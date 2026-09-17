@@ -12,20 +12,33 @@ local is_windows = os_name == "Windows"
 local is_linux = os_name == "Linux"
 local is_macos = os_name == "OS X"
 
-if is_windows then
-    ffi = require("ffi")
-    bit = require("bit")
+-- ffi / bit 由 LuaJIT 提供，与平台无关（LÖVE 12 的 love-git 构建就是 LuaJIT）。
+-- 外面包一层 pcall 是为了在没有 ffi 的构建（例如 Lua 5.4 版 LÖVE）上也能把本模块
+-- 加载起来，此时 SDL 路径不可用，只影响 DevTool 之类依赖它的功能。
+local ok_ffi, ffi_mod = pcall(require, "ffi")
+if ok_ffi then
+    ffi = ffi_mod
+    local ok_bit, bit_mod = pcall(require, "bit")
+    if ok_bit then bit = bit_mod end
+end
+
+-- SDL3 是跨平台的：LÖVE 自己就动态链接了它（Linux 上是 libSDL3.so.0），
+-- 所以 ffi.load("SDL3") 解析到的是同一进程内的同一个 SDL 实例，用它建的窗口
+-- 归 LÖVE 这套 SDL 管。ffi.load 会按平台惯例补全文件名：
+--   Linux -> libSDL3.so   macOS -> libSDL3.dylib   Windows -> SDL3.dll
+if ffi then
+    local ok_sdl, sdl_mod = pcall(ffi.load, "SDL3")
+    if ok_sdl then
+        sdl = sdl_mod
+    end
+end
+
+-- 下面这段 cdef 是 Win32 专用的（user32/gdi32/kernel32），只在 Windows 上需要。
+if is_windows and ffi then
     user32 = ffi.load("user32")
     gdi32 = ffi.load("gdi32")
     -- GetModuleHandle/GetLastError/GetCurrentProcessId live in kernel32, not user32
     kernel32 = ffi.load("kernel32")
-
-    -- LÖVE 12 bundles SDL3.dll; using SDL to create native windows is more stable
-    -- (no manual Win32 message loop required)
-    local ok_sdl, sdl_or_err = pcall(ffi.load, "SDL3")
-    if ok_sdl then
-        sdl = sdl_or_err
-    end
 
     ffi.cdef[[
         typedef void* HWND;
@@ -194,6 +207,15 @@ if is_windows then
         BOOL TextOutA(HDC hdc, int x, int y, const char* lpString, int c);
         BOOL TextOutW(HDC hdc, int x, int y, const wchar_t* lpString, int c);
 
+        // Win32: send WM_CLOSE to the native HWND to trigger a real close request
+        intptr_t SendMessageW(void* hWnd, unsigned int Msg, uintptr_t wParam, intptr_t lParam);
+    ]]
+end
+
+-- SDL3 声明：所有平台都需要。原先这一整段也关在 if is_windows 里，
+-- 这正是 DevTool 在 Linux 上打不开窗口的直接原因。
+if ffi then
+    ffi.cdef[[
         // SDL3 (bundled with LÖVE 12): create native windows without a manual Win32 message loop
         typedef struct SDL_Window SDL_Window;
         typedef struct SDL_Renderer SDL_Renderer;
@@ -232,9 +254,6 @@ if is_windows then
         int SDL_SetWindowKeyboardFocus(SDL_Window* window);
         void* SDL_GetWindowProperties(SDL_Window* window);
         void* SDL_GetPointerProperty(void* props, const char* name, void* default_value);
-
-        // Win32: send WM_CLOSE to the native HWND to trigger a real close request
-        intptr_t SendMessageW(void* hWnd, unsigned int Msg, uintptr_t wParam, intptr_t lParam);
 
         static const int SDL_EVENT_WINDOW_CLOSE_REQUESTED = 0x20F;
         static const int SDL_EVENT_KEY_DOWN = 0x301;
@@ -736,11 +755,8 @@ end
 ---@return string|nil errMsg Error message when creation fails
 function window.CreateWindowSDL(opts)
     opts = opts or {}
-    if not is_windows then
-        return nil, "CreateWindowSDL only supported on Windows."
-    end
     if not sdl then
-        return nil, "SDL3.dll not found (requires LÖVE 12)."
+        return nil, "SDL3 not available (requires a LÖVE 12 build with LuaJIT/ffi)."
     end
 
     sdl.SDL_Init(SDL_INIT_VIDEO) -- already initialized by LÖVE; repeated calls are safe
@@ -896,6 +912,9 @@ end
 ---@return boolean ok true if WM_CLOSE was sent
 function window.SDLSimulateClose(win)
     if not sdl or not win then return false end
+    -- 这条走的是 Win32 的 WM_CLOSE（需要 hwnd），非 Windows 上直接放弃；
+    -- 调用方想关窗请改用 window.DestroyWindowSDL(win)。
+    if not is_windows then return false end
     ensureSdlEventWatch()
     local hwnd = window.SDLGetNativeHandle(win)
     if hwnd == nil or tonumber(ffi.cast("intptr_t", hwnd)) == 0 then
