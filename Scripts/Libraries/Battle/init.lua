@@ -67,13 +67,22 @@ battle.ui = require(path .. "Battle.UI")
 UI = battle.ui
 
 Player.SetSoul(1)
-battle.mainarena = Arenas.New("plus", "rectangle", 320, 320, 565, 130, 0)
+battle.mainarena = Arenas.New("plus", "rectangle", 249, 357.5, 454, 197, 0)
 battle.mainarena.is_active = false
-local narration_text = Typers.EText.New("", {60, 270}, "UponArena", {0, 0}, "none")
+-- The menu box opens toward the separate command column.
+Layers.add_external(function()
+    if not battle.mainarena.is_active and not battle.restoring_arena then
+        SE.graphics.setColor(0, 0, 0)
+        SE.graphics.rectangle("fill", 476, 259, 5, 197)
+    end
+end, "UponArena")
+local narration_text = Typers.EText.New("", {41, 273}, "UponArena", {420, 170}, "none")
+narration_text.auto_wrap = true
 battle.narration_text = narration_text
 
 function battle.BattleDialogue(texts, final_state)
-    local t = Typers.EText.New(texts, {60, 270}, "UponArena", {0, 0}, "manual")
+    local t = Typers.EText.New(texts, {41, 273}, "UponArena", {420, 170}, "manual")
+    t.auto_wrap = true
     t._onComplete = function ()
         Battle.ChangeState(final_state or "ACTIONSELECT")
         Battle.narration_text:SetText(battle.game.narration)
@@ -82,7 +91,8 @@ function battle.BattleDialogue(texts, final_state)
 end
 
 function battle.FullDialogue(texts, call)
-    local t = Typers.EText.New(texts, {60, 270}, "UponArena", {0, 0}, "manual")
+    local t = Typers.EText.New(texts, {41, 273}, "UponArena", {420, 170}, "manual")
+    t.auto_wrap = true
     t._onComplete = function ()
         call()
     end
@@ -127,7 +137,8 @@ local function defaultEnteringState(old, new)
         Battle._wave = {}
         battle.DefenseEnding()
         Arenas.Clear()
-        battle.mainarena:Resize(565, 130)
+        battle.mainarena:MoveTo(249, 357.5)
+        battle.mainarena:Resize(454, 197)
         battle.mainarena:RotateTo(0)
         battle.mainarena.is_active = false
         -- Defer the narration text until the arena finishes restoring to full
@@ -178,7 +189,8 @@ function battle.Win(extra_texts, on_complete)
         end
     end
 
-    local t = Typers.EText.New(texts, {60, 270}, "UponArena", {0, 0}, "manual")
+    local t = Typers.EText.New(texts, {41, 273}, "UponArena", {420, 170}, "manual")
+    t.auto_wrap = true
     t._onComplete = function ()
         if (on_complete) then on_complete() end
         battle._end = true
@@ -251,6 +263,7 @@ function battle.SetAttackPattern(pattern)
 end
 
 function battle.Defending()
+    Battle.mainarena:MoveTo(320, 320, true)
     Player.sprite:MoveTo(320, 320)
     Battle.mainarena.is_active = true
     Battle.mainarena:Resize(155, 130)
@@ -319,7 +332,8 @@ function battle.UpdateRestore(dt)
 
     local arena = battle.mainarena
     if (Controller.GetState("confirm") == 1) then
-        arena:Resize(565, 130, true)
+        arena:MoveTo(249, 357.5, true)
+        arena:Resize(454, 197, true)
     end
 
     if (arena.width == arena.target.width and arena.height == arena.target.height) then

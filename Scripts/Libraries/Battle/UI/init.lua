@@ -14,23 +14,23 @@ local ui = {
 local setup_hpbar = {
     use_stencil = false
 }
-local kr_configuration = true
+local kr_configuration = false
 local time_kr = 0
 
 -- ---------------------------------------------------------------------------
 -- Layout
 -- ---------------------------------------------------------------------------
--- The status line is laid out from ONE configurable origin (`text_pos`): the
--- name sits at (text_pos[1], text_pos[2]) and LV / "HP" are offset from it,
+-- The two-row status block is laid out from one origin (`text_pos`): the
+-- name and LV sit above HP and the compact health bar,
 -- while the "KR" label and the HP numbers follow the right end of the HP bar.
 -- Every element mirrors its live coordinates into the `pos_*` tables below, so
 -- other code can ask "where is the HP label right now?" (ui.GetLayout()).
 -- The public API at the bottom of this file drives all of it:
 --     ui.SetTextPosition / ui.GetTextPosition / ui.MoveTextPosition
 --     ui.SetBarPosition  / ui.GetBarPosition  / ui.MoveBarPosition
-local text_pos = {30, 400}
+local text_pos = {458, 198}
 -- Left edge (x) and height (y) shared by the three HP bars.
-local bar_pos = {245 + 30, 410}
+local bar_pos = {493, 237}
 -- The "HP" label follows the name / LV text but never moves further left than
 -- this, so it can not collide with the numbers when the name gets short.
 local hpname_limit = 245
@@ -53,7 +53,7 @@ bar_kr.xpivot = 0
 bar_kr.xscale = 0
 bar_kr.yscale = 20
 
-local ui_font = SE.graphics.newFont("Resources/Fonts/Mars Needs Cunnilingus.ttf", 24, "mono")
+local ui_font = SE.graphics.newFont("Resources/Fonts/Mars Needs Cunnilingus.ttf", 20, "mono")
 local lit_font = SE.graphics.newFont("Resources/Fonts/8bit-wonder.TTF", 12, "mono")
 ui_font:setFilter("nearest", "nearest")
 lit_font:setFilter("nearest", "nearest")
@@ -90,18 +90,15 @@ local name = Layers.add_external(function ()
     drawOutlinedText(ui_font, Global.GetVariable("MainColor"), Player.name, pos_name[1], pos_name[2], 2)
 end, "UI")
 local lv = Layers.add_external(function ()
-    -- Offset by the width of the name (plus the two spaces that follow it).
-    pos_lv[1] = text_pos[1] + 15 * (Player.name:len() + 2)
+    -- Align LV over the right edge of the command column.
+    pos_lv[1] = text_pos[1] + 113
     pos_lv[2] = text_pos[2]
-    drawOutlinedText(ui_font, Global.GetVariable("MainColor"), "LV  " .. Player.lv, pos_lv[1], pos_lv[2], 2)
+    drawOutlinedText(ui_font, Global.GetVariable("MainColor"), "LV " .. Player.lv, pos_lv[1], pos_lv[2], 2)
 end, "UI")
 local hpname = Layers.add_external(function ()
-    -- Sits right after the LV text, but never closer than `hpname_limit`.
-    pos_hpname[1] = math.max(
-        text_pos[1] + 15 * (Player.name:len() + 2) + 15 * (("LV  " .. Player.lv):len()) + 20,
-        hpname_limit
-    )
-    pos_hpname[2] = text_pos[2] + 3
+    -- The HP label starts the second row.
+    pos_hpname[1] = math.max(text_pos[1], hpname_limit)
+    pos_hpname[2] = text_pos[2] + 30
     pos_.hpname = pos_hpname[1] -- kept for callers of the old variable
     drawOutlinedText(lit_font, Global.GetVariable("MainColor"), "HP", pos_hpname[1], pos_hpname[2], 2)
 end, "UI")
@@ -116,8 +113,8 @@ local hptext = Layers.add_external(function ()
     -- The numbers follow the right end of the HP bar; the KR variant leaves a
     -- wider gap because the KR value is appended to them.
     if (not kr_configuration) then
-        pos_hptext[1] = bar_maxhp.x + bar_maxhp.xscale + 10
-        pos_hptext[2] = text_pos[2]
+        pos_hptext[1] = bar_maxhp.x + bar_maxhp.xscale + 14
+        pos_hptext[2] = text_pos[2] + 28
         drawOutlinedText(ui_font, Global.GetVariable("MainColor"), Player.hp .. " / " .. Player.maxhp, pos_hptext[1], pos_hptext[2], 2)
     else
         pos_hptext[1] = bar_maxhp.x + bar_maxhp.xscale + 45
@@ -130,7 +127,7 @@ local hptext = Layers.add_external(function ()
     end
 end, "UI")
 
-local bar_maxlength = 100 * 1.21
+local bar_maxlength = 26
 function ui.SetBarMaxLength(length)
     if (not length or type(length) ~= "number") then
         return
@@ -143,7 +140,8 @@ function ui.SetHPBarColor(color)
 end
 
 function ui.ToggleKR(bool)
-    kr_configuration = (bool or not kr_configuration)
+    if bool == nil then bool = not kr_configuration end
+    kr_configuration = bool
 end
 
 function ui.GetKRStarted()

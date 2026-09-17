@@ -87,7 +87,7 @@ local function state_behaviours_drawer()
                 maxhp:Scale(100, 15)
                 maxhp.xpivot = 0
                 maxhp.color = {1, 0, 0}
-                maxhp:MoveTo(400, 270 + 33 * (i - 1) + 18)
+                maxhp:MoveTo(350, 270 + 33 * (i - 1) + 18)
 
                 local hp = Sprites.CreateSprite("px.png", "UponArena")
                 hp:Scale(math.min(e.hp / e.maxhp * 100, 100), 15)
@@ -124,7 +124,7 @@ local function state_behaviours_drawer()
         do
             local action_ = e.actions[i]
             if (i % 2 == 0) then
-                x = 340
+                x = 270
             else
                 x = 90
             end
@@ -147,7 +147,7 @@ local function state_behaviours_drawer()
         do
             local item_ = game.items[i]
             if (i % 2 == 0) then
-                x = 340
+                x = 270
             else
                 x = 90
             end
@@ -164,7 +164,7 @@ local function state_behaviours_drawer()
             end
         end
 
-        local t = Typers.InstText.New(Localize.localizeText("Battle.Items.Page", {items_page}), {400, 340}, "UponArena")
+        local t = Typers.InstText.New(Localize.localizeText("Battle.Items.Page", {items_page}), {300, 410}, "UponArena")
         state.page_typer = t
         table.insert(state.typers, t)
     elseif (s == "MERCYMENU") then
@@ -194,7 +194,8 @@ local function state_behaviours_drawer()
         UI.buttons.ResetButtons()
         local texts = Battle.dialog_texts or dialog_result_texts
         Battle.dialog_texts = nil
-        local t = Typers.EText.New(texts, {60, 270}, "UponArena", {0, 0}, "manual")
+        local t = Typers.EText.New(texts, {41, 273}, "UponArena", {420, 170}, "manual")
+        t.auto_wrap = true
         t._onComplete = function ()
             Battle.ChangeState("ACTIONSELECT")
             Battle.narration_text:SetText(game.narration)

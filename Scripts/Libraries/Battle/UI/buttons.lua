@@ -40,17 +40,31 @@ local buttons = {
 }
 
 local fight = Sprites.CreateSprite(buttons.sprites[1][2], "UI")
-fight:MoveTo(87, 453)
+fight:MoveTo(554, 288)
 local act = Sprites.CreateSprite(buttons.sprites[2][1], "UI")
-act:MoveTo(240, 453)
+act:MoveTo(554, 334)
 local item = Sprites.CreateSprite(buttons.sprites[3][1], "UI")
-item:MoveTo(400, 453)
+item:MoveTo(554, 380)
 local mercy = Sprites.CreateSprite(buttons.sprites[4][1], "UI")
-mercy:MoveTo(555, 453)
+mercy:MoveTo(554, 426)
 table.insert(buttons.buttons, fight)
 table.insert(buttons.buttons, act)
 table.insert(buttons.buttons, item)
 table.insert(buttons.buttons, mercy)
+
+-- Keep horizontal navigation available, and match the visible vertical menu.
+for i = 1, 4 do
+    table.insert(buttons.logic_buttons, {i, i % 4 + 1, "down"})
+    table.insert(buttons.logic_buttons, {i, (i + 2) % 4 + 1, "up"})
+end
+
+Layers.add_external(function()
+    SE.graphics.setColor(1, 1, 1)
+    SE.graphics.rectangle("fill", 485, 254, 138, 5)
+    SE.graphics.rectangle("fill", 485, 456, 138, 5)
+    SE.graphics.rectangle("fill", 485, 254, 5, 207)
+    SE.graphics.rectangle("fill", 618, 254, 5, 207)
+end, "UI")
 
 local last_applied_index = nil
 
