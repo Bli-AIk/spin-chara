@@ -1,0 +1,37 @@
+{
+  "Battle.Narration.Default": "* Poseur strikes a pose!",
+
+  "Battle.Spare": "Spare",
+  "Battle.Flee": "Flee",
+  "Battle.HP.NotFull": "* You recovered %s hp!",
+  "Battle.HP.Full": "* Your HP was maxed out!",
+  "Battle.Items.Page": "PAGE %s",
+  "Battle.WinTexts1": "* You WON![wait:0.5]\n* You earned %s XP and %s Gold.\n",
+  "Battle.WinTexts2": "* Your LOVE increased!",
+
+  "Battle.GameoverText": ["* Our fates rests\n  upon you...", "* %s![wait:0.5]\n  stay determined..."],
+
+  "Battle.EnemiesName.Poseur": "Poseur",
+  
+  "Battle.Actions.Names.Check": "Check",
+  "Battle.Actions.Names.Pose": "Pose",
+
+  "Battle.Actions.Texts.Poseur.Check": ["* Poseur[wait:0.5] - 0 ATK 0 DEF[wait:0.5]\n* Not what I want.", "* A mascot from CYF."],
+  "Battle.Actions.Texts.Poseur.Pose": ["* "],
+  
+  "Items": {},
+
+  "Overworld.Menu.Buttons": ["ITEM", "STAT", "CELL"],
+  "Overworld.Menu.Item": "USE   INFO   DROP",
+  "Overworld.Menu.Interval": [215, 312, 425],
+  "Overworld.Menu.Stat": "\"%s\"\n\nLV %s\nHP %s/%s\n\nAT %s(%s)\nDF %s(%s)\n\nWeapon: %s\nArmor: %s\nGold: %s",
+  "Overworld.Save.Buttons": "Save       Cancel",
+  "Overworld.Save.Success": "Saved successfully",
+  "Overworld.Chest.Title": "Inventory            Box",
+  "Overworld.Chest.Tip": "Press [X] to close",
+  "Overworld.Shop.Action.Buy": "Buy",
+  "Overworld.Shop.Action.Sell": "Sell",
+  "Overworld.Shop.Action.Talk": "Talk",
+  "Overworld.Shop.Action.Exit": "Exit",
+  "Overworld.Text.NobodyCame": "* But nobody came."
+}
