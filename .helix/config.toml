@@ -1,0 +1,16 @@
+[keys.normal]
+# Alt-r: 通过触发文件让运行中的 Love2D 实例热重载当前场景。
+#
+# 键位本身没问题（evil-helix 25.07.1 实测能正常触发并创建 .reload_trigger），
+# 但它依赖游戏侧去消费这个文件：那段代码来自 PR #2（旧版 main.lua 的
+# love.update 里 io.open(".reload_trigger")），而 Nexus02 重写时漏掉了，
+# 全分支 grep 不到 reload_trigger。
+# 所以：在上游把消费方补回来（或本地打补丁）之前，按 Alt+r 不会有任何效果。
+"A-r" = ':sh root="$(git rev-parse --show-toplevel)" && touch "$root/.reload_trigger"'
+
+[keys.normal.space]
+# 启动 Love2D 游戏并打开当前终端类型的新窗口以显示日志
+# （实际启动命令在项目根的 justfile 里，固定使用 love-git / LÖVE 12）
+l = ':sh root="$(git rev-parse --show-toplevel)" && "$root/.helix/run-love-terminal.sh" >/dev/null 2>&1'
+# 同上但关了游戏还开着终端
+L = ':sh root="$(git rev-parse --show-toplevel)" && "$root/.helix/run-love-terminal.sh" --hold >/dev/null 2>&1'

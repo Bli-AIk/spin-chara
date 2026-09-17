@@ -119,19 +119,32 @@ function love.load()
         state       = "Route: Genocide",
         large_image = "qq20250220-225345",
         large_text  = "It's a bad time.",
-        start       = Discord.timestamp(),   -- elapsed timer
+        start       = Discord.timestamp(), -- elapsed timer
     })
 end
 
 function love.update(dt)
     dt = math.min(dt, 1 / 20)
 
+    -- 外部触发文件热重载当前场景
+    if (not _RELEASED) then
+        local trigger = io.open(".reload_trigger", "r")
+        if (trigger) then
+            trigger:close()
+            os.remove(".reload_trigger")
+            Localize.reload()
+            local sceneName = Scenes.name_current
+            package.loaded["Scripts.Scenes." .. sceneName] = nil
+            Scenes.switchTo(sceneName)
+        end
+    end
+
     -- Process any scene switch queued during the previous frame's callbacks
     -- (prevents re-entrant switchTo from overflowing the stack).
     Scenes.flushPendingSwitch()
 
     -- Libraries
-    Border.Update(dt)   -- advance border fade in/out
+    Border.Update(dt) -- advance border fade in/out
     Guard.Update(dt)
     -- Order matters: poll the gamepad, mirror it onto Keyboard's simulated
     -- keys, then let Keyboard.Update() finalize all key states before the
@@ -171,7 +184,7 @@ function love.update(dt)
 end
 
 function love.draw()
-    SE.graphics.setCanvas({MAIN_CANVAS, stencil = true})
+    SE.graphics.setCanvas({ MAIN_CANVAS, stencil = true })
     SE.graphics.clear(0, 0, 0, 1)
 
     Camera:apply()
@@ -247,7 +260,8 @@ function love.keypressed(key, scancode, isrepeat)
         if (DevTool and DevTool.Toggle and key == "f8") then
             DevTool.Toggle()
             return
-        elseif (key == "f5") then
+        elseif (key == "f5" or (key == "r" and (love.keyboard.isDown("lctrl") or
+                love.keyboard.isDown("rctrl")))) then
             Localize.reload()
             local sceneName = Scenes.name_current
             package.loaded["Scripts.Scenes." .. sceneName] = nil
@@ -294,7 +308,10 @@ function love.mousepressed(x, y, button, istouch, presses)
         -- Desktop simulation: clicking the virtual keyboard acts like touch
         consumed = VirtualKeyboard.MousePressed(x, y)
     end
-    if (not consumed and scene_.mousepressed and not scene_.pausing) then scene_.mousepressed(x, y, button, istouch, presses) end
+    if (not consumed and scene_.mousepressed and not scene_.pausing) then
+        scene_.mousepressed(x, y, button, istouch,
+            presses)
+    end
 end
 
 function love.mousereleased(x, y, button, istouch, presses)
@@ -302,7 +319,10 @@ function love.mousereleased(x, y, button, istouch, presses)
     if (button == 1 and not istouch) then
         consumed = VirtualKeyboard.MouseReleased(x, y)
     end
-    if (not consumed and scene_.mousereleased and not scene_.pausing) then scene_.mousereleased(x, y, button, istouch, presses) end
+    if (not consumed and scene_.mousereleased and not scene_.pausing) then
+        scene_.mousereleased(x, y, button, istouch,
+            presses)
+    end
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)

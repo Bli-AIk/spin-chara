@@ -1,0 +1,24 @@
+[language-server.lua-language-server.config.Lua.runtime]
+version = "LuaJIT"
+
+[language-server.lua-language-server.config.Lua.workspace]
+library = ["${3rd}/love2d/library"]
+checkThirdParty = "Disable"
+
+[language-server.lua-language-server.config.Lua.completion]
+autoRequire = false
+
+[language-server.lua-language-server.config.Lua.diagnostics]
+workspaceEvent = "OnChange"
+globals = ["love"]
+disable = [
+  "deprecated",
+  "redundant-parameter",
+  "undefined-doc-name",
+  "return-type-mismatch",
+  "lowercase-global",
+  "need-check-nil",
+  "cast-local-type",
+  "inject-field",
+  "undefined-field",
+]
