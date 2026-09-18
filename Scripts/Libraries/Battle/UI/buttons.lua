@@ -58,12 +58,22 @@ for i = 1, 4 do
     table.insert(buttons.logic_buttons, {i, (i + 2) % 4 + 1, "up"})
 end
 
+local offset, visible = 0, true
+function buttons.SetOffset(x, show)
+    offset, visible = x, show
+    for _, button in ipairs(buttons.buttons) do
+        button.x = 554 + x
+        button.visible = show
+    end
+end
+
 Layers.add_external(function()
+    if not visible then return end
     SE.graphics.setColor(1, 1, 1)
-    SE.graphics.rectangle("fill", 485, 254, 138, 5)
-    SE.graphics.rectangle("fill", 485, 456, 138, 5)
-    SE.graphics.rectangle("fill", 485, 254, 5, 207)
-    SE.graphics.rectangle("fill", 618, 254, 5, 207)
+    SE.graphics.rectangle("fill", 485 + offset, 254, 138, 5)
+    SE.graphics.rectangle("fill", 485 + offset, 456, 138, 5)
+    SE.graphics.rectangle("fill", 485 + offset, 254, 5, 207)
+    SE.graphics.rectangle("fill", 618 + offset, 254, 5, 207)
 end, "UI")
 
 local last_applied_index = nil
@@ -246,6 +256,7 @@ function buttons.SetAnimations(anims)
 end
 
 function buttons.Update()
+    if Battle.transition.busy then return end
     if (Battle.state ~= "ACTIONSELECT") then return end
 
     local button_list = buttons.buttons

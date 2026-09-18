@@ -53,10 +53,12 @@ local function destroy_elements()
     state.sprites = {}
 end
 
-local function state_behaviours_drawer()
+state.ClearElements = destroy_elements
+
+local function state_behaviours_drawer(preserve_narration)
     destroy_elements()
-    Battle.narration_text:SetText("")
-    Player.sprite:MoveTo(99999, 99999)
+    if not preserve_narration then Battle.narration_text:SetText("") end
+    if Battle.state ~= "DEFENDING" then Player.sprite:MoveTo(99999, 99999) end
     local s = Battle.state
     local game = (Battle.game)
 
@@ -68,7 +70,7 @@ local function state_behaviours_drawer()
     local enemies = game.enemies
     if (s == "ACTIONSELECT") then
         choosing_enemy = 1
-        Battle.narration_text:SetText(game.narration)
+        if not preserve_narration then Battle.narration_text:SetText(game.narration) end
     elseif (s == "FIGHTMENU") then
         for i = 1, #enemies
         do
@@ -192,17 +194,19 @@ local function state_behaviours_drawer()
         choosing_enemy = 1
         choosing_action = 1
         UI.buttons.ResetButtons()
+        if Battle.dialogue_started then return end
         local texts = Battle.dialog_texts or dialog_result_texts
         Battle.dialog_texts = nil
-        local t = Typers.EText.New(texts, {41, 273}, "UponArena", {420, 170}, "manual")
+        local t = Battle.NewDialogue(texts)
         t.auto_wrap = true
         t._onComplete = function ()
             Battle.ChangeState("ACTIONSELECT")
-            Battle.narration_text:SetText(game.narration)
             state.block_transition = true
         end
     end
 end
+
+state.Enter = state_behaviours_drawer
 
 local function refresh_items_page_display(items, page)
     if (not state.page_typer) then
@@ -471,6 +475,7 @@ local function get_items_table()
 end
 
 function state.Update(dt)
+    if Battle.transition.busy then return end
     local current_state = Battle.state
     local current_button = UI.button_selecting
 
@@ -529,8 +534,6 @@ function state.Update(dt)
                     skip_mercy_updater = true
                 end
 
-                state_behaviours_drawer()
-
                 if (key_action == "confirm") then
                     Audio.PlaySound("snd_menu_1.wav")
                 end
@@ -539,7 +542,7 @@ function state.Update(dt)
         end
     end
 
-    state_behaviours_updater(dt)
+    if not Battle.transition.busy then state_behaviours_updater(dt) end
 end
 
 return state

@@ -32,7 +32,7 @@ local encounter = {
         },
     },
 
-    state = "DEFENDING",
+    state = "ACTIONSELECT",
     wave = "wave",
 
     player = {

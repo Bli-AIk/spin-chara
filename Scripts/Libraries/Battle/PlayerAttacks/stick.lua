@@ -13,15 +13,15 @@ function atk.Restart(_enemy)
     missed = false
 
     local target = Sprites.CreateSprite("UI/Battle Screen/spr_target_0.png", "UponArena")
-    target.y = 320
+    target:MoveTo(Battle.mainarena.x, Battle.mainarena.y)
     atk.target = target
 
     local bar = Sprites.CreateSprite("UI/Battle Screen/Player Attack/spr_targetchoice_0.png", "UponArena")
-    bar.y = 320
+    bar.y = target.y
 
     local randomer = (math.random() <= 0.5)
     bar._rand = randomer
-    bar.x = (randomer and 320 - 280 or 320 + 280)
+    bar.x = target.x + (randomer and -280 or 280)
     bar.velocity.x = (randomer and 6 or -6)
     bar:SetAnimation({
         "UI/Battle Screen/Player Attack/spr_targetchoice_1.png",
@@ -82,7 +82,7 @@ function atk.Update(dt)
     if (not bar or not tar) then return end
 
     if (not attacked) then
-        if (bar.x < 320 - 280 or bar.x > 320 + 280) then
+        if (bar.x < tar.x - 280 or bar.x > tar.x + 280) then
             bar.velocity.x = 0
             bar.alpha = 0
             attacked = true

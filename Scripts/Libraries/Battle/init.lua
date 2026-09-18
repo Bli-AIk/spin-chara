@@ -65,15 +65,20 @@ Player = battle.player
 Arenas = battle.arenas
 battle.ui = require(path .. "Battle.UI")
 UI = battle.ui
+battle.transition = require(path .. "Battle.UI.transition")
 
 Player.SetSoul(1)
 battle.mainarena = Arenas.New("plus", "rectangle", 249, 357.5, 454, 197, 0)
 battle.mainarena.is_active = false
 -- The menu box opens toward the separate command column.
 Layers.add_external(function()
-    if not battle.mainarena.is_active and not battle.restoring_arena then
+    local reveal = battle.transition.edgeReveal
+    if reveal < 1 then
+        local arena = battle.mainarena
+        local right = arena.x + arena.width / 2
         SE.graphics.setColor(0, 0, 0)
-        SE.graphics.rectangle("fill", 476, 259, 5, 197)
+        SE.graphics.rectangle("fill", right + arena.thickness * reveal,
+            arena.y - arena.height / 2, arena.thickness * (1 - reveal), arena.height)
     end
 end, "UponArena")
 local narration_text = Typers.EText.New("", {41, 273}, "UponArena", {420, 170}, "none")
@@ -81,17 +86,37 @@ narration_text.auto_wrap = true
 battle.narration_text = narration_text
 
 function battle.BattleDialogue(texts, final_state)
-    local t = Typers.EText.New(texts, {41, 273}, "UponArena", {420, 170}, "manual")
+    battle.dialogue_started = true
+    local t = battle.NewDialogue(texts)
     t.auto_wrap = true
     t._onComplete = function ()
         Battle.ChangeState(final_state or "ACTIONSELECT")
-        Battle.narration_text:SetText(battle.game.narration)
         UI.state.block_transition = true
     end
 end
 
+function battle.NewDialogue(texts)
+    local arena = battle.mainarena
+    local t = Typers.EText.New(texts,
+        {arena.x - arena.width / 2 + 19, arena.y - arena.height / 2 + 14},
+        "UponArena", {arena.width - 38, arena.height - 24}, "manual")
+    t.auto_wrap = true
+    local update = t.Update
+    function t:Update(dt)
+        local box = battle.mainarena
+        self.x = box.x - box.width / 2 + 19
+        self.y = box.y - box.height / 2 + 14
+        self.size[1] = math.max(416, box.width - 38)
+        local mode = self.mode
+        if battle.transition.busy then self.mode = "none" end
+        update(self, dt)
+        self.mode = mode
+    end
+    return t
+end
+
 function battle.FullDialogue(texts, call)
-    local t = Typers.EText.New(texts, {41, 273}, "UponArena", {420, 170}, "manual")
+    local t = battle.NewDialogue(texts)
     t.auto_wrap = true
     t._onComplete = function ()
         call()
@@ -127,24 +152,6 @@ local function defaultEnteringState(old, new)
     if (new == "DEFENDING") then
         battle.Defending()
         UI.buttons.ResetButtons()
-    elseif (old == "DEFENDING" and new == "ACTIONSELECT") then
-        package.loaded["Scripts.Waves." .. Battle.wave] = nil
-        if (Battle._wave) then
-            Battle._wave._end = false
-            Battle._wave.objects = {}
-            Battle._wave._paths = {}
-        end
-        Battle._wave = {}
-        battle.DefenseEnding()
-        Arenas.Clear()
-        battle.mainarena:MoveTo(249, 357.5)
-        battle.mainarena:Resize(454, 197)
-        battle.mainarena:RotateTo(0)
-        battle.mainarena.is_active = false
-        -- Defer the narration text until the arena finishes restoring to full
-        -- size (handled in battle.UpdateRestore), so the box visibly scales
-        -- back before the text reappears.
-        battle.restoring_arena = true
     end
 
     if (new == "WIN") then
@@ -159,12 +166,50 @@ battle.defaultEnteringState = defaultEnteringState
 -- Whenever the state actually changes, EnteringState is run exactly once,
 -- so callers never need to trigger it manually.
 function battle.ChangeState(new_state)
+    if battle.transition.busy then
+        battle.pending_state = new_state
+        return
+    end
     if (battle.state == new_state) then
         return
     end
     local old = battle.state
-    battle.state = new_state
-    battle.EnteringState(old, new_state)
+    local function commit(preserve_narration)
+        battle.state = new_state
+        battle.dialogue_started = false
+        Player.sprite.visible = new_state ~= "WIN" and new_state ~= "DIALOGUERESULT"
+            and new_state ~= "ATTACKING"
+        battle.EnteringState(old, new_state)
+        UI.state.Enter(preserve_narration)
+        UI.state.block_transition = true
+    end
+    if old == "DEFENDING" then
+        if battle._wave.EndWave and not battle._wave.ENDED then battle._wave.EndWave() end
+        package.loaded["Scripts.Waves." .. battle.wave] = nil
+        battle._wave = {}
+        battle.DefenseEnding()
+        Arenas.Clear()
+    end
+    local mode
+    if new_state == "DEFENDING" then mode = "defense"
+    elseif new_state == "ATTACKING" or new_state == "DIALOGUERESULT" then mode = "compact"
+    elseif new_state == "ACTIONSELECT" then mode = "menu" end
+    if mode and mode ~= battle.transition.mode then
+        local early_dialogue = new_state == "DIALOGUERESULT"
+        battle.transition.Start(mode, function()
+            if not early_dialogue then commit(new_state == "ACTIONSELECT") end
+            local pending = battle.pending_state
+            battle.pending_state = nil
+            if pending then battle.ChangeState(pending) end
+        end)
+        if early_dialogue then
+            commit()
+        elseif new_state == "ACTIONSELECT" then
+            battle.narration_text:SetText(battle.game.narration)
+        end
+    else
+        commit()
+    end
 end
 
 function battle.SetEndRoom(room)
@@ -180,6 +225,7 @@ end
 ---@param extra_texts table|nil Extra text lines appended to the win message.
 ---@param on_complete function|nil Called once the win message has finished.
 function battle.Win(extra_texts, on_complete)
+    battle.transition.Cancel()
     battle.ChangeState("WIN")
     local texts = Localize.localizeText("Battle.WinTexts1", {Battle.EXP, Battle.GOLD})
 
@@ -189,7 +235,7 @@ function battle.Win(extra_texts, on_complete)
         end
     end
 
-    local t = Typers.EText.New(texts, {41, 273}, "UponArena", {420, 170}, "manual")
+    local t = battle.NewDialogue(texts)
     t.auto_wrap = true
     t._onComplete = function ()
         if (on_complete) then on_complete() end
@@ -220,7 +266,7 @@ function battle.SetGame(file)
         if (game_.wave) then Battle.wave = game_.wave end
         Battle.ChangeState(game_.state or "ACTIONSELECT")
         UI.buttons.ResetButtons()
-        if (Battle.state == "ACTIONSELECT") then
+        if (Battle.state == "ACTIONSELECT" and not battle.transition.busy) then
             narration_text:SetText(game_.narration or "")
         end
         UI.barUpdate()
@@ -263,10 +309,8 @@ function battle.SetAttackPattern(pattern)
 end
 
 function battle.Defending()
-    Battle.mainarena:MoveTo(320, 320, true)
-    Player.sprite:MoveTo(320, 320)
+    Player.sprite:MoveTo(Battle.mainarena.x, Battle.mainarena.y)
     Battle.mainarena.is_active = true
-    Battle.mainarena:Resize(155, 130)
 
     local _wave = {}
     local ok, err = pcall(function ()
@@ -287,9 +331,14 @@ function battle.Defending()
 end
 
 function battle.Update(dt)
-    Player.Update(dt)
+    local transitioning = battle.transition.busy
+    battle.transition.Update()
+    local arena = battle.mainarena
+    battle.narration_text.x = arena.x - arena.width / 2 + 19
+    battle.narration_text.y = arena.y - arena.height / 2 + 14
+    if not transitioning and not battle.transition.busy then Player.Update(dt) end
     Arenas.Update(dt)
-    UI.Update(dt)
+    if not transitioning then UI.Update(dt) else UI.barUpdate() end
 
     -- Timers
     battle.TIME_F = battle.TIME_F + 1
@@ -322,27 +371,14 @@ function battle.Update(dt)
     end
 end
 
--- Called while returning from DEFENDING to ACTIONSELECT. Defers the narration
--- text until the arena has scaled back to full size (565x130); pressing confirm
--- during the restore snaps the arena to full size so the text can show at once.
+-- Compatibility entry point; restoration is owned by the transition controller.
 function battle.UpdateRestore(dt)
-    if (not battle.restoring_arena) then
-        return
-    end
-
-    local arena = battle.mainarena
-    if (Controller.GetState("confirm") == 1) then
-        arena:MoveTo(249, 357.5, true)
-        arena:Resize(454, 197, true)
-    end
-
-    if (arena.width == arena.target.width and arena.height == arena.target.height) then
-        battle.restoring_arena = false
-        battle.narration_text:SetText(battle.game.narration)
-    end
+    battle.transition.Update()
 end
 
 function battle.Clear()
+    battle.transition.Cancel()
+    battle.pending_state = nil
     -- Clear the game module tree so it re-queries Localize on next load
     if battle.gameName then
         ClearModuleTree(battle.gameName)
