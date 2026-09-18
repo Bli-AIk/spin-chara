@@ -25,6 +25,14 @@ local BATTLE_MODULE_ROOTS = {
 -- Resources/Music, so this custom track still works if the engine copy exists.
 local BATTLE_BGM = "mus_elbow_grease.mp3"
 
+-- "50. Elbow Grease" starts at 130 BPM in 4/4. The attached edit view marks
+-- the one-time intro as 1.1 -> 2.1, i.e. four beats / one 4/4 bar.
+-- The intro is played once; after that the track loops from bar 2.1 to the end.
+local BATTLE_BGM_BPM = 130
+local BATTLE_BGM_BEATS_PER_BAR = 4
+local BATTLE_BGM_INTRO_BARS = 1 -- 1.1 -> 2.1 in the editor; use 4 for four full bars
+local BATTLE_BGM_LOOP_START = BATTLE_BGM_INTRO_BARS * BATTLE_BGM_BEATS_PER_BAR * (60 / BATTLE_BGM_BPM)
+
 --- Describe a module name as a project-relative file path, for filesystem probes.
 ---@param module_name string e.g. "Scripts.Waves.wave"
 ---@return string e.g. "Scripts/Waves/wave.lua"
@@ -403,12 +411,77 @@ local function startBattleBGM()
 
     Audio.Clear()
     battle._music = nil
+    battle._music_source = nil
+    battle._music_duration = nil
+    battle._music_loop_start = nil
 
-    local ok, result, inst = pcall(Audio.PlayMusic, BATTLE_BGM)
+    -- Play the whole track once (intro included). updateBattleBGM() is what
+    -- seeks back to BATTLE_BGM_LOOP_START after the first pass.
+    local ok, source, inst = pcall(Audio.PlayMusic, BATTLE_BGM, nil, false)
     if (ok) then
         battle._music = inst
+        battle._music_source = source or (inst and inst.source)
+        battle._music_loop_start = BATTLE_BGM_LOOP_START
+
+        if (battle._music_source) then
+            local duration_ok, duration = pcall(function()
+                return battle._music_source:getDuration()
+            end)
+            battle._music_duration = (duration_ok and duration) or nil
+        end
+
+        -- Audio.PlayMusic already set Source:setLooping(false). Mark the
+        -- instance as managed by us so Audio.Update() does not release it
+        -- when the stream momentarily reaches the end of the first pass.
+        if (inst) then
+            inst.loop = true
+        end
     else
-        print("[Battle] Failed to play BGM '" .. BATTLE_BGM .. "': " .. tostring(result))
+        print("[Battle] Failed to play BGM '" .. BATTLE_BGM .. "': " .. tostring(source))
+    end
+end
+
+---Keep the battle BGM on its intro/loop schedule.
+---First pass: the source plays from 0 to its natural end. After that every
+---pass is seeked back to BATTLE_BGM_LOOP_START (bar 2.1), which skips the
+---one-time intro. The audio file itself is never modified.
+---@param dt number
+local function updateBattleBGM(dt)
+    local source = battle._music_source
+    if (not source) then
+        return
+    end
+
+    local ok_position, position = pcall(function()
+        return source:tell()
+    end)
+    if (not ok_position) then
+        return
+    end
+
+    local duration = battle._music_duration
+    if (not duration or duration <= 0) then
+        local ok_duration, value = pcall(function()
+            return source:getDuration()
+        end)
+        duration = (ok_duration and value) or nil
+        battle._music_duration = duration
+    end
+
+    -- If this frame would cross the end, seek back before the stream stops.
+    -- The lookahead covers one frame (minimum 0.03 s), which is small enough
+    -- not to be noticeable at the loop point.
+    local lookahead = math.max(dt or 0, 0.03)
+    local reached_end = (
+        (duration and (position + lookahead) >= (duration - 0.01)) or
+        (not source:isPlaying())
+    )
+
+    if (reached_end) then
+        pcall(function()
+            source:seek(battle._music_loop_start or BATTLE_BGM_LOOP_START)
+            source:play()
+        end)
     end
 end
 
@@ -559,6 +632,8 @@ function battle.Defending()
 end
 
 function battle.Update(dt)
+    updateBattleBGM(dt)
+
     local transitioning = battle.transition.busy
     battle.transition.Update()
     local arena = battle.mainarena
@@ -609,6 +684,9 @@ function battle.Clear()
         battle._music:Stop()
         battle._music = nil
     end
+    battle._music_source = nil
+    battle._music_duration = nil
+    battle._music_loop_start = nil
 
     battle.transition.Cancel()
     battle.pending_state = nil
