@@ -47,7 +47,7 @@ ImportFile("Engine.2_0")
 Localize = ImportFile("Localize")
 Localize.setFile(Global.GetVariable("Language"))
 Border = ImportFile("Utils.Border")
-Border.SetEnabled(true)
+Border.SetEnabled(false) -- 8要这个
 Border.FadeIn(0)
 math.randomseed()
 
@@ -265,7 +265,9 @@ function love.draw()
     -- uses the same scale as the canvas and positions its opening exactly on
     -- the canvas rectangle, so the frame always hugs the game screen. Enable /
     -- pick image / fade / re-align via the Border.* APIs.
-    Border.Draw()
+
+    -- 我服了linux不注释掉这个不行那就注释掉得了
+    -- Border.Draw()
 
     SE.graphics.push()
     SE.graphics.translate(DrawX, DrawY)
@@ -273,13 +275,6 @@ function love.draw()
 
     SE.graphics.setColor(1, 1, 1, 1)
     SE.graphics.draw(source)
-    local prevLineStyle = SE.graphics.getLineStyle()
-    SE.graphics.setLineStyle("rough")
-    SE.graphics.setLineWidth(1)
-    SE.graphics.setColor(1, 1, 1)
-    SE.graphics.rectangle("line", -1, -1, CANVAS_WIDTH + 2, CANVAS_HEIGHT + 2)
-    SE.graphics.setColor(1, 1, 1, 1)
-    SE.graphics.setLineStyle(prevLineStyle)
     SE.graphics.pop()
 
     if (Debugger and Debugger.Draw) then Debugger.Draw() end

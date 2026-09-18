@@ -98,7 +98,7 @@ Battle.OnHit = OnHit
 local background = Sprites.CreateSprite("px.png", "Background")
 background:Scale(640, 480)
 background:MoveTo(320, 240)
-background.color = {0.12, 0.06, 0.18} --todo: 后续需要改回
+background.color = {0., 0., 0.}
 
 function scene.update(dt)
     Battle.Update(dt)

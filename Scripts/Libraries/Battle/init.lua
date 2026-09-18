@@ -20,6 +20,11 @@ local BATTLE_MODULE_ROOTS = {
     waves = {"Scripts.Game.Waves.", "Scripts.Waves."}
 }
 
+-- Battle BGM. Pass only the file name: Audio.ResolvePath checks the Game
+-- resource folder first (Scripts/Game/Resources/Music) and then falls back to
+-- Resources/Music, so this custom track still works if the engine copy exists.
+local BATTLE_BGM = "mus_elbow_grease.mp3"
+
 --- Describe a module name as a project-relative file path, for filesystem probes.
 ---@param module_name string e.g. "Scripts.Waves.wave"
 ---@return string e.g. "Scripts/Waves/wave.lua"
@@ -388,6 +393,25 @@ end
 -- Base implementation, kept so a scene can override Battle.Win and still call it.
 battle.defaultWin = battle.Win
 
+---Start the battle BGM. Any music (usually the overworld theme) is cleared
+---first so two tracks can never overlap; Audio.Clear also stops leftover
+---sound effects at the scene boundary.
+local function startBattleBGM()
+    if (Audio.FindMusic(BATTLE_BGM)) then
+        return
+    end
+
+    Audio.Clear()
+    battle._music = nil
+
+    local ok, result, inst = pcall(Audio.PlayMusic, BATTLE_BGM)
+    if (ok) then
+        battle._music = inst
+    else
+        print("[Battle] Failed to play BGM '" .. BATTLE_BGM .. "': " .. tostring(result))
+    end
+end
+
 ---Load an encounter script from the Game area.
 ---
 ---Encounters live under Scripts/Game/Encounter/ (there is no engine-side twin -
@@ -436,6 +460,8 @@ function battle.SetGame(file)
         if (type(game_) == "table") then
             setmetatable(game_, {__index = game_apis})
         end
+
+        startBattleBGM()
 
         return battle.game
     end
@@ -579,6 +605,11 @@ function battle.UpdateRestore(dt)
 end
 
 function battle.Clear()
+    if (battle._music) then
+        battle._music:Stop()
+        battle._music = nil
+    end
+
     battle.transition.Cancel()
     battle.pending_state = nil
     -- Clear the game module tree so it re-queries Localize on next load
