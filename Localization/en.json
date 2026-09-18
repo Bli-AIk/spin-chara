@@ -1,6 +1,16 @@
 {
   "Battle.Narration.Default": "* Poseur strikes a pose!",
 
+  "Battle.Narration.Random": [
+    "* smells like stage smoke and... chocolate?",
+    "* the spotlight is shining right on your skull.",
+    "* chara is reading from a script. um... it's completely blank.",
+    "* napstablook is sweating profusely. ghosts can sweat?",
+    "* the ratings for this show are completely dead.",
+    "* you feel like you're not making the cut for this audition.",
+    "* Chara is thinking about various ways to use knives."
+  ],
+
   "Battle.Spare": "Spare",
   "Battle.Flee": "Flee",
   "Battle.HP.NotFull": "* You recovered %s hp!",

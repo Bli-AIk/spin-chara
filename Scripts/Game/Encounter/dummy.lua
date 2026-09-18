@@ -1,5 +1,7 @@
 local encounter = {
-    narration = Localize.localizeText("Battle.Narration.Default"),
+    -- Battle.GetNarration() samples one entry from this localized array
+    -- on every player turn, so the flavor text keeps changing.
+    narration = Localize.localizeText("Battle.Narration.Random"),
     can_flee = true,
     flee_percent = 0.75,
     enemy_id = 1,

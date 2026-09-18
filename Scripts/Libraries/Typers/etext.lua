@@ -625,6 +625,8 @@ function typers.New(text, position, layer, size, mode)
         typer.alpha = 1
         typer.scale = 1
         typer.has_star_prefix = false
+        typer.line_height = 0
+        typer.wrap_indent = nil
         typer.skip.skipping = false
         typer.skip.absolute = false
     end
@@ -723,6 +725,13 @@ function typers.New(text, position, layer, size, mode)
         typer:Destroy()
     end
 
+    local function newLine(indent, font, scale)
+        typer.pos.offset[1] = indent
+        typer.pos.offset[2] = typer.pos.offset[2]
+            + math.max(typer.line_height or 0, font:getHeight() * scale) + 4
+        typer.line_height = 0
+    end
+
     function typer:Update(dt)
         typer.time = typer.time + dt
 
@@ -772,8 +781,7 @@ function typers.New(text, position, layer, size, mode)
                         local is_star_padding_space = typer.has_star_prefix and counter == 2 and temp_char == " "
                         counter = counter + 1
                         if (temp_char == "\n") then
-                            typer.pos.offset[1] = 0
-                            typer.pos.offset[2] = typer.pos.offset[2] + current_font:getHeight() + 4
+                            newLine(0, current_font, 1)
                         elseif (temp_char == "\t") then
                             typer.pos.offset[1] = typer.pos.offset[1] + current_font:getWidth("    ")
                         else
@@ -781,19 +789,18 @@ function typers.New(text, position, layer, size, mode)
                                 local max_width = (typer.size and typer.size[1]) or 640
                                 local next_word = ""
                                 local next_index = counter
-                                local wrap_indent = typer.has_star_prefix and current_font:getWidth("  ") or 0
+                                local wrap_indent = typer.wrap_indent or 0
                                 while (next_index <= sentence_len) do
                                     local next_char = sentence:sub(next_index, next_index)
-                                    if (next_char == " " or next_char == "\n" or next_char == "\t" or next_char == "[" or next_char == "]" or next_char == "^") then
+                                    if (next_char:byte() >= 128 or next_char == " " or next_char == "\n" or next_char == "\t" or next_char == "[" or next_char == "]" or next_char == "^") then
                                         break
                                     end
                                     next_word = next_word .. next_char
                                     next_index = next_index + 1
                                 end
 
-                                if (max_width > 0 and next_word ~= "" and typer.pos.offset[1] + wrap_indent + current_font:getWidth(next_word) > max_width) then
-                                    typer.pos.offset[1] = wrap_indent
-                                    typer.pos.offset[2] = typer.pos.offset[2] + current_font:getHeight() * typer.scale
+                                if (max_width > 0 and next_word ~= "" and typer.pos.offset[1] + current_font:getWidth(" ") + current_font:getWidth(next_word) > max_width) then
+                                    newLine(wrap_indent, current_font, 1)
                                 else
                                     local _width = current_font:getWidth(" ")
                                     if (typer.scale <= 1) then _width = _width * typer.scale end
@@ -837,15 +844,20 @@ function typers.New(text, position, layer, size, mode)
 
                         if typer.auto_wrap then
                             local max_width = (typer.size and typer.size[1]) or 640
-                            local wrap_indent = typer.has_star_prefix and current_font:getWidth("  ") or 0
-                            local char_width = current_font:getWidth(char)
-                            if max_width > 0 and typer.pos.offset[1] > wrap_indent and typer.pos.offset[1] + char_width > max_width then
-                                typer.pos.offset[1] = wrap_indent
-                                typer.pos.offset[2] = typer.pos.offset[2] + current_font:getHeight()
+                            local wrap_indent = typer.wrap_indent or 0
+                            local char_width = current_font:getWidth(char) * typer.scale
+                            if max_width > 0 and typer.pos.offset[1] > wrap_indent
+                                and typer.pos.offset[1] + typer.pos.relative[1] + char_width > max_width then
+                                newLine(wrap_indent, current_font, typer.scale)
                             end
                         end
                     end
 
+                    if typer.has_star_prefix and counter == 3 then
+                        typer.wrap_indent = typer.pos.offset[1]
+                    end
+                    typer.line_height = math.max(typer.line_height or 0,
+                        current_font:getHeight() * typer.scale + typer.pos.relative[2])
                     local text_obj = getTextObject(current_font, char)
 
                     local new_index = #typer.letters + 1

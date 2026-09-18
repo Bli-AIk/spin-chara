@@ -196,6 +196,53 @@ function battle.ClearWaveModule(wave_name)
     clearWaveModule(wave_name)
 end
 
+---Resolve the narration line for the current player turn.
+---
+---Encounters may set `narration` to:
+---  * a string  - legacy behavior, displayed as-is;
+---  * an array   - one entry is picked at random every turn;
+---  * a function - called with the encounter table, must return a string.
+---The resolved value is always a string so callers can safely pass it to
+---`EText:SetText`.
+---@return string
+local function resolveNarration()
+    local game_ = battle.game
+    local narration = game_ and game_.narration
+
+    if (type(narration) == "function") then
+        local ok, result = pcall(narration, game_)
+        if (ok and type(result) == "string") then
+            return result
+        end
+        print("[Battle System] WARNING: encounter narration function failed: " .. tostring(result))
+        return ""
+    end
+
+    if (type(narration) == "table") then
+        local count = #narration
+        if (count > 0) then
+            local line = narration[math.random(count)]
+            if (type(line) == "string") then
+                return line
+            end
+            print("[Battle System] WARNING: encounter narration table contains a non-string entry.")
+            return ""
+        end
+        print("[Battle System] WARNING: encounter narration table is empty.")
+        return ""
+    end
+
+    return type(narration) == "string" and narration or ""
+end
+
+-- Keep the resolved line stable through menu navigation and action dialogues.
+function battle.GetNarration()
+    if battle._turnNarration == nil then
+        battle._turnNarration = resolveNarration()
+    end
+    return battle._turnNarration
+end
+
 local blacktop = Sprites.CreateSprite("px.png", "TOP")
 blacktop:Scale(1000, 1000)
 blacktop.alpha = 0
@@ -342,6 +389,7 @@ function battle.ChangeState(new_state)
         battle._wave._paths = {}
         battle._wave = {}
         battle.DefenseEnding()
+        battle._turnNarration = nil
         Arenas.Clear()
     end
     local mode
@@ -361,7 +409,7 @@ function battle.ChangeState(new_state)
         if early_dialogue then
             commit()
         elseif new_state == "ACTIONSELECT" then
-            battle.narration_text:SetText(battle.game.narration)
+            battle.narration_text:SetText(battle.GetNarration())
         end
     else
         commit()
@@ -511,6 +559,7 @@ function battle.SetGame(file)
         return nil
     else
         print("[Battle System] Loaded '" .. file .. "' as the battle successfully!")
+        battle._turnNarration = nil
         local game_ = battle.game
         if (not game_) then return end
         local player_data = game_.player
@@ -523,7 +572,7 @@ function battle.SetGame(file)
         Battle.ChangeState(game_.state or "ACTIONSELECT")
         UI.buttons.ResetButtons()
         if (Battle.state == "ACTIONSELECT" and not battle.transition.busy) then
-            narration_text:SetText(game_.narration or "")
+            narration_text:SetText(battle.GetNarration())
         end
         UI.barUpdate()
 

@@ -71,7 +71,7 @@ local function state_behaviours_drawer(preserve_narration)
     local enemies = game.enemies
     if (s == "ACTIONSELECT") then
         choosing_enemy = 1
-        if not preserve_narration then Battle.narration_text:SetText(game.narration) end
+        if not preserve_narration then Battle.narration_text:SetText(Battle.GetNarration()) end
     elseif (s == "FIGHTMENU") then
         for i = 1, #enemies
         do
