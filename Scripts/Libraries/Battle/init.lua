@@ -196,7 +196,9 @@ function battle.ChangeState(new_state)
     elseif new_state == "ACTIONSELECT" then mode = "menu" end
     if mode and mode ~= battle.transition.mode then
         local early_dialogue = new_state == "DIALOGUERESULT"
+        battle.preparing_attack = new_state == "ATTACKING"
         battle.transition.Start(mode, function()
+            battle.preparing_attack = false
             if not early_dialogue then commit(new_state == "ACTIONSELECT") end
             local pending = battle.pending_state
             battle.pending_state = nil

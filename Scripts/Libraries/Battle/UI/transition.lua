@@ -69,6 +69,12 @@ function transition.Start(mode, done)
         end)
         add("fold", durations.fold, function(p)
             frame(320, expandedWidth, 197 - hudDrop * p, hudDrop * p)
+            if Battle.preparing_attack and Battle.attack.Prepare and Battle.attack.Reveal then
+                if not Battle.attack._prepared then
+                    Battle.attack.Prepare(Battle.game.enemies[Battle.selected_enemy_index])
+                end
+                Battle.attack.Reveal(p)
+            end
         end)
     end
     if mode == "defense" then

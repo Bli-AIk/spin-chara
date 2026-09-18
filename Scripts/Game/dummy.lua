@@ -43,11 +43,11 @@ local encounter = {
     },
 
     items = {
-        {id = "CHOCOLATE", _color = {0.4, 1, 1}, name = "Chocolate"},
-        {id = "END", _color = {0.4, 0, 1}, name = "END", _cantdestroy = true},
-        {id = "CHOCOLATE", _color = {0.4, 1, 1}, name = "Chocolate"},
-        {id = "CHOCOLATE", _color = {0.4, 1, 1}, name = "Chocolate"},
-        {id = "CHOCOLATE", _color = {0.4, 1, 1}, name = "Chocolate"},
+        {id = "CHOCOLATE", _color = {0.4, 1, 1}, heal = 99, name = "Chocolate"},
+        {id = "END", _color = {0.4, 0, 1}, heal = 99, name = "END", _cantdestroy = true},
+        {id = "CHOCOLATE", _color = {0.4, 1, 1}, heal = 99, name = "Chocolate"},
+        {id = "CHOCOLATE", _color = {0.4, 1, 1}, heal = 99, name = "Chocolate"},
+        {id = "CHOCOLATE", _color = {0.4, 1, 1}, heal = 99, name = "Chocolate"},
     }
 }
 

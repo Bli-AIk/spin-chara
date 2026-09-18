@@ -5,7 +5,7 @@ local damage = -999
 local missed = false
 local time = 0
 
-function atk.Restart(_enemy)
+function atk.Prepare(_enemy)
     atk._end = false
     time = 0
     enemy = _enemy
@@ -17,17 +17,53 @@ function atk.Restart(_enemy)
     atk.target = target
 
     local bar = Sprites.CreateSprite("UI/Battle Screen/Player Attack/spr_targetchoice_0.png", "UponArena")
-    bar.y = target.y
+    bar.y = target.y + Battle.mainarena.height / 2 + bar.height / 2
 
     local randomer = (math.random() <= 0.5)
     bar._rand = randomer
     bar.x = target.x + (randomer and -280 or 280)
-    bar.velocity.x = (randomer and 6 or -6)
+    bar.velocity.x = 0
     bar:SetAnimation({
         "UI/Battle Screen/Player Attack/spr_targetchoice_1.png",
         "UI/Battle Screen/Player Attack/spr_targetchoice_0.png"
     }, 0.1)
     atk.bar = bar
+    atk._prepared = true
+    local mask = Masks.New("rectangle", 0, 0, 0, 0, 0, 0)
+    mask:Follow(Battle.mainarena.black)
+    for _, sprite in ipairs({target, bar}) do
+        sprite:SetStencils({mask})
+        sprite.Step = function() mask:Follow(Battle.mainarena.black) end
+        -- Scissor also excludes stencil values left by other arena sprites.
+        local draw = sprite.Draw
+        function sprite:Draw()
+            local arena = Battle.mainarena
+            SE.graphics.push("all")
+            SE.graphics.intersectScissor(arena.x - arena.width / 2,
+                arena.y - arena.height / 2, arena.width, arena.height)
+            draw(self)
+            SE.graphics.pop()
+        end
+    end
+    atk.Reveal(0)
+end
+
+function atk.Reveal(progress)
+    local arena = Battle.mainarena
+    local offset = (arena.height / 2 + math.max(atk.target.height, atk.bar.height) / 2) * (1 - progress)
+    atk.target:MoveTo(arena.x, arena.y + offset)
+    atk.bar.y = arena.y + offset
+end
+
+function atk.Begin()
+    atk._prepared = false
+    atk.bar.velocity.x = atk.bar._rand and 6 or -6
+end
+
+function atk.Restart(_enemy)
+    atk.Prepare(_enemy)
+    atk.Reveal(1)
+    atk.Begin()
 end
 
 function atk.SetMaxDamage(dmg)
@@ -74,6 +110,7 @@ function atk.Destroy()
     atk.target:Destroy()
 
     atk._end = true
+    atk._prepared = false
 end
 
 function atk.Update(dt)

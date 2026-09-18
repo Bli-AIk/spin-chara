@@ -4,9 +4,9 @@ local scene = {}
 Battle = ImportFile("Battle")
 Battle.SetEndRoom("scene_end")
 Game = Battle.SetGame("dummy")
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, name = "ImNotFood"})
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, name = "ImNotFood"})
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, name = "ImNotFood"})
+Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
+Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
+Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
 Blasters = ImportFile("Attacks.Blasters")
 
 -- Give each enemy its own independent animation instance. The animation
@@ -27,10 +27,11 @@ end
 local function HandleItems(item)
     print("Used " .. item.name)
 
-    Player.Heal(99, true)
+    local heal = item.heal or 0
+    Player.Heal(heal, true)
     Battle.BattleDialogue({
         "* You ate " .. item.name .. ".",
-        "* You recovered 99 HP!"
+        "* You recovered " .. heal .. " HP!"
     }, "ACTIONSELECT")
 end
 
