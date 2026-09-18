@@ -242,11 +242,11 @@ local function state_behaviours_updater(dt)
             Battle._wave.Update(dt)
 
             if (Battle._wave.ENDED) then
-                Battle._wave.ENDED = false
                 choosing = 1
                 choosing_action = 1
                 choosing_enemy = 1
-                package.loaded["Scripts.Waves." .. Battle.wave] = nil
+                -- Drops whichever copy was loaded (Game area or engine dir).
+                Battle.ClearWaveModule(Battle.wave)
                 Battle.ChangeState("ACTIONSELECT")
             end
         end

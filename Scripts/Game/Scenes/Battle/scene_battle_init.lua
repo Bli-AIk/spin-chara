@@ -4,15 +4,15 @@ local scene = {}
 Battle = ImportFile("Battle")
 Battle.SetEndRoom("scene_end")
 Game = Battle.SetGame("dummy")
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, name = "ImNotFood"})
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, name = "ImNotFood"})
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, name = "ImNotFood"})
+Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
+Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
+Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
 Blasters = ImportFile("Attacks.Blasters")
 
 -- Give each enemy its own independent animation instance. The animation
 -- module is a factory, so every call to InitAnimation creates a fresh
 -- instance with its own sprite — enemy #1 and enemy #2 no longer share one.
---Game:InitAnimation(1, {320, 120})
+Game:InitAnimation(1, {320, 120})
 --Game:InitAnimation(2, {120, 140})
 local enemies = Game.enemies
 
@@ -27,10 +27,11 @@ end
 local function HandleItems(item)
     print("Used " .. item.name)
 
-    Player.Heal(99, true)
+    local heal = item.heal or 0
+    Player.Heal(heal, true)
     Battle.BattleDialogue({
         "* You ate " .. item.name .. ".",
-        "* You recovered 99 HP!"
+        "* You recovered " .. heal .. " HP!"
     }, "ACTIONSELECT")
 end
 
@@ -94,16 +95,10 @@ Battle.OnHit = OnHit
 
 
 -- Scene backgrounds
-local shader = ImportFile("Gradiant", "shader")
-shader:send("topLeftColor", {1, 0, 1, 0.5})
-shader:send("bottomLeftColor", {1, 0, 1, 0.5})
-shader:send("topRightColor", {0, 1, 1, 0.5})
-shader:send("bottomRightColor", {0, 1, 1, 0.5})
-shader:send("angle", 20)
 local background = Sprites.CreateSprite("px.png", "Background")
 background:Scale(640, 480)
-background.color = {0, 0, 0}
-background:SetShaders({shader})
+background:MoveTo(320, 240)
+background.color = {0.12, 0.06, 0.18} --todo: 后续需要改回
 
 function scene.update(dt)
     Battle.Update(dt)
