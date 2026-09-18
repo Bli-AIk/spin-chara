@@ -94,16 +94,10 @@ Battle.OnHit = OnHit
 
 
 -- Scene backgrounds
-local shader = ImportFile("Gradiant", "shader")
-shader:send("topLeftColor", {1, 0, 1, 0.5})
-shader:send("bottomLeftColor", {1, 0, 1, 0.5})
-shader:send("topRightColor", {0, 1, 1, 0.5})
-shader:send("bottomRightColor", {0, 1, 1, 0.5})
-shader:send("angle", 20)
 local background = Sprites.CreateSprite("px.png", "Background")
 background:Scale(640, 480)
-background.color = {0, 0, 0}
-background:SetShaders({shader})
+background:MoveTo(320, 240)
+background.color = {0.12, 0.06, 0.18}
 
 function scene.update(dt)
     Battle.Update(dt)

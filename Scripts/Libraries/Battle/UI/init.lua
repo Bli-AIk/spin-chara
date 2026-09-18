@@ -62,10 +62,13 @@ local function drawOutlinedText(font, color, text, x, y, thickness)
     local th = thickness or 1
     SE.graphics.setFont(font)
     SE.graphics.setColor(0, 0, 0)
-    SE.graphics.print(text, x - th, y)
-    SE.graphics.print(text, x + th, y)
-    SE.graphics.print(text, x, y - th)
-    SE.graphics.print(text, x, y + th)
+    for dx = -th, th do
+        for dy = -th, th do
+            if dx ~= 0 or dy ~= 0 then
+                SE.graphics.print(text, x + dx, y + dy)
+            end
+        end
+    end
     SE.graphics.setColor(color)
     SE.graphics.print(text, x, y)
 end
@@ -91,7 +94,7 @@ local name = Layers.add_external(function ()
 end, "UI")
 local lv = Layers.add_external(function ()
     -- Align LV over the right edge of the command column.
-    pos_lv[1] = text_pos[1] + 113
+    pos_lv[1] = text_pos[1] + 165 - ui_font:getWidth("LV " .. Player.lv)
     pos_lv[2] = text_pos[2]
     drawOutlinedText(ui_font, Global.GetVariable("MainColor"), "LV " .. Player.lv, pos_lv[1], pos_lv[2], 2)
 end, "UI")
@@ -113,7 +116,7 @@ local hptext = Layers.add_external(function ()
     -- The numbers follow the right end of the HP bar; the KR variant leaves a
     -- wider gap because the KR value is appended to them.
     if (not kr_configuration) then
-        pos_hptext[1] = bar_maxhp.x + bar_maxhp.xscale + 14
+        pos_hptext[1] = text_pos[1] + 165 - ui_font:getWidth(Player.hp .. " / " .. Player.maxhp)
         pos_hptext[2] = text_pos[2] + 28
         drawOutlinedText(ui_font, Global.GetVariable("MainColor"), Player.hp .. " / " .. Player.maxhp, pos_hptext[1], pos_hptext[2], 2)
     else

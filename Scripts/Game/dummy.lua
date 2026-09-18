@@ -37,9 +37,9 @@ local encounter = {
 
     player = {
         name = "end",
-        lv = 20,
-        maxhp = 99,
-        hp = 99
+        lv = 1,
+        maxhp = 20,
+        hp = 20
     },
 
     items = {
