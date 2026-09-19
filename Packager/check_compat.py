@@ -1183,7 +1183,7 @@ def _print_report(root, strict, issues, file_count):
             print("%s %s%s %s" % (SEV_LABEL[i["sev"]], line,
                                   i["file"], i["message"]))
         if not show_all and len(lst) > MAX_SHOWN:
-            print("  …… 其余 %d 条略过（用 --all 查看全部）"
+            print("  ... 其余 %d 条略过（用 --all 查看全部）"
                   % (len(lst) - MAX_SHOWN))
 
     # 错误是阻断运行的核心信息，始终全量展示；warning/info 按需截断

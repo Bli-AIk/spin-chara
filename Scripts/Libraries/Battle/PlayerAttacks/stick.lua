@@ -93,6 +93,7 @@ end
 --   data.perfect  → true when the timing landed in the perfect zone
 --   data.offset   → distance from the perfect zone (0 = perfect)
 --   data.position → {x, y} of the enemy on screen
+--   data.miss     → true when the strike is resolved as a miss (no damage lands)
 --   data.attack   → this attack pattern instance (atk)
 function atk.Attack(data)
     if (not enemy or not enemy.animation) then
@@ -128,7 +129,23 @@ function atk.Update(dt)
             -- Calculate
             bar.velocity.x = 0
             local bonus_factor = math.abs(bar.x - tar.x)
-            if (not atk._max) then
+
+            -- Resolve `always_miss` HERE, on the same frame the slice spawns and
+            -- OnAttack() fires, so the enemy's dodge starts immediately.
+            --
+            -- Setting `missed` now routes the strike into the EXISTING timeout-miss
+            -- branch below rather than duplicating it: the MISS text pops on the
+            -- very next frame (time == 1), HP is never written at all, and
+            -- Destroy() lands at time == 30 -- which is exactly how long the dodge
+            -- in Animations/Chara.lua runs, so the slide can never outlive the strike.
+            --
+            -- Read straight off the enemy table (not a module-level local), so this
+            -- attack's singleton state has nothing new to reset in Prepare().
+            local always_miss = (enemy.always_miss == true)
+            if (always_miss) then
+                damage = 0
+                missed = true
+            elseif (not atk._max) then
                 if (bonus_factor <= 12) then -- Perfect
                     damage = math.ceil(enemy.maxdamage + math.random(0, enemy.dmg_float))
                 else
@@ -158,6 +175,9 @@ function atk.Update(dt)
                 perfect = (bonus_factor <= 12),
                 offset = bonus_factor,
                 position = {enemy.position[1], enemy.position[2]},
+                -- True when this strike was resolved as a miss on this frame
+                -- (always_miss today). Animations use it to dodge.
+                miss = (missed == true),
                 attack = atk,
             })
         end

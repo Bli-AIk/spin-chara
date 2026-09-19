@@ -11,11 +11,17 @@ Game.narration = function()
 end
 Blasters = ImportFile("Attacks.Blasters")
 
--- Give each enemy its own independent animation instance. The animation
--- module is a factory, so every call to InitAnimation creates a fresh
--- instance with its own sprite — enemy #1 and enemy #2 no longer share one.
-Game:InitAnimation(1, {320, 120})
---Game:InitAnimation(2, {120, 140})
+-- Give each enemy its own independent animation instance, at the position the
+-- encounter declares. The animation module is a factory, so every call to
+-- InitAnimation creates a fresh instance with its own sprite — enemy #1 and
+-- enemy #2 no longer share one.
+-- Reading each enemy's own `position` (instead of hard-coding coordinates here)
+-- keeps the encounter the single source of truth for where a monster stands:
+-- the same field is what stick.lua uses to place the slice / MISS text.
+for i, enemy in ipairs(Game.enemies)
+do
+    Game:InitAnimation(i, enemy.position)
+end
 local enemies = Game.enemies
 
 local function DefenseEnding()

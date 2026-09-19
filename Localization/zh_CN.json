@@ -1,5 +1,5 @@
 {
-  "Battle.Narration.Default": "* 颇似儿摆了一个姿势！",
+  "Battle.Narration.Default": "* 看来你上台了。祝你演出成功呀...[wait:0.5]可别把你自己的骨头摔散了。",
 
   "Battle.Narration.Random": [
     "* 闻起来有舞台烟雾的味道...[wait:1.0]\n  还有巧克力？",
@@ -22,12 +22,17 @@
   "Battle.GameoverText": ["* 我们的命运都\n  寄托于你...", "* %s![wait:0.5]\n  保持你的决心..."],
 
   "Battle.EnemiesName.Chara": "Chara",
+  "Battle.EnemiesName.Napstablook": "Napstablook",
   
   "Battle.Actions.Names.Check": "查看",
-  "Battle.Actions.Names.Pose": "摆姿势",
+  "Battle.Actions.Names.Applause": "鼓掌",
+  "Battle.Actions.Names.Boo": "喝倒彩",
 
-  "Battle.Actions.Texts.Chara.Check": ["* 颇似儿[wait:0.5] - 0 攻击 0 防御[wait:0.5]\n* 并不是我想要的。", "* 一个来自于CYF的吉祥物。"],
-  "Battle.Actions.Texts.Chara.Pose": ["* 你和颇似儿一起摆姿势...[wait:0.5]\n* 时间似乎静止在了这一刻。"],
+  "Battle.Actions.Texts.Chara.Check": ["* CHARA[wait:0.5] - LV 1[wait:0.35]\n* 一个似乎对你怀有\n  深仇大恨的神秘表演者。"],
+  "Battle.Actions.Texts.Chara.Applause": ["* 你鼓起掌来。[wait:0.5]\n* Chara朝着空无一人的片场\n  深深鞠了一躬。", "* 哦亲爱的，[wait:0.35]你可真捧场。[wait:0.5]\n* 继续拍吧，[wait:0.35]我的好伙伴。[wait:0.5]这样我瞄准你的时候，[wait:0.35]能方便不少。"],
+  "Battle.Actions.Texts.Chara.Boo": ["* 你喝了倒彩。[wait:0.5]\n* Chara倒吸一口凉气，[wait:0.35]\n  好像你犯天条了一样。", "* 我的好伙伴，[wait:0.35]你太没品味了。[wait:0.5]\n* 空场而已。[wait:0.5]只是观众还没跟上我的格调。"],
+  "Battle.Actions.Texts.Napstablook.Check": ["* NAPSTABLOOK[wait:0.5] - 攻击 5 防御 4[wait:0.35]\n* 这只幽灵似乎并不想待在这儿。"],
+  "Battle.Actions.Texts.Napstablook.Applause": ["* 你鼓起掌来。[wait:0.5]\n* Napstablook当场缩水了两寸。", "* 哦...[wait:0.5]谢谢。[wait:0.5]\n* 哦...[wait:0.5]对不起。"],
   
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",

@@ -26,8 +26,10 @@ local encounter = {
 
             position = {320, 140},
             actions = {
+                -- ACT ids are per-enemy: the dialogue key is
+                -- Battle.Actions.Texts.<enemy.id>.<action.id>, so reuse a shared
+                -- id like Check/Applause when the action is the same verb.
                 {id = "Check", name = Localize.localizeText("Battle.Actions.Names.Check")},
-                {id = "Pose",  name = Localize.localizeText("Battle.Actions.Names.Pose")},
             }
         },
     },

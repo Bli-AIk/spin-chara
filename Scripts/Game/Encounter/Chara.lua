@@ -27,7 +27,6 @@ local encounter = {
             position = {320, 140},
             actions = {
                 {id = "Check", name = Localize.localizeText("Battle.Actions.Names.Check")},
-                {id = "Pose",  name = Localize.localizeText("Battle.Actions.Names.Pose")},
             }
         },
         {
@@ -53,7 +52,6 @@ local encounter = {
             position = {120, 140},
             actions = {
                 {id = "Check", name = Localize.localizeText("Battle.Actions.Names.Check")},
-                {id = "Pose",  name = Localize.localizeText("Battle.Actions.Names.Pose")},
             }
         },
     },

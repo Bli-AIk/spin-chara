@@ -1,5 +1,5 @@
 {
-  "Battle.Narration.Default": "* Chara strikes a pose!",
+  "Battle.Narration.Default": "* Looks like you're on stage. Break a leg...[wait:0.5] preferably not your own.",
 
   "Battle.Narration.Random": [
     "* Smells like stage smoke and...[wait:1.0] chocolate?",
@@ -22,12 +22,17 @@
   "Battle.GameoverText": ["* Our fates rests\n  upon you...", "* %s![wait:0.5]\n  stay determined..."],
 
   "Battle.EnemiesName.Chara": "Chara",
+  "Battle.EnemiesName.Napstablook": "Napstablook",
   
   "Battle.Actions.Names.Check": "Check",
-  "Battle.Actions.Names.Pose": "Pose",
+  "Battle.Actions.Names.Applause": "Applause",
+  "Battle.Actions.Names.Boo": "Boo",
 
-  "Battle.Actions.Texts.Chara.Check": ["* Chara[wait:0.5] - 0 ATK 0 DEF[wait:0.5]\n* Not what I want.", "* A mascot from CYF."],
-  "Battle.Actions.Texts.Chara.Pose": ["* "],
+  "Battle.Actions.Texts.Chara.Check": ["* CHARA[wait:0.5] - LV 1[wait:0.35]\n* A mysterious performer that seems to have a vendetta against you."],
+  "Battle.Actions.Texts.Chara.Applause": ["* You applaud.[wait:0.5]\n* Chara turns to a completely empty set,[wait:0.35] and bows deeply.", "* Oh dear,[wait:0.35] how generous.[wait:0.5]\n* Do keep clapping,[wait:0.35] partner.[wait:0.5] It makes you easier to aim at."],
+  "Battle.Actions.Texts.Chara.Boo": ["* You boo.[wait:0.5]\n* Chara gasps like you just broke a commandment.", "* Partner,[wait:0.35] you have NO taste.[wait:0.5]\n* An empty set is just[wait:0.35] a set that hasn't caught up to me yet."],
+  "Battle.Actions.Texts.Napstablook.Check": ["* NAPSTABLOOK[wait:0.5] - ATK 5 DEF 4[wait:0.35]\n* This ghost doesn't seem to want to be here."],
+  "Battle.Actions.Texts.Napstablook.Applause": ["* You applaud.[wait:0.5]\n* Napstablook shrinks about two inches.", "* oh......[wait:0.5] thanks.[wait:0.5]\n* oh......[wait:0.5] sorry."],
   
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",

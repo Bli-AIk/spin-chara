@@ -70,6 +70,7 @@ end
 ---   data.perfect  → true when the timing landed in the perfect zone
 ---   data.offset   → distance from the perfect zone (0 = perfect)
 ---   data.position → {x, y} of the enemy on screen
+---   data.miss     → true when the strike is resolved as a miss (no damage lands)
 ---   data.attack   → the attack pattern instance
 function MyMonster:OnAttack(data)
 end
