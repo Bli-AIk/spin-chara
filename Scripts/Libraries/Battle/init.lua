@@ -396,6 +396,15 @@ function battle.ChangeState(new_state)
     if new_state == "DEFENDING" then mode = "defense"
     elseif new_state == "ATTACKING" or new_state == "DIALOGUERESULT" then mode = "compact"
     elseif new_state == "ACTIONSELECT" then mode = "menu" end
+    -- Encounters that begin in DEFENDING should render in the defense layout
+    -- immediately.  This is only used during SetGame initialization.
+    if battle._skip_initial_transition and mode then
+        battle._skip_initial_transition = false
+        battle.transition.Cancel()
+        battle.transition.SetImmediate(mode)
+        commit(new_state == "ACTIONSELECT")
+        return
+    end
     if mode and mode ~= battle.transition.mode then
         local early_dialogue = new_state == "DIALOGUERESULT"
         battle.preparing_attack = new_state == "ATTACKING"
@@ -569,6 +578,7 @@ function battle.SetGame(file)
         if (player_data.maxhp) then Player.maxhp = player_data.maxhp end
         if (player_data.hp) then Player.hp = player_data.hp end
         if (game_.wave) then Battle.wave = game_.wave end
+        battle._skip_initial_transition = game_.state == "DEFENDING"
         Battle.ChangeState(game_.state or "ACTIONSELECT")
         UI.buttons.ResetButtons()
         if (Battle.state == "ACTIONSELECT" and not battle.transition.busy) then

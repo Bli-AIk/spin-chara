@@ -1,4 +1,6 @@
 local encounter = {
+    rounds = require("Scripts.Game.Encounter.Rounds"),
+    round = 0,
     -- Battle.GetNarration() samples one entry from this localized array
     -- on every player turn, so the flavor text keeps changing.
     narration = Localize.localizeText("Battle.Narration.Random"),
@@ -89,7 +91,7 @@ local encounter = {
         },
     },
 
-    state = "ACTIONSELECT",
+    state = "DEFENDING",
     wave = "wave",
 
     player = {

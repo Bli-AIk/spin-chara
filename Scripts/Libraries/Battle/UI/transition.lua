@@ -43,6 +43,26 @@ local function frame(x, width, height, hudOffset)
     UI.SetBarPosition(hud[3], hud[4] + hudOffset)
 end
 
+-- Place the complete defense layout without creating a tween.  Used when an
+-- encounter starts in DEFENDING so the first rendered frame is already the
+-- enemy-turn layout.
+function transition.SetImmediate(mode)
+    if mode ~= "defense" then return end
+    if not hud then
+        local tx, ty = UI.GetTextPosition()
+        local bx, by = UI.GetBarPosition()
+        hud = {tx, ty, bx, by}
+    end
+    transition.edgeReveal = 1
+    transition.mode = mode
+    Battle.mainarena:MoveTo(320, defenseY, true)
+    Battle.mainarena:Resize(155, compactHeight, true)
+    Battle.mainarena.is_active = true
+    UI.SetTextPosition(hud[1], defenseTextY)
+    UI.SetBarPosition(hud[3], defenseTextY - hud[2] + hud[4])
+    UI.buttons.SetOffset(-160, false)
+end
+
 local function nextStep()
     index = index + 1
     local step = steps[index]

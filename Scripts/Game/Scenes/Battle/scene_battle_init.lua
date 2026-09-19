@@ -27,6 +27,13 @@ do
 end
 local enemies = Game.enemies
 
+local function EnterRound()
+    Game.round = math.min(Game.round + 1, #Game.rounds)
+    local round = Game.rounds[Game.round]
+    Battle.wave = round.wave
+    print("[Spin] Start Wave: " .. Game.round)
+end
+
 local function DefenseEnding()
     items:DefenseEnding()
     acts:DefenseEnding()
@@ -67,6 +74,7 @@ local function FleeUpdate(dt)
 end
 
 local function EnteringState(oldstate, newstate)
+    if newstate == "DEFENDING" then EnterRound() end
     if newstate == "ITEMMENU" then items:Refresh(Game.items) end
     if newstate == "DEFENDING" then
         items:DefenseStarting()
@@ -102,6 +110,13 @@ Battle.EnteringState = EnteringState
 Battle.HandleFlee = HandleFlee
 Battle.FleeUpdate = FleeUpdate
 Battle.OnHit = OnHit
+
+-- SetGame loads the encounter before this scene installs its handlers.  Emit
+-- the initial round here so startup and later DEFENDING entries use the same
+-- round bookkeeping.
+if Battle.state == "DEFENDING" and Game.round == 0 then
+    EnterRound()
+end
 
 
 

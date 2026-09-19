@@ -129,6 +129,16 @@ end
 -- Bubble helpers
 -- ══════════════════════════════════════
 
+-- Thickness of the black rim drawn around the bubble. The rim is a second copy
+-- of every piece, grown by this many pixels and dropped one layer below, so the
+-- white pieces cover all of it but the rim itself. 0 turns the rim off.
+local bubble_outline = 2
+-- The corner sprite is a quarter disc inside its 20x20 box, with a centre a few
+-- pixels outside that box. Growing the disc has to pivot on that centre, or the
+-- arc warps instead of moving outwards evenly. Measured from
+-- Resources/Sprites/Bubble/spr_bubblecorner.png.
+local corner_centre, corner_radius = 23.01, 22.87
+
 local function createBubble(x, y, w, h, layer)
     local bubble = {}
     local offsetX, offsetY = -10, 10
@@ -172,6 +182,54 @@ local function createBubble(x, y, w, h, layer)
     bubble.corner_dr.yscale = -1
     bubble.corner_dr.alpha = 0
 
+    -- Black rim: the same pieces again, each grown by `bubble_outline` and drawn
+    -- one layer lower, where the white pieces hide all of it but the rim.
+    local rim = bubble_outline
+    if (rim > 0) then
+        local rim_layer = bubble_layer - 0.0001
+        local function rimPiece(path)
+            local piece = Sprites.CreateSprite(path, rim_layer)
+            piece.color = {0, 0, 0}
+            piece.visible = false
+            return piece
+        end
+
+        bubble.rim_rect_h = rimPiece("px.png")
+        bubble.rim_rect_h:MoveTo(x + offsetX - rim, y + offsetY - rim)
+        bubble.rim_rect_h:Scale(w + rim * 2, h - 40 + rim * 2)
+        bubble.rim_rect_h:Pivot(0, 0)
+
+        bubble.rim_rect_v = rimPiece("px.png")
+        bubble.rim_rect_v:MoveTo(bubble.main_rect_v.x, bubble.main_rect_v.y)
+        bubble.rim_rect_v:Scale(w - 40 + rim * 2, h + rim * 2)
+
+        -- Each corner keeps its mirror in its scale, and its disc centre sits
+        -- `inset` pixels inwards from the sprite centre.
+        local grow = (corner_radius + rim) / corner_radius
+        local inset = corner_centre - 10
+        local function rimCorner(corner)
+            local piece = rimPiece("Bubble/spr_bubblecorner.png")
+            piece:Pivot(corner_centre / 20, corner_centre / 20)
+            piece:MoveTo(corner.x + corner.xscale * inset, corner.y + corner.yscale * inset)
+            piece:Scale(corner.xscale * grow, corner.yscale * grow)
+            return piece
+        end
+        bubble.rim_corner_ul = rimCorner(bubble.corner_ul)
+        bubble.rim_corner_ur = rimCorner(bubble.corner_ur)
+        bubble.rim_corner_dl = rimCorner(bubble.corner_dl)
+        bubble.rim_corner_dr = rimCorner(bubble.corner_dr)
+
+        -- The tail is a lone shape, so its own sprite outline grows it for us.
+        bubble.rim_tail = rimPiece("Bubble/spr_bubbletail.png")
+        bubble.rim_tail:Outline(0, 0, 0, 1, rim)
+
+        bubble.rim = {
+            bubble.rim_rect_h, bubble.rim_rect_v, bubble.rim_tail,
+            bubble.rim_corner_ul, bubble.rim_corner_ur,
+            bubble.rim_corner_dl, bubble.rim_corner_dr
+        }
+    end
+
     return bubble
 end
 
@@ -184,6 +242,11 @@ local function showBubble(bubble, direction, position)
     bubble.corner_ur.alpha = 1
     bubble.corner_dl.alpha = 1
     bubble.corner_dr.alpha = 1
+    -- The rim follows `visible` rather than `alpha`: the outline behind the tail
+    -- ignores alpha and would keep drawing on a hidden bubble.
+    for _, piece in ipairs(bubble.rim or {}) do
+        piece.visible = true
+    end
 
     local tail = bubble.tail
     local dir = direction:lower()
@@ -200,6 +263,11 @@ local function showBubble(bubble, direction, position)
         tail.rotation = -90
         tail:MoveTo(bubble.main_rect_h.x + (position * bubble.main_rect_h.xscale), bubble.main_rect_h.y + bubble.main_rect_h.yscale + 20)
     end
+
+    if (bubble.rim_tail) then
+        bubble.rim_tail:MoveTo(tail.x, tail.y)
+        bubble.rim_tail.rotation = tail.rotation
+    end
 end
 
 local function hideBubble(bubble)
@@ -211,6 +279,9 @@ local function hideBubble(bubble)
     bubble.corner_ur.alpha = 0
     bubble.corner_dl.alpha = 0
     bubble.corner_dr.alpha = 0
+    for _, piece in ipairs(bubble.rim or {}) do
+        piece.visible = false
+    end
 end
 
 local function removeBubble(bubble)
@@ -222,6 +293,9 @@ local function removeBubble(bubble)
     bubble.corner_ur:Remove()
     bubble.corner_dl:Remove()
     bubble.corner_dr:Remove()
+    for _, piece in ipairs(bubble.rim or {}) do
+        piece:Remove()
+    end
 end
 
 function typers.TextureFont(path, width, height, amount, real_pattern)
