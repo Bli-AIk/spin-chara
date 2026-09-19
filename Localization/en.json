@@ -29,10 +29,15 @@
   "Battle.Actions.Names.Boo": "Boo",
 
   "Battle.Actions.Texts.Chara.Check": ["* CHARA[wait:0.5] - LV 1[wait:0.35]\n* A mysterious performer that seems to have a vendetta against you."],
-  "Battle.Actions.Texts.Chara.Applause": ["* You applaud.[wait:0.5]\n* Chara turns to a completely empty set,[wait:0.35] and bows deeply.", "* Oh dear,[wait:0.35] how generous.[wait:0.5]\n* Do keep clapping,[wait:0.35] partner.[wait:0.5] It makes you easier to aim at."],
-  "Battle.Actions.Texts.Chara.Boo": ["* You boo.[wait:0.5]\n* Chara gasps like you just broke a commandment.", "* Partner,[wait:0.35] you have NO taste.[wait:0.5]\n* An empty set is just[wait:0.35] a set that hasn't caught up to me yet."],
+  "Battle.Actions.Texts.Chara.Applause": ["* You applaud.[wait:0.5]\n* Chara turns to a completely empty set,[wait:0.35] and bows deeply."],
+  "Battle.Actions.Texts.Chara.Applause.Reply": ["Oh dear,[wait:0.35] how generous.", "Do keep clapping,[wait:0.35] partner.", "It makes you easier to aim at."],
+  "Battle.Actions.Texts.Chara.Applause.Effect": ["* Chara slows down, but aims more precisely!"],
+  "Battle.Actions.Texts.Chara.Boo": ["* You boo.[wait:0.5]\n* Chara gasps like you just broke a commandment."],
+  "Battle.Actions.Texts.Chara.Boo.Reply": ["Partner,[wait:0.35] you have NO taste.[wait:0.5]", "An empty set is just[wait:0.35] a set that hasn't caught up to me yet."],
+  "Battle.Actions.Texts.Chara.Boo.Effect": ["* Chara will deal more damage next turn!"],
   "Battle.Actions.Texts.Napstablook.Check": ["* NAPSTABLOOK[wait:0.5] - ATK 5 DEF 4[wait:0.35]\n* This ghost doesn't seem to want to be here."],
-  "Battle.Actions.Texts.Napstablook.Applause": ["* You applaud.[wait:0.5]\n* Napstablook shrinks about two inches.", "* oh......[wait:0.5] thanks.[wait:0.5]\n* oh......[wait:0.5] sorry."],
+  "Battle.Actions.Texts.Napstablook.Applause": ["* You applaud.[wait:0.5]\n* Napstablook shrinks about two inches."],
+  "Battle.Actions.Texts.Napstablook.Applause.Reply": ["oh......[wait:0.5] thanks.[wait:0.5]", "oh......[wait:0.5] sorry."],
   
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",

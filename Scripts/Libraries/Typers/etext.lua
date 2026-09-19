@@ -731,7 +731,8 @@ function typers.New(text, position, layer, size, mode)
     local function newLine(indent, font, scale)
         typer.pos.offset[1] = indent
         typer.pos.offset[2] = typer.pos.offset[2]
-            + math.max(typer.line_height or 0, font:getHeight() * scale) + 4
+            + math.max(typer.line_height or 0, font:getHeight() * scale)
+            + (typer.line_spacing or 4)
         typer.line_height = 0
     end
 

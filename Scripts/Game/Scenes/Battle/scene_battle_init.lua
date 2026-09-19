@@ -5,6 +5,9 @@ Battle = ImportFile("Battle")
 Battle.SetEndRoom("scene_end")
 Game = Battle.SetGame("dummy")
 local items = require("Scripts.Game.Logics.battle_items").New()
+local acts = require("Scripts.Game.Logics.battle_acts").New()
+-- Indexed by enemy._id, then tag name; active only during the upcoming defense.
+Game.act_effects = acts
 local narration = Game.narration
 Game.narration = function()
     return items.narration or narration[math.random(#narration)]
@@ -26,11 +29,12 @@ local enemies = Game.enemies
 
 local function DefenseEnding()
     items:DefenseEnding()
+    acts:DefenseEnding()
 end
 
 -- Handlers
 local function HandleActions(enemy, action)
-    Battle.BattleDialogue(Localize.localizeText("Battle.Actions.Texts." .. enemy.id .. "." .. action.id), "ACTIONSELECT")
+    acts:Use(enemy, action)
 end
 
 local function HandleItems(item)
@@ -64,7 +68,10 @@ end
 
 local function EnteringState(oldstate, newstate)
     if newstate == "ITEMMENU" then items:Refresh(Game.items) end
-    if newstate == "DEFENDING" then items:DefenseStarting() end
+    if newstate == "DEFENDING" then
+        items:DefenseStarting()
+        acts:DefenseStarting()
+    end
     Battle.defaultEnteringState(oldstate, newstate)
     --print("[Battle] " .. oldstate .. " → " .. newstate)
 end
@@ -110,6 +117,8 @@ function scene.update(dt)
 end
 
 function scene.clear()
+    acts:Clear()
+    ClearModuleTree("Scripts.Game.Logics.battle_acts")
     items:Clear()
     ClearModuleTree("Scripts.Game.Logics.battle_items")
     Layers.clear()
