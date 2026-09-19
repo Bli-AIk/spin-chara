@@ -738,8 +738,8 @@ function typers.New(text, position, layer, size, mode)
     function typer:Update(dt)
         typer.time = typer.time + dt
 
-        -- Cancel key (manual mode only)
-        if (typer.mode ~= "none" and Controller.GetState("cancel") == 1 and typer.skip.canskip and typer.sentence_index <= #typer.texts) then
+        -- Cancel key skips the current sentence, including auto-typing text.
+        if (Controller.GetState("cancel") == 1 and typer.skip.canskip and typer.sentence_index <= #typer.texts) then
             typer.skip.skipping = true
         end
 
