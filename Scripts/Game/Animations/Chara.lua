@@ -10,12 +10,23 @@ local CharaAnim = {}
 CharaAnim.__index = CharaAnim
 
 -- Dodge tuning, in FRAMES, like every other duration in this codebase.
--- Total = DODGE_OUT + DODGE_HOLD + DODGE_BACK = 30 frames (~0.5 s at 60 fps),
--- which is exactly when stick.lua's miss path calls Destroy() (time == 30).
-local DODGE_OUT  = 10 -- slide left
-local DODGE_HOLD = 6  -- parked at the far left
-local DODGE_BACK = 14 -- slide home
-local DODGE_DIST = 48 -- pixels to the left (~30% of chara.png's 162px width)
+-- Total = DODGE_OUT + DODGE_HOLD + DODGE_BACK = 64 frames (~1.07 s at 60 fps).
+--
+-- This total is deliberately NOT pinned to the 45-frame miss path in
+-- Scripts/Libraries/Battle/PlayerAttacks/stick.lua (time == 45 → Destroy()).
+-- It does not need to be: battle.Update() steps every enemy animation on every
+-- frame, including long after the strike has been torn down, so a slide that
+-- outlives the strike finishes cleanly in the menu instead of being truncated.
+--
+-- That decoupling is what buys the travel below its readable speed. Chara is
+-- `always_miss`, so this slide plays on EVERY strike -- pinning it inside the
+-- strike would mean either a 96px dart too fast to show its easing, or a stall
+-- the player sits through on every single attack. Overshooting the strike costs
+-- menu time, not player time.
+local DODGE_OUT  = 26 -- slide left
+local DODGE_HOLD = 8  -- parked at the far left
+local DODGE_BACK = 30 -- slide home
+local DODGE_DIST = 96 -- pixels to the left (~59% of chara.png's 162px width)
 
 -- Create a brand-new, independent Chara animation instance.
 function CharaAnim.New(pos)

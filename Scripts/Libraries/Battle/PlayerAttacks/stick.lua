@@ -136,8 +136,11 @@ function atk.Update(dt)
             -- Setting `missed` now routes the strike into the EXISTING timeout-miss
             -- branch below rather than duplicating it: the MISS text pops on the
             -- very next frame (time == 1), HP is never written at all, and
-            -- Destroy() lands at time == 30 -- which is exactly how long the dodge
-            -- in Animations/Chara.lua runs, so the slide can never outlive the strike.
+            -- Destroy() lands at time == 45, which is how long this strike holds
+            -- the player. The dodge in Animations/Chara.lua is deliberately
+            -- LONGER than that and finishes in the menu; see the tuning comment
+            -- there. The two timings are independent -- don't re-pin one to the
+            -- other, or the slide has to fit inside the strike again.
             --
             -- Read straight off the enemy table (not a module-level local), so this
             -- attack's singleton state has nothing new to reset in Prepare().
@@ -206,7 +209,7 @@ function atk.Update(dt)
         else
             if (time == 1) then
                 UI.newMissText("MISS", {enemy.position[1], enemy.position[2]})
-            elseif (time == 30) then
+            elseif (time == 45) then
                 atk.Destroy()
             end
         end
