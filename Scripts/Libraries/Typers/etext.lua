@@ -37,6 +37,9 @@ The "^" character still works as a reset-to-default marker, same as NText.
 Every "* " at the start of a sentence is treated as a dialogue prefix (star prefix).
 
 ]]
+local path = (...):match("(.-)[^%.]+$")
+local defaults = require(path .. "defaults")
+
 local typers = {
     insts = {}
 }
@@ -532,8 +535,8 @@ function typers.New(text, position, layer, size, mode)
     end
     typer.texts = text
     typer.time = 0
-    typer.dint = 1 / 15
-    typer.interval = 1 / 15
+    typer.dint = defaults.DEFAULT_TYPING_INTERVAL
+    typer.interval = defaults.DEFAULT_TYPING_INTERVAL
     typer.counter = 1
     typer.sentence_index = 1
 

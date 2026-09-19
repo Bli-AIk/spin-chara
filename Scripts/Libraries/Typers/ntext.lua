@@ -42,6 +42,9 @@ Opts table can contain the following fields:
   - "remove" / "hide" to remove the portrait.
 
 ]]
+local path = (...):match("(.-)[^%.]+$")
+local defaults = require(path .. "defaults")
+
 local typers = {
     insts = {}
 }
@@ -356,8 +359,8 @@ function typers.New(text, position, layer, size, opts, mode)
     typer.texts = text
     typer.opts = opts
     typer.time = 0
-    typer.dint = 1 / 15
-    typer.interval = 1 / 15
+    typer.dint = defaults.DEFAULT_TYPING_INTERVAL
+    typer.interval = defaults.DEFAULT_TYPING_INTERVAL
     typer.counter = 1
     typer.sentence_index = 1
 

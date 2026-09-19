@@ -41,6 +41,9 @@ Builder API (available via `self` inside the builder function):
 
 
 ]]
+local path = (...):match("(.-)[^%.]+$")
+local defaults = require(path .. "defaults")
+
 local typers = {
     insts = {}
 }
@@ -338,8 +341,8 @@ function typers.New(fn, position, layer, size, mode)
     end
 
     typer.time = 0
-    typer.dint = 1 / 15
-    typer.interval = 1 / 15
+    typer.dint = defaults.DEFAULT_TYPING_INTERVAL
+    typer.interval = defaults.DEFAULT_TYPING_INTERVAL
     typer.waiting_for_confirm = false
 
     typer.pos = {
