@@ -5,8 +5,8 @@ Localize = {localizeText = function(key, args)
     local value = assert(language[key], key)
     return args and string.format(value, unpack(args)) or value
 end}
-Audio = {PlaySound = function() end}
-Player = {hp = 20, maxhp = 20, action = {SetMovementModifiers = function() end}}
+Audio = {PlaySound = function(name) Audio.played = name end}
+Player = {hp = 20, maxhp = 20, action = {SetMovementModifiers = function(scale, seconds) Player.modifiers = {scale, seconds} end}}
 Player.Heal = function(n) Player.hp = math.min(Player.maxhp, Player.hp + n) end
 Battle = {state = "ACTIONSELECT", transition = {busy = false}}
 Battle.ChangeState = function(state) Battle.state = state end
@@ -48,7 +48,10 @@ for _, locale in ipairs({"en", "zh_CN"}) do
     end
     Player.hp = 20
     state:Use(inventory[1])
-    assert(Player.hp == 19)
+    assert(Player.hp == 16)
+    Player.maxhp, Player.hp = 24, 20
+    state:Use(inventory[1])
+    assert(Player.hp == 15, "Stew damage must round up")
     Player.maxhp, Player.hp = 21, 1
     state:DefenseStarting(); state:DefenseEnding()
     assert(Player.hp == 4, "Healing must round up")
@@ -59,12 +62,17 @@ for _, locale in ipairs({"en", "zh_CN"}) do
     Player.hp = 10
     state:Use(inventory[6])
     assert(Player.hp == 10 and state.oil == 3)
-    state:DefenseStarting(); state:DefenseEnding()
+    assert(Audio.played == "snd_splat.wav", "WD40 must spray")
+    state:DefenseStarting()
+    assert(Player.modifiers[1] == 1.875 and Player.modifiers[2] == 0.15, "Oil speed boost")
+    state:DefenseEnding()
     assert(state.oil == 2)
     state:Use(inventory[7])
     assert(state.oil == 3)
     for _ = 1, 3 do state:DefenseStarting(); state:DefenseEnding() end
     assert(state.oil == 0)
+    state:DefenseStarting()
+    assert(Player.modifiers[1] == 1, "Boost must expire with the oil")
     local first = state:Use(inventory[2])
     local second = state:Use(inventory[3])
     assert(first[1] ~= second[1] and Player.hp == 20)

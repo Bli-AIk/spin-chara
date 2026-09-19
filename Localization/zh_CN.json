@@ -41,7 +41,7 @@
   "Battle.Items.Pinecone.Use": "* 你吃了松果。[wait:0.35]\n%s",
   "Battle.Items.Pinecone.Repeat": "* 你吃了松果。[wait:0.45]又一次。[wait:0.35]\n%s",
   "Battle.Items.WD40.Name": "万金油",
-  "Battle.Items.WD40.Use": "* 你往自己身上喷了点万金油。[wait:0.35]\n* 你跑不过我，[wait:0.35]你信吗？",
+  "Battle.Items.WD40.Use": "* 你往自己身上喷了点万金油。[wait:0.35]\n* 你跑不过我你信吗？",
   "Battle.Items.Chocolate.Name": "巧克力",
   "Battle.Items.Chocolate.Name3": "巧克力",
   "Battle.Items.Chocolate.Name2": "巧古",

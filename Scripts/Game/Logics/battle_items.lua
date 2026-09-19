@@ -53,11 +53,12 @@ function items.New()
         self.used[id] = (self.used[id] or 0) + 1
         local page
         if id == "Stew" then
-            Player.hp = math.max(1, Player.hp - 1)
+            Player.hp = math.max(1, Player.hp - math.ceil(Player.maxhp / 5))
             Audio.PlaySound("snd_phurt.wav")
             self.digestion = 1
             page = text("Stew.Use")
         elseif id == "WD40" then
+            Audio.PlaySound("snd_splat.wav")
             self.oil = 3
             page = text("WD40.Use")
         elseif id == "Chocolate" then
@@ -75,7 +76,7 @@ function items.New()
     function self:DefenseStarting()
         self.defending = true
         if Player.action.SetMovementModifiers then
-            Player.action.SetMovementModifiers(self.oil > 0 and 1.5 or 1, self.oil > 0 and 0.15 or 0)
+            Player.action.SetMovementModifiers(self.oil > 0 and 1.875 or 1, self.oil > 0 and 0.15 or 0)
         end
     end
 
