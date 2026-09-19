@@ -13,6 +13,19 @@ local function layout()
 end
 
 local function stat(item)
+    if item.statText then return item.statText end
+    if item.statRange then
+        -- A fast eased sweep with a readable hold at each endpoint.
+        local phase = (SE.timer.getTime() - openedAt) % 1.8
+        local progress
+        if phase < 0.3 then progress = 0
+        elseif phase < 0.9 then progress = (phase - 0.3) / 0.6
+        elseif phase < 1.2 then progress = 1
+        else progress = (1.8 - phase) / 0.6 end
+        local fraction = (1 - math.cos(math.pi * progress)) / 2
+        local low, high = item.statRange[1], item.statRange[2]
+        return string.format("%s%2d", item.statPrefix or "HP +", math.floor(low + (high - low) * fraction + 0.5))
+    end
     local kind = item.type
     -- Existing inline items may omit type; infer only an unambiguous stat.
     if not kind then
@@ -23,7 +36,7 @@ local function stat(item)
         if count ~= 1 then kind = nil end
     end
     if kind == "food" and type(item.heal) == "number" then
-        return "HP " .. (item.heal > 0 and "+" or "") .. item.heal
+        return "HP " .. (item.heal > 0 and "+" or "") .. string.format("%2d", item.heal)
     elseif kind == "weapon" and type(item.atk) == "number" then return "ATK " .. item.atk
     elseif kind == "armor" and type(item.def) == "number" then return "DEF " .. item.def end
     return "--"
@@ -60,11 +73,12 @@ function menu.Refresh()
             local name = Typers.InstText.New("* " .. item.name, {nameX, y}, "UponArena")
             name.color = color
             fit(name, valueX - nameX - 118)
-            local value = Typers.InstText.New(stat(item), {valueX, y}, "UponArena")
+            local label = stat(item)
+            local value = Typers.InstText.New(label, {valueX, y}, "UponArena")
             value:SetAlign("right")
             value.color = color
             fit(value, 106)
-            menu.rows[#menu.rows + 1] = {name = name, stat = value}
+            menu.rows[#menu.rows + 1] = {name = name, stat = value, item = item, label = label}
         end
     end
 end
@@ -79,6 +93,16 @@ function menu.Open()
 end
 
 function menu.Update()
+    for _, row in ipairs(menu.rows) do
+        if row.item.statRange then
+            local label = stat(row.item)
+            if label ~= row.label then
+                row.stat:SetText(label)
+                fit(row.stat, 106)
+                row.label = label
+            end
+        end
+    end
     local previous = menu.selected
     local count = #Battle.game.items
     if Controller.GetState("up") == 1 then menu.selected = math.max(1, previous - 1)

@@ -44,13 +44,7 @@ local encounter = {
         hp = 20
     },
 
-    items = {
-        {id = "CHOCOLATE", _color = {0.4, 1, 1}, heal = 99, name = "Chocolate"},
-        {id = "END", _color = {0.4, 0, 1}, heal = 99, name = "END", _cantdestroy = true},
-        {id = "CHOCOLATE", _color = {0.4, 1, 1}, heal = 99, name = "Chocolate"},
-        {id = "CHOCOLATE", _color = {0.4, 1, 1}, heal = 99, name = "Chocolate"},
-        {id = "CHOCOLATE", _color = {0.4, 1, 1}, heal = 99, name = "Chocolate"},
-    }
+    items = require("Scripts.Game.Logics.battle_items").Inventory()
 }
 
 -- Assign internal _id to each statically-defined enemy

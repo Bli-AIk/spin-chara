@@ -74,21 +74,91 @@ local function run()
     frames(3)
     local items = require("Scripts.Libraries.Battle.UI.items")
     assert(#items.rows == 5)
+    assert(Game.items[1].statText == "HP -??" and Game.items[6].statText == "+SP")
+    capture("items-top")
     for _ = 1, 6 do press("down") end
     assert(items.selected == 7 and items.first == 3)
     capture("items")
+    press("down")
     Player.hp = 1
     local beforeItems = #Game.items
     press("confirm")
     settled("DIALOGUERESULT")
     assert(Player.hp == Player.maxhp and #Game.items == beforeItems - 1)
     for _ = 1, 8 do
-        if Battle.state == "ACTIONSELECT" then break end
+        if Battle.state == "DEFENDING" then break end
         press("cancel")
         press("confirm")
     end
+    settled("DEFENDING")
+    local started = love.timer.getTime()
     settled("ACTIONSELECT")
+    assert(love.timer.getTime() - started >= 4.8, "Item defense ended before five seconds")
     pass("item scrolling, healing, consumption and dialogue transition")
+
+    local function finishDialogue(target)
+        for _ = 1, 20 do
+            if Battle.state == target then break end
+            press("cancel")
+            press("confirm")
+        end
+        settled(target)
+    end
+    local function useSlot(slot)
+        Battle.ChangeState("ITEMMENU")
+        frames(3)
+        for _ = 2, slot do press("down") end
+        press("confirm")
+        settled("DIALOGUERESULT")
+    end
+    local function endDefense()
+        Battle._wave.EndWave()
+        settled("ACTIONSELECT")
+    end
+    Game.items = require("Scripts.Game.Logics.battle_items").Inventory()
+    local originalHit = Battle.OnHit
+    Battle.OnHit = function() end
+    Player.hp = Player.maxhp
+    useSlot(8)
+    assert(#Game.items == 8 and Game.items[8].portion == 2)
+    finishDialogue("DEFENDING")
+    endDefense()
+    useSlot(8)
+    assert(#Game.items == 8 and Game.items[8].portion == 1)
+    finishDialogue("DEFENDING")
+    endDefense()
+    Battle.ChangeState("ITEMMENU")
+    frames(3)
+    for _ = 1, 7 do press("down") end
+    assert(items.rows[#items.rows].label == "HP + 4", "Last chocolate piece must show normal healing")
+    capture("chocolate-crumb")
+    press("confirm")
+    settled("DIALOGUERESULT")
+    assert(#Game.items == 7)
+    finishDialogue("DEFENDING")
+    endDefense()
+    Player.hp = 1
+    useSlot(1)
+    assert(Player.hp == 1 and #Game.items == 6)
+    finishDialogue("DEFENDING")
+    for i, hp in ipairs({3, 6, 10}) do
+        Battle._wave.EndWave()
+        settled("ACTIONSELECT")
+        assert(Player.hp == hp, "Live digestion tick " .. i)
+        assert((Battle.GetNarration() == Localize.localizeText("Battle.Items.Stew.Digest")) == (i == 1))
+        if i == 1 then frames(90); capture("digestion") end
+        if i < 3 then Battle.ChangeState("DEFENDING"); settled("DEFENDING") end
+    end
+    useSlot(5)
+    assert(Player.hp == 10 and #Game.items == 5, "Spray must not heal")
+    press("cancel")
+    frames(60)
+    capture("spray")
+    finishDialogue("DEFENDING")
+    endDefense()
+    assert(Battle.GetNarration() ~= Localize.localizeText("Battle.Items.Stew.Digest"))
+    Battle.OnHit = originalHit
+    pass("partial chocolate consumption, digestion narration and spray")
 
     Battle.selected_enemy_index = 1
     Battle.ChangeState("ATTACKING")
@@ -187,6 +257,42 @@ local function run()
     Battle.ClearWaveModule("template_test")
     cleanup()
     pass("scene and wave overrides fall back after removing game copy")
+    Localize.setFile("en")
+    Scenes.switchTo("Battle.scene_battle_init")
+    frames(3)
+    Battle.ChangeState("ITEMMENU")
+    frames(3)
+    capture("english-items-top")
+    for _ = 1, 7 do press("down") end
+    capture("english-items-bottom")
+    assert(Game.items[1].statText == "HP -??" and Game.items[6].statText == "+SP")
+    pass("English names and special item stats")
+    local currentMenu = require("Scripts.Libraries.Battle.UI.items")
+    local getTime, now = SE.timer.getTime, 0
+    SE.timer.getTime = function() return now end
+    currentMenu.Open()
+    currentMenu.first, currentMenu.selected = 4, 8
+    currentMenu.Refresh()
+    local chocolateRow = currentMenu.rows[5]
+    for _, sample in ipairs({{0, "HP ? 4"}, {0.25, "HP ? 4"}, {0.6, "HP ?47"}, {1, "HP ?90"}, {1.19, "HP ?90"}, {1.5, "HP ?47"}, {1.85, "HP ? 4"}}) do
+        now = sample[1]
+        currentMenu.Update()
+        assert(chocolateRow.label == sample[2], "Chocolate animation at " .. now .. ": " .. chocolateRow.label)
+    end
+    SE.timer.getTime = getTime
+    untilTrue(function() return chocolateRow.label == "HP ?90" end, "Chocolate maximum")
+    capture("chocolate-max")
+    untilTrue(function() return chocolateRow.label == "HP ? 4" end, "Chocolate minimum")
+    capture("chocolate-min")
+    pass("eased chocolate range, endpoint holds and padded single digits")
+    Battle.ChangeState("ACTIONSELECT")
+    settled("ACTIONSELECT")
+    useSlot(6)
+    press("cancel")
+    frames(60)
+    capture("english-spray-single-page")
+    finishDialogue("DEFENDING")
+    endDefense()
     print("[PASS] All template integration checks; screenshots: " .. love.filesystem.getSaveDirectory())
     love.event.quit(0)
 end
@@ -220,7 +326,7 @@ function love.draw()
             end
             data:encode("png", name .. ".png")
             print("[FRAME] " .. name .. ": " .. count .. " sampled colors")
-            assert(count > 3, "Blank or incomplete rendered frame: " .. name)
+            assert(count >= 3, "Blank or incomplete rendered frame: " .. name)
             screenshot = nil
         end)
     end

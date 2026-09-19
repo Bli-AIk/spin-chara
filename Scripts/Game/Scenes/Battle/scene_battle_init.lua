@@ -4,9 +4,11 @@ local scene = {}
 Battle = ImportFile("Battle")
 Battle.SetEndRoom("scene_end")
 Game = Battle.SetGame("dummy")
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
-Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, heal = 99, name = "ImNotFood"})
+local items = require("Scripts.Game.Logics.battle_items").New()
+local narration = Game.narration
+Game.narration = function()
+    return items.narration or narration[math.random(#narration)]
+end
 Blasters = ImportFile("Attacks.Blasters")
 
 -- Give each enemy its own independent animation instance. The animation
@@ -17,6 +19,7 @@ Game:InitAnimation(1, {320, 120})
 local enemies = Game.enemies
 
 local function DefenseEnding()
+    items:DefenseEnding()
 end
 
 -- Handlers
@@ -25,14 +28,7 @@ local function HandleActions(enemy, action)
 end
 
 local function HandleItems(item)
-    print("Used " .. item.name)
-
-    local heal = item.heal or 0
-    Player.Heal(heal, true)
-    Battle.BattleDialogue({
-        "* You ate " .. item.name .. ".",
-        "* You recovered " .. heal .. " HP!"
-    }, "ACTIONSELECT")
+    Battle.BattleDialogue(items:Use(item), "DEFENDING")
 end
 
 local function HandleFlee()
@@ -61,6 +57,8 @@ local function FleeUpdate(dt)
 end
 
 local function EnteringState(oldstate, newstate)
+    if newstate == "ITEMMENU" then items:Refresh(Game.items) end
+    if newstate == "DEFENDING" then items:DefenseStarting() end
     Battle.defaultEnteringState(oldstate, newstate)
     --print("[Battle] " .. oldstate .. " → " .. newstate)
 end
@@ -106,6 +104,8 @@ function scene.update(dt)
 end
 
 function scene.clear()
+    items:Clear()
+    ClearModuleTree("Scripts.Game.Logics.battle_items")
     Layers.clear()
     Battle.Clear()
 end

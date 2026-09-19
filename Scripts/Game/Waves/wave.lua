@@ -18,8 +18,8 @@ function wave.Update(dt)
     bones.Update(dt)
     mask:Follow(Arena.black)
 
-    time = time + 1
-    if (time == 60) then
+    time = time + dt
+    if (time >= 5) then
         EndWave()
     end
 end
