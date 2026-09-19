@@ -35,18 +35,22 @@ local bar_pos = {493, 237}
 -- this, so it can not collide with the numbers when the name gets short.
 local hpname_limit = 245
 
-local bar_maxhp = Sprites.CreateSprite("px.png", "UI")
+-- The three bars here and the status texts further down draw on TopAll, not
+-- "UI": enemy sprites are created on "UI" and get a higher _id, and Layers sorts
+-- by (layer, _id) -- so on "UI" a monster sprite covered the name / LV / HP text.
+-- TopAll sits above every sprite except the TOP fade.
+local bar_maxhp = Sprites.CreateSprite("px.png", "TopAll")
 bar_maxhp:MoveTo(bar_pos[1], bar_pos[2])
 bar_maxhp.xpivot = 0
 bar_maxhp.yscale = 20
 bar_maxhp.color = {1, 0, 0}
 bar_maxhp:Outline(0, 0, 0, 1, 2)
-local bar_hp = Sprites.CreateSprite("px.png", "UI")
+local bar_hp = Sprites.CreateSprite("px.png", "TopAll")
 bar_hp.color = {1, 1, 0}
 bar_hp:MoveTo(bar_pos[1], bar_pos[2])
 bar_hp.xpivot = 0
 bar_hp.yscale = 20
-local bar_kr = Sprites.CreateSprite("px.png", "UI")
+local bar_kr = Sprites.CreateSprite("px.png", "TopAll")
 bar_kr.color = {1, 0, 1}
 bar_kr:MoveTo(bar_pos[1], bar_pos[2])
 bar_kr.xpivot = 0
@@ -91,27 +95,27 @@ local pos_hptext = {30, 400}
 local name = Layers.add_external(function ()
     pos_name[1], pos_name[2] = text_pos[1], text_pos[2]
     drawOutlinedText(ui_font, Global.GetVariable("MainColor"), Player.name, pos_name[1], pos_name[2], 2)
-end, "UI")
+end, "TopAll")
 local lv = Layers.add_external(function ()
     -- Align LV over the right edge of the command column.
     pos_lv[1] = text_pos[1] + 165 - ui_font:getWidth("LV " .. Player.lv)
     pos_lv[2] = text_pos[2]
     drawOutlinedText(ui_font, Global.GetVariable("MainColor"), "LV " .. Player.lv, pos_lv[1], pos_lv[2], 2)
-end, "UI")
+end, "TopAll")
 local hpname = Layers.add_external(function ()
     -- The HP label starts the second row.
     pos_hpname[1] = math.max(text_pos[1], hpname_limit)
     pos_hpname[2] = text_pos[2] + 30
     pos_.hpname = pos_hpname[1] -- kept for callers of the old variable
     drawOutlinedText(lit_font, Global.GetVariable("MainColor"), "HP", pos_hpname[1], pos_hpname[2], 2)
-end, "UI")
+end, "TopAll")
 local krname = Layers.add_external(function ()
     if (kr_configuration) then
         pos_krname[1] = bar_maxhp.x + bar_maxhp.xscale + 8
         pos_krname[2] = text_pos[2] + 3
         drawOutlinedText(lit_font, Global.GetVariable("MainColor"), "KR", pos_krname[1], pos_krname[2], 2)
     end
-end)
+end, "TopAll")
 local hptext = Layers.add_external(function ()
     -- The numbers follow the right end of the HP bar; the KR variant leaves a
     -- wider gap because the KR value is appended to them.
@@ -128,7 +132,7 @@ local hptext = Layers.add_external(function ()
         end
         drawOutlinedText(ui_font, color_, Player.hp + Player.kr .. " / " .. Player.maxhp, pos_hptext[1], pos_hptext[2], 2)
     end
-end, "UI")
+end, "TopAll")
 
 local bar_maxlength = 26
 function ui.SetBarMaxLength(length)
