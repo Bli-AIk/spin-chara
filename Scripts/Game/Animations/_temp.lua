@@ -50,7 +50,7 @@ end
 
 function MyMonster:Init(pos)
     local _pos = (pos or {320, 140})
-    local sprite = Sprites.CreateSprite("poseur.png", "UI")
+    local sprite = Sprites.CreateSprite("chara.png", "UI")
     sprite:MoveTo(_pos[1], _pos[2])
 
     self.sprite = sprite

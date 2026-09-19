@@ -242,7 +242,7 @@ function buttons.SetAnimations(anims)
     buttons.animations = (anims or {
         idle = {
             {{
-                "poseur.png",
+                "chara.png",
                 "bullet.png"
             }, 0.1}
         },

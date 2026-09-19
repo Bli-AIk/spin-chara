@@ -3,7 +3,7 @@ local ow = ImportFile("Overworld")
 ow.Init("Maps/main_scene/main_0.lua")
 ow.SetMusic("Start.ogg")
 --ow.InitEncounter("test_killed", 80, 40, 3)
-ow.SetBattleScene("Battle.scene_battle_ow", "Poseur")
+ow.SetBattleScene("Battle.scene_battle_ow", "Chara")
 Camera:setBounds(320, 210, 1080, 210)
 
 -- 180, 50
@@ -34,11 +34,11 @@ do
     end
 end
 
-local poseur = Sprites.CreateSprite("poseur.png", "UponPlayer")
-poseur.ypivot = 1
-poseur._fly = false
-poseur:Scale(0.5, 0.5)
-poseur.Step = function (self)
+local chara = Sprites.CreateSprite("chara.png", "UponPlayer")
+chara.ypivot = 1
+chara._fly = false
+chara:Scale(0.5, 0.5)
+chara.Step = function (self)
     if (self._fly) then
         self.velocity = {
             x = 3,
@@ -53,7 +53,7 @@ poseur.Step = function (self)
 end
 local obj = ow.FindObject("trigger", 7)
 if (obj) then
-    poseur:MoveTo(obj.x, obj.y + 40)
+    chara:MoveTo(obj.x, obj.y + 40)
 end
 
 local trigger_1 = 0
@@ -122,7 +122,7 @@ function scene.update(dt)
         end
     elseif (ow.getInteractResult("trigger", 7) and not trigger_7) then
         if (Keyboard.GetState("confirm") == 1) then
-            poseur._fly = true
+            chara._fly = true
             trigger_7 = true
         end
     end

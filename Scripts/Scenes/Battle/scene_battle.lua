@@ -3,7 +3,7 @@ local scene = {}
 -- Import battle module
 Battle = ImportFile("Battle")
 Battle.SetEndRoom("scene_end")
-Game = Battle.SetGame("Poseur")
+Game = Battle.SetGame("Chara")
 Game:AddItem({id = "STABLE", _color = {0.5, 0, 0}, name = "ImNotFood"})
 
 -- Give each enemy its own independent animation instance. The animation
@@ -15,7 +15,7 @@ local enemies = Game.enemies
 
 -- Handlers
 local function HandleActions(enemy, action)
-    if (enemy.id == "Poseur") then
+    if (enemy.id == "Chara") then
         if (action.id == "Check") then
             Battle.BattleDialogue(Localize.localizeText("Battle.Actions.Texts." .. enemy.id .. "." .. action.id), "ACTIONSELECT")
         end

@@ -7,9 +7,9 @@ local encounter = {
     enemy_id = 1,
     enemies = {
         {
-            id = "Poseur",
-            name = Localize.localizeText("Battle.EnemiesName.Poseur"),
-            animation = require("Scripts.Game.Animations.Poseur"),
+            id = "Chara",
+            name = Localize.localizeText("Battle.EnemiesName.Chara"),
+            animation = require("Scripts.Game.Animations.Chara"),
 
             maxdamage = -400,
             dmg_float = 2,  -- Some random stuff......I hate them

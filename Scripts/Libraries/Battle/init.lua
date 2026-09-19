@@ -539,7 +539,7 @@ end
 ---Scripts/Encounter/ does not exist). The file is probed before requiring so a
 ---missing encounter reports "not found" instead of being confused with an
 ---encounter that exists but throws.
----@param file string Encounter name, e.g. "Poseur" (no extension).
+---@param file string Encounter name, e.g. "Chara" (no extension).
 ---@return table|nil The loaded encounter table, or nil on failure.
 function battle.SetGame(file)
     battle.gameName = "Scripts.Game.Encounter." .. file

@@ -21,13 +21,13 @@
 
   "Battle.GameoverText": ["* 我们的命运都\n  寄托于你...", "* %s![wait:0.5]\n  保持你的决心..."],
 
-  "Battle.EnemiesName.Poseur": "颇似儿",
+  "Battle.EnemiesName.Chara": "Chara",
   
   "Battle.Actions.Names.Check": "查看",
   "Battle.Actions.Names.Pose": "摆姿势",
 
-  "Battle.Actions.Texts.Poseur.Check": ["* 颇似儿[wait:0.5] - 0 攻击 0 防御[wait:0.5]\n* 并不是我想要的。", "* 一个来自于CYF的吉祥物。"],
-  "Battle.Actions.Texts.Poseur.Pose": ["* 你和颇似儿一起摆姿势...[wait:0.5]\n* 时间似乎静止在了这一刻。"],
+  "Battle.Actions.Texts.Chara.Check": ["* 颇似儿[wait:0.5] - 0 攻击 0 防御[wait:0.5]\n* 并不是我想要的。", "* 一个来自于CYF的吉祥物。"],
+  "Battle.Actions.Texts.Chara.Pose": ["* 你和颇似儿一起摆姿势...[wait:0.5]\n* 时间似乎静止在了这一刻。"],
   
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",

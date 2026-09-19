@@ -1,5 +1,5 @@
 {
-  "Battle.Narration.Default": "* Poseur strikes a pose!",
+  "Battle.Narration.Default": "* Chara strikes a pose!",
 
   "Battle.Narration.Random": [
     "* smells like stage smoke and...[wait:1.0] chocolate?",
@@ -21,17 +21,17 @@
 
   "Battle.GameoverText": ["* Our fates rests\n  upon you...", "* %s![wait:0.5]\n  stay determined..."],
 
-  "Battle.EnemiesName.Poseur": "Poseur",
+  "Battle.EnemiesName.Chara": "Chara",
   
   "Battle.Actions.Names.Check": "Check",
   "Battle.Actions.Names.Pose": "Pose",
 
-  "Battle.Actions.Texts.Poseur.Check": ["* Poseur[wait:0.5] - 0 ATK 0 DEF[wait:0.5]\n* Not what I want.", "* A mascot from CYF."],
-  "Battle.Actions.Texts.Poseur.Pose": ["* "],
+  "Battle.Actions.Texts.Chara.Check": ["* Chara[wait:0.5] - 0 ATK 0 DEF[wait:0.5]\n* Not what I want.", "* A mascot from CYF."],
+  "Battle.Actions.Texts.Chara.Pose": ["* "],
   
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",
-  "Battle.Items.Stew.Name": "A Pot of Stew",
+  "Battle.Items.Stew.Name": "Pot o' Stew",
   "Battle.Items.Stew.Use": "* you finished the whole pot.[wait:0.35]\n* you regretted it on the first bite.",
   "Battle.Items.Stew.Digest": "* ...[wait:0.5]but it is,[wait:0.25] technically,[wait:0.25] food.",
   "Battle.Items.Bunlet.Name": "CinnaBunlet",

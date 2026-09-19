@@ -9,6 +9,10 @@ Global.SetVariable("MainColor", {1, 1, 1})
 Global.SetVariable("EnableFriskDance", false)
 Global.SetVariable("Language", "en")
 Global.SetVariable("Language", "zh_CN")
+local startup_language = os.getenv("SPIN_CHARA_LANGUAGE")
+if startup_language and startup_language ~= "" then
+    Global.SetVariable("Language", startup_language)
+end
 Global.SetVariable("UseRealTime(dt)", false)
 Global.SetVariable("ScreenShaders", {})
 Global.SetVariable("FPS", 60)
