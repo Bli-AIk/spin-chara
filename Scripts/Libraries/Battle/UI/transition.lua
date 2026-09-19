@@ -57,6 +57,11 @@ function transition.SetImmediate(mode)
     transition.mode = mode
     Battle.mainarena:MoveTo(320, defenseY, true)
     Battle.mainarena:Resize(155, compactHeight, true)
+    -- The layout jumped straight to its end state, so bring the arena's sprites
+    -- with it; otherwise the next update treats the jump as movement and drags
+    -- the player along, spawning the heart at the arena's corner instead of the
+    -- centre the entrance animation would have left it at.
+    Battle.mainarena:SyncSprites()
     Battle.mainarena.is_active = true
     UI.SetTextPosition(hud[1], defenseTextY)
     UI.SetBarPosition(hud[3], defenseTextY - hud[2] + hud[4])

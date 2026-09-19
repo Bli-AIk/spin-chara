@@ -38,7 +38,18 @@
   "Battle.Actions.Texts.Napstablook.Check": ["* NAPSTABLOOK[wait:0.5] - 攻击 5 防御 4[wait:0.35]\n* 这只幽灵似乎并不想待在这儿。"],
   "Battle.Actions.Texts.Napstablook.Applause": ["* 你鼓起掌来。[wait:0.5]\n* Napstablook当场缩水了两寸。"],
   "Battle.Actions.Texts.Napstablook.Applause.Reply": ["哦...[wait:0.5]谢谢。[wait:0.5]", "哦...[wait:0.5]对不起。"],
-  
+  "Battle.Waves.Wave01.Intro": [
+    "看来又到了上台表演的时候啦！[wait:0.35]",
+    "欢迎欢迎，我们的新朋友！[wait:0.35]",
+    "嘿，愁眉苦脸的干什么——笑一个呀，亲？我们可是在**演出**呢？[wait:0.35]",
+    "不要露出那种惹人厌的脸色啊，你要知道...[func:Wave01Slash][wait:0.35]"
+  ],
+  "Battle.Waves.Wave01.Outro": [
+    "Chara：说到\"演出\"...[wait:0.35]",
+    "最好的节目效果，当然是嘉宾面临真实的致命危机时的表情啦！[wait:0.35]",
+    "为什么不笑一下呢，嗯？[wait:0.35]"
+  ],
+
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",
   "Battle.Items.Stew.Name": "一锅乱炖",

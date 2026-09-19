@@ -92,7 +92,7 @@ local encounter = {
     },
 
     state = "DEFENDING",
-    wave = "wave",
+    wave = "wave01",
 
     player = {
         name = "end",

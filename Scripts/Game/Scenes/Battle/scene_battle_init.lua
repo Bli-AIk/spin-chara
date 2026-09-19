@@ -31,7 +31,7 @@ local function EnterRound()
     Game.round = math.min(Game.round + 1, #Game.rounds)
     local round = Game.rounds[Game.round]
     Battle.wave = round.wave
-    print("[Spin] Start Wave: " .. Game.round)
+    print("回合 " .. Game.round)
 end
 
 local function DefenseEnding()
@@ -85,7 +85,7 @@ local function EnteringState(oldstate, newstate)
 end
 
 local function OnHit(bullet)
-    local damage = 1
+    local damage = bullet.spin_damage or 1
     local color = (bullet["HurtMode"] or "normal")
     color = color:lower()
 

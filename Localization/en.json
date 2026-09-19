@@ -38,7 +38,18 @@
   "Battle.Actions.Texts.Napstablook.Check": ["* NAPSTABLOOK[wait:0.5] - ATK 5 DEF 4[wait:0.35]\n* This ghost doesn't seem to want to be here."],
   "Battle.Actions.Texts.Napstablook.Applause": ["* You applaud.[wait:0.5]\n* Napstablook shrinks about two inches."],
   "Battle.Actions.Texts.Napstablook.Applause.Reply": ["oh......[wait:0.5] thanks.[wait:0.5]", "oh......[wait:0.5] sorry."],
-  
+  "Battle.Waves.Wave01.Intro": [
+    "Looks like it's time to take the stage again![wait:0.35]",
+    "Welcome, welcome, our new friend![wait:0.35]",
+    "Hey, why so glum? Smile, dear - we're in a **show**![wait:0.35]",
+    "Don't make that tiresome face, you know...[func:Wave01Slash][wait:0.35]"
+  ],
+  "Battle.Waves.Wave01.Outro": [
+    "Chara: Speaking of a \"performance\"...[wait:0.35]",
+    "Nothing beats a guest's face when the danger is real![wait:0.35]",
+    "Why not crack a smile, hm?[wait:0.35]"
+  ],
+
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",
   "Battle.Items.Stew.Name": "Pot o' Stew",

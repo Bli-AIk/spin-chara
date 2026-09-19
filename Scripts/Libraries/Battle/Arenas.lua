@@ -386,6 +386,28 @@ function arenas.New(mode, shape, x, y, width, height, angle)
         end
     end
 
+    ---Snap the arena's sprites onto its current geometry right now.
+    ---arenas.Update does this once per frame, but a layout applied in one go
+    ---(transition.SetImmediate preparing the defense arena before the first
+    ---frame) happens outside that loop. The sprites would still sit at the old
+    ---geometry, and the delta arenas.Update then records in `black.speed` would
+    ---be handed to the player by the move_player carry - dragging the heart into
+    ---the arena's corner on round 1. Clear that recorded motion too: an immediate
+    ---change is a teleport, not movement, so nobody rides along with it.
+    function arena:SyncSprites()
+        arena.white:MoveTo(arena.x, arena.y)
+        arena.black:MoveTo(arena.x, arena.y)
+        arena.white:Scale(arena.width + arena.thickness * 2, arena.height + arena.thickness * 2)
+        arena.black:Scale(arena.width, arena.height)
+
+        if (arena.mask) then
+            arena.mask:Follow(arena.white)
+        end
+
+        arena.white.speed.x, arena.white.speed.y = 0, 0
+        arena.black.speed.x, arena.black.speed.y = 0, 0
+    end
+
     function arena:SetThickness(t)
         arena.thickness = (t or 5)
     end
