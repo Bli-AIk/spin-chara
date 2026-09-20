@@ -302,6 +302,10 @@ function love.keypressed(key, scancode, isrepeat)
         package.loaded["Scripts.Libraries.Engine.PureConf"] = nil
         require("conf_pure")
         Scenes.switchTo(Global.GetVariable("F2Room"))
+    elseif (VirtualKeyboard.HandleKey(key, isrepeat)) then
+        -- 触屏虚拟按键开关（默认 F9，改 VirtualKeyboard.toggleKey）。
+        -- 手机在 Termux:X11 里收到真实触摸时会自动打开，这个键用来手动开关。
+        return
     end
     if (not _RELEASED) then
         if (DevTool and DevTool.Toggle and key == "f8") then
@@ -369,6 +373,8 @@ function love.mousereleased(x, y, button, istouch, presses)
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
+    -- 桌面调试：按住拖动等同手指滑动（虚拟按键的方向区靠这条才能试出斜向/换向）
+    VirtualKeyboard.MouseMoved(x, y)
     if (scene_.mousemoved and not scene_.pausing) then scene_.mousemoved(x, y, dx, dy, istouch) end
 end
 
