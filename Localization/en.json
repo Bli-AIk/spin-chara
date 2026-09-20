@@ -39,8 +39,8 @@
   "Battle.Actions.Texts.Napstablook.Applause": ["* You applaud.[wait:0.5]\n* Napstablook shrinks about two inches."],
   "Battle.Actions.Texts.Napstablook.Applause.Reply": ["oh......[wait:0.5] thanks.[wait:0.5]", "oh......[wait:0.5] sorry."],
   "Battle.Waves.Wave01.Intro": [
-    "Looks like it's time[wait:0.35]\nto take the stage again!",
-    "Welcome, welcome,[wait:0.35]\nour new friend!",
+    "Looks like it's time\nto take the stage again!",
+    "Welcome,[wait:0.35] welcome,[wait:0.35]\nour new friend!",
     "Hey,[wait:0.35] why so glum?[wait:0.5]\nSmile,[wait:0.35] dear?[speed:0.05][wait:0.75]\nWe're in a [colorHEX:ff0000]show[colorHEX:000000]![wait:0.35]",
     "[speed:0.05]Don't make that\ntiresome face,\n[speed:0.09][wait:0.5]you know[speed:0.15][func:Wave01Warning]...[func:Wave01Slash][wait:0.35]"
   ],
