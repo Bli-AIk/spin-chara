@@ -63,6 +63,13 @@ if (_controllerSim) then
     end
 end
 
+-- 触屏虚拟按键：本作不要它自己弹出来。两条自动路径都关掉——触屏设备上的自动
+-- 检测，以及收到真实触摸（桌面端鼠标按下也算）就自动启用——只留手动开关：F9
+-- （VirtualKeyboard.toggleKey），或 conf_pure.lua 里 ControllerSimulation.virtualKeyboard。
+-- 想恢复自动弹出，把下面两行删掉即可。
+VirtualKeyboard.autoDetect = false          -- 触屏设备上不自动打开
+VirtualKeyboard.autoEnableOnTouch = false   -- 首个触摸不自动打开
+
 -- Apply the analog stick dead-zone (see Engine/PureConf.lua "ControllerDeadzone").
 local _deadzone = Global.GetVariable("ControllerDeadzone")
 if (_deadzone ~= nil) then
