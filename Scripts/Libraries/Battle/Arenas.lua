@@ -518,6 +518,14 @@ function arenas.New(mode, shape, x, y, width, height, angle)
     end
 
     function arena:Destroy()
+        -- A plus arena's mask lives in the shared stencil list, and minus arenas
+        -- copy that list into their own sprites. Left behind, it would keep
+        -- clipping later waves' obstacles to a box that no longer exists.
+        if (arena.mask) then
+            LuaEX.rmVarTable(arenas.stencils, arena.mask)
+            arena.mask = nil
+        end
+
         LuaEX.rmVarTable(arenas.insts, arena)
         arena.white:Destroy()
         arena.black:Destroy()

@@ -454,11 +454,21 @@ end
 --- Clear all layers, objects, and external draws, resetting the system.
 function layers.clear()
     Typers.ClearAll()
-    for i = #layers.objects, 1, -1 do
-        local o = layers.objects[i]
+    -- Always take the current last object rather than walking a fixed index
+    -- range. Destroy can cascade: a typer takes its whole bubble with it and an
+    -- arena takes both of its boxes, so one Destroy() can drop several entries at
+    -- once -- which would leave a fixed index pointing past the end and index nil
+    -- (ctrl+R during a wave that had a live typer used to crash here). ClearAll
+    -- can also add objects, when a typer's _onComplete builds the next one; the
+    -- loop has to be able to swallow those too. Drop the object ourselves if it
+    -- unregistered nothing, so the loop always makes progress.
+    while (#layers.objects > 0) do
+        local o = layers.objects[#layers.objects]
         if (o.Destroy) then o:Destroy() end
         if (o.Remove) then o:Remove() end
-        table.remove(layers.objects, i)
+        if (layers.objects[#layers.objects] == o) then
+            table.remove(layers.objects, #layers.objects)
+        end
     end
 
     layers.layers = {}
