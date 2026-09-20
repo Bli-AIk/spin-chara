@@ -42,7 +42,7 @@
     "看来，[wait:0.35]又到了\n上台表演的时候啦！",
     "欢迎欢迎，[wait:0.35]\n我们的新朋友！",
     "嘿，[wait:0.35]愁眉苦脸的干什么—[wait:0.5]\n笑一个呀，[wait:0.35]亲？[speed:0.05][wait:0.75]\n我们可是在 [colorHEX:ff0000]演出[colorHEX:000000] 呢？[wait:0.35]",
-    "[speed:0.05]不要露出那种\n惹人厌的脸色啊，\n[speed:0.09][wait:0.5]你要知道[speed:0.15]...[func:Wave01Slash][wait:0.35]"
+    "[speed:0.05]不要露出那种\n惹人厌的脸色啊，\n[speed:0.09][wait:0.5]你要知道[speed:0.15][func:Wave01Warning]...[func:Wave01Slash][wait:0.35]"
   ],
   "Battle.Waves.Wave01.Outro": [
     "[speed:0.09]说到\"演出\"...",

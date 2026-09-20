@@ -42,7 +42,7 @@
     "Looks like it's time[wait:0.35]\nto take the stage again!",
     "Welcome, welcome,[wait:0.35]\nour new friend!",
     "Hey,[wait:0.35] why so glum?[wait:0.5]\nSmile,[wait:0.35] dear?[speed:0.05][wait:0.75]\nWe're in a [colorHEX:ff0000]show[colorHEX:000000]![wait:0.35]",
-    "[speed:0.05]Don't make that\ntiresome face,\n[speed:0.09][wait:0.5]you know[speed:0.15]...[func:Wave01Slash][wait:0.35]"
+    "[speed:0.05]Don't make that\ntiresome face,\n[speed:0.09][wait:0.5]you know[speed:0.15][func:Wave01Warning]...[func:Wave01Slash][wait:0.35]"
   ],
   "Battle.Waves.Wave01.Outro": [
     "[speed:0.09]Speaking of a \"performance\"...",
