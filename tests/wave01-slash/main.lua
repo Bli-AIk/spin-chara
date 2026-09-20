@@ -100,6 +100,15 @@ local function run()
 
     -- Advance through the first three lines. Each press only lands once the
     -- current line has finished typing, so wait for that instead of guessing.
+    -- First let the heart reach the middle of the box, where the wave drops it:
+    -- driving the dialogue before it settles lets a hitched frame type the intro
+    -- out and fire the blade while the heart is still sliding, which is not the
+    -- "heart sitting on the cut line" this test means to check.
+    untilTrue(function()
+        return math.abs(Player.sprite.x - Battle.mainarena.x) <= 1
+            and math.abs(Player.sprite.y - Battle.mainarena.y) <= 1
+    end, "the heart settled at the middle of the box")
+
     nextLine("intro line 1")
     nextLine("intro line 2")
     nextLine("intro line 3")
@@ -116,6 +125,10 @@ local function run()
     -- the blade has to draw blood, exactly once.
     local x_at_cut = Player.sprite.x
     untilTrue(function() return #Arenas.insts == 2 end, "box split into two arenas")
+    -- The cut and the damage land in the same frame, but do not assume the order
+    -- they become observable in: wait for the hit instead of reading hp on the
+    -- frame the second arena shows up.
+    untilTrue(function() return Player.hp ~= hp0 end, "the blade drew blood")
     assert(Player.hp == hp0 - 10,
         "expected exactly one 10 damage hit, hp " .. tostring(hp0) .. " -> " .. tostring(Player.hp))
     assert(Player.hurt_time > 0, "the hit should have started invincibility")
