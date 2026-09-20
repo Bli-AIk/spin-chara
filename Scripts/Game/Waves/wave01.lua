@@ -54,6 +54,7 @@ end
 
 local function dismissBubble(typer)
     if (not typer) then return end
+    Audio.PlaySound("heavyswing.wav")
     typer:HideBubble()
     typer._onComplete = nil
     typer:Destroy()
@@ -96,6 +97,7 @@ local function layoutHalves(age)
 end
 
 local function cutArena()
+    Audio.PlaySound("disappear.wav")
     local gap = Arena.thickness * 2 + 2
     local width = (original_box.width - gap) / 2
     split_arena = Arenas.New("plus", "rectangle", blade_x + gap / 2 + width / 2,
