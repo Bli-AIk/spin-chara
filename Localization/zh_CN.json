@@ -30,10 +30,10 @@
 
   "Battle.Actions.Texts.Chara.Check": ["* CHARA[wait:0.5] - LV 1[wait:0.35]\n* 一个似乎对你怀有\n  深仇大恨的神秘表演者。"],
   "Battle.Actions.Texts.Chara.Applause": ["* 你鼓起掌来。[wait:0.5]\n* Chara朝着空无一人的片场\n  深深鞠了一躬。"],
-  "Battle.Actions.Texts.Chara.Applause.Reply": ["哦亲爱的，[wait:0.35]你可真捧场。", "继续拍吧，[wait:0.35]我的好伙伴。", "这样我瞄准你的时候，[wait:0.35]能方便不少。"],
+  "Battle.Actions.Texts.Chara.Applause.Reply": ["哦亲爱的，[wait:0.35]你可真捧场。", "继续拍吧，[wait:0.35]我的好搭档。", "这样我瞄准你的时候，[wait:0.35]能方便不少。"],
   "Battle.Actions.Texts.Chara.Applause.Effect": ["* Chara的动作变慢了，但瞄的更精准了！"],
   "Battle.Actions.Texts.Chara.Boo": ["* 你喝了倒彩。[wait:0.5]\n* Chara倒吸一口凉气，[wait:0.35]\n  好像你犯天条了一样。"],
-  "Battle.Actions.Texts.Chara.Boo.Reply": ["我的好伙伴，[wait:0.35]你太没品味了。[wait:0.5]", "空场而已。[wait:0.5]只是观众还没跟上我的格调。"],
+  "Battle.Actions.Texts.Chara.Boo.Reply": ["我的好搭档，[wait:0.35]你太没品味了。[wait:0.5]", "空场而已。[wait:0.5]只是观众还没跟上我的格调。"],
   "Battle.Actions.Texts.Chara.Boo.Effect": ["* Chara下一回合的伤害提高了！"],
   "Battle.Actions.Texts.Napstablook.Check": ["* NAPSTABLOOK[wait:0.5] - 攻击 5 防御 4[wait:0.35]\n* 这只幽灵似乎并不想待在这儿。"],
   "Battle.Actions.Texts.Napstablook.Applause": ["* 你鼓起掌来。[wait:0.5]\n* Napstablook当场缩水了两寸。"],
