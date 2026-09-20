@@ -1,5 +1,5 @@
 {
-  "Battle.Narration.Default": "* 看来你上台了。祝你演出成功呀...[wait:0.5]可别把你自己的骨头摔散了。",
+  "Battle.Narration.Default": "* 看来你上台了。[wait:1.5]\n* 祝你演出成功呀...[wait:0.5]\n  别把自己的骨头摔散了。",
 
   "Battle.Narration.Random": [
     "* 闻起来有舞台烟雾的味道...[wait:1.0]\n  还有巧克力？",
@@ -41,13 +41,13 @@
   "Battle.Waves.Wave01.Intro": [
     "看来，[wait:0.35]又到了\n上台表演的时候啦！",
     "欢迎欢迎，[wait:0.35]\n我们的新朋友！",
-    "嘿，[wait:0.35]愁眉苦脸的干什么—[wait:0.5]\n笑一个呀，[wait:0.35]亲？[wait:0.5]\n[speed:0.9]我们可是在 [color=red]演出[/color] 呢？[wait:0.35]",
-    "[speed:0.85]不要露出那种\n惹人厌的脸色啊，\n[wait:0.5][speed:0.8]你要知道...[func:Wave01Slash][wait:0.35]"
+    "嘿，[wait:0.35]愁眉苦脸的干什么—[wait:0.5]\n笑一个呀，[wait:0.35]亲？[speed:0.05][wait:0.75]\n我们可是在 [colorHEX:ff0000]演出[colorHEX:000000] 呢？[wait:0.35]",
+    "[speed:0.05]不要露出那种\n惹人厌的脸色啊，\n[speed:0.09][wait:0.5]你要知道[speed:0.15]...[func:Wave01Slash][wait:0.35]"
   ],
   "Battle.Waves.Wave01.Outro": [
-    "说到\"演出\"...[wait:0.35]",
-    "最好的节目效果，当然是嘉宾面临真实的致命危机时的表情啦！[wait:0.35]",
-    "为什么不笑一下呢，嗯？[wait:0.35]"
+    "[speed:0.09]说到\"演出\"...",
+    "[speed:0.033]最好的节目效果，\n[wait:0.35]当然是嘉宾面临\n真实的致命危机时\n的表情啦！",
+    "为什么不笑一下呢，[wait:0.35]嗯？"
   ],
 
   "Battle.Items.Stew.Stat": "HP -??",

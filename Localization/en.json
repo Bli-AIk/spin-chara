@@ -1,5 +1,5 @@
 {
-  "Battle.Narration.Default": "* Looks like you're on stage. Break a leg...[wait:0.5] preferably not your own.",
+  "Battle.Narration.Default": "* Looks like you're on stage.[wait:1.5]\n* Break a leg...[wait:0.5]\n  preferably not your own.",
 
   "Battle.Narration.Random": [
     "* Smells like stage smoke and...[wait:1.0] chocolate?",
@@ -39,15 +39,15 @@
   "Battle.Actions.Texts.Napstablook.Applause": ["* You applaud.[wait:0.5]\n* Napstablook shrinks about two inches."],
   "Battle.Actions.Texts.Napstablook.Applause.Reply": ["oh......[wait:0.5] thanks.[wait:0.5]", "oh......[wait:0.5] sorry."],
   "Battle.Waves.Wave01.Intro": [
-    "Looks like it's time to take the stage again![wait:0.35]",
-    "Welcome, welcome, our new friend![wait:0.35]",
-    "Hey, why so glum? Smile, dear - we're in a **show**![wait:0.35]",
-    "Don't make that tiresome face, you know...[func:Wave01Slash][wait:0.35]"
+    "Looks like it's time[wait:0.35]\nto take the stage again!",
+    "Welcome, welcome,[wait:0.35]\nour new friend!",
+    "Hey,[wait:0.35] why so glum?[wait:0.5]\nSmile,[wait:0.35] dear?[speed:0.05][wait:0.75]\nWe're in a [colorHEX:ff0000]show[colorHEX:000000]![wait:0.35]",
+    "[speed:0.05]Don't make that\ntiresome face,\n[speed:0.09][wait:0.5]you know[speed:0.15]...[func:Wave01Slash][wait:0.35]"
   ],
   "Battle.Waves.Wave01.Outro": [
-    "Chara: Speaking of a \"performance\"...[wait:0.35]",
-    "Nothing beats a guest's face when the danger is real![wait:0.35]",
-    "Why not crack a smile, hm?[wait:0.35]"
+    "[speed:0.09]Speaking of a \"performance\"...",
+    "[speed:0.033]Nothing beats\na guest's face,\n[wait:0.35]when the danger is\nreal!",
+    "Why not crack a smile,[wait:0.35] hm?"
   ],
 
   "Battle.Items.Stew.Stat": "HP -??",
