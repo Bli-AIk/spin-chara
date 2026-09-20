@@ -15,10 +15,42 @@ default: run
 # LÖVE 以 cwd 作为源目录，游戏里的 io.open(".reload_trigger") 和 Resources/
 # 相对路径都依赖这一点，所以先 cd 到 justfile 所在目录再启动。
 # `-l/--language` 可覆盖本次启动语言，例如 `just run -l en`。
+# `-w/--workspace` 指定窗口开在哪个工作区：数字 = 对应工作区（默认 9），
+# auto = 当前工作区。做法是给本次启动一个专属窗口类（SDL_APP_ID），再向
+# Hyprland 注册一条"该类 -> 目标工作区"的运行时规则（no_initial_focus，
+# 不抢焦点）；规则不写进 hyprland 配置，reload 即消失；没有 hyprctl 或不
+# 在 Hyprland 下会退化成普通启动，不影响游戏本身。
 # 其他参数仍会透传给 LÖVE，例如 `just run -- --fused`。
 run *args:
-    @command -v {{love_bin}} >/dev/null 2>&1 || { echo "找不到 {{love_bin}}：请先安装 AUR 包 love-git，或设 LOVE_BIN=love" >&2; exit 127; }
-    @set -- {{args}}; language=""; previous=""; for argument in "$@"; do if [ "$previous" = "language" ]; then language="$argument"; previous=""; elif [ "$argument" = "-l" ] || [ "$argument" = "--language" ]; then previous="language"; fi; done; [ "$previous" != "language" ] || { echo "-l/--language 缺少语言代码" >&2; exit 2; }; [ -z "$language" ] || [ -f "{{justfile_directory()}}/Localization/$language.json" ] || { echo "不支持的语言：$language" >&2; exit 2; }; cd "{{justfile_directory()}}" && SPIN_CHARA_LANGUAGE="$language" {{love_bin}} . "$@"
+    #!/bin/sh
+    set -eu
+    # shebang recipe 拿不到 just 的参数，跟原来的写法一样用 {{args}} 自己装回来
+    set -- {{args}}
+    command -v {{love_bin}} >/dev/null 2>&1 || { echo "找不到 {{love_bin}}：请先安装 AUR 包 love-git，或设 LOVE_BIN=love" >&2; exit 127; }
+    language=""; workspace="9"; previous=""
+    for argument in "$@"; do
+      if [ "$previous" = "language" ]; then language="$argument"; previous=""
+      elif [ "$previous" = "workspace" ]; then workspace="$argument"; previous=""
+      elif [ "$argument" = "-l" ] || [ "$argument" = "--language" ]; then previous="language"
+      elif [ "$argument" = "-w" ] || [ "$argument" = "--workspace" ]; then previous="workspace"
+      fi
+    done
+    [ "$previous" != "language" ] || { echo "-l/--language 缺少语言代码" >&2; exit 2; }
+    [ "$previous" != "workspace" ] || { echo "-w/--workspace 缺少参数（数字或 auto）" >&2; exit 2; }
+    [ -z "$language" ] || [ -f "{{justfile_directory()}}/Localization/$language.json" ] || { echo "不支持的语言：$language" >&2; exit 2; }
+    [ -n "$workspace" ] || workspace="9"
+    case "$workspace" in
+      auto) app_id="spin-chara-auto" ;;
+      *[!0-9]*) echo "-w/--workspace 只接受数字或 auto：$workspace" >&2; exit 2 ;;
+      *)
+        app_id="spin-chara-ws$workspace"
+        if command -v hyprctl >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+          hyprctl eval "hl.window_rule({ name = \"spin-chara-run-ws$workspace\", match = { class = \"^$app_id\$\" }, workspace = $workspace, no_initial_focus = true })" >/dev/null 2>&1 \
+            || echo "提示：注册工作区规则失败，窗口会开在当前工作区" >&2
+        fi
+        ;;
+    esac
+    cd "{{justfile_directory()}}" && SDL_APP_ID="$app_id" SPIN_CHARA_LANGUAGE="$language" {{love_bin}} . "$@"
 
 # 默认严格度 3（love.js）；`just check --all` 三种严格度一次对比。
 # 只读，不改代码
