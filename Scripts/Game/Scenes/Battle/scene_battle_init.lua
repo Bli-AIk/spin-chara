@@ -8,9 +8,18 @@ local items = require("Scripts.Game.Logics.battle_items").New()
 local acts = require("Scripts.Game.Logics.battle_acts").New()
 -- Indexed by enemy._id, then tag name; active only during the upcoming defense.
 Game.act_effects = acts
-local narration = Game.narration
+local random_narration = Game.narration
+-- The hand-over out of round 1 is the battle's opening line, not a random peek
+-- at the stage, so the first turn is pinned to Battle.Narration.Default and the
+-- Random table only starts being sampled from round 2 on. EnterRound increments
+-- Game.round on entering DEFENDING, so round 1 is 1 for the whole of its turn.
+local opening_narration = Localize.localizeText("Battle.Narration.Default")
 Game.narration = function()
-    return items.narration or narration[math.random(#narration)]
+    if (items.narration) then return items.narration end
+    if (Game.round <= 1 and type(opening_narration) == "string") then
+        return opening_narration
+    end
+    return random_narration[math.random(#random_narration)]
 end
 Blasters = ImportFile("Attacks.Blasters")
 

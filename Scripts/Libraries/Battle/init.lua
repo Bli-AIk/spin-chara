@@ -257,6 +257,10 @@ blacktop.Step = function (self)
     end
 end
 
+-- Forward declaration: ChangeState (defined above startBattleBGM) has to be able
+-- to start the music once a scripted opening DEFENDING turn is over.
+local startBattleBGM
+
 -- Load battle method APIs for attaching to encounter tables via metatable
 local game_apis = require(path .. "Battle.game_apis")
 
@@ -391,6 +395,10 @@ function battle.ChangeState(new_state)
         battle.DefenseEnding()
         battle._turnNarration = nil
         Arenas.Clear()
+        -- An encounter that opened on a scripted DEFENDING turn held the music
+        -- back so its opening played dry; that turn just ended, so start it now.
+        -- FindMusic-guarded, so every later round is a no-op.
+        startBattleBGM()
     end
     local mode
     if new_state == "DEFENDING" then mode = "defense"
@@ -461,7 +469,9 @@ battle.defaultWin = battle.Win
 ---Start the battle BGM. Any music (usually the overworld theme) is cleared
 ---first so two tracks can never overlap; Audio.Clear also stops leftover
 ---sound effects at the scene boundary.
-local function startBattleBGM()
+---Guarded by FindMusic, so calling it on every leave-DEFENDING is a no-op once
+---the track is already running.
+function startBattleBGM()
     if (Audio.FindMusic(BATTLE_BGM)) then
         return
     end
@@ -578,7 +588,12 @@ function battle.SetGame(file)
         if (player_data.maxhp) then Player.maxhp = player_data.maxhp end
         if (player_data.hp) then Player.hp = player_data.hp end
         if (game_.wave) then Battle.wave = game_.wave end
-        battle._skip_initial_transition = game_.state == "DEFENDING"
+        -- An encounter that opens straight into DEFENDING is running a scripted
+        -- opening turn (Chara's round 1): leave the music off until that turn is
+        -- over, so the monologue and its set piece play dry. ChangeState clears
+        -- _skip_initial_transition, hence the separate flag.
+        local opens_in_defending = game_.state == "DEFENDING"
+        battle._skip_initial_transition = opens_in_defending
         Battle.ChangeState(game_.state or "ACTIONSELECT")
         UI.buttons.ResetButtons()
         if (Battle.state == "ACTIONSELECT" and not battle.transition.busy) then
@@ -593,7 +608,9 @@ function battle.SetGame(file)
             setmetatable(game_, {__index = game_apis})
         end
 
-        startBattleBGM()
+        if (not opens_in_defending) then
+            startBattleBGM()
+        end
 
         return battle.game
     end
