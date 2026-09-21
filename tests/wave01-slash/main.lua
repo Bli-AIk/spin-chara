@@ -80,7 +80,11 @@ end
 ---Press confirm until the current line is on screen, then move to the next one.
 local function nextLine(label)
     untilTrue(function() return lineTyped(bubbleTyper()) end, label .. " typed out")
+    local typer=bubbleTyper()
+    local index=typer.sentence_index
     press("confirm")
+    untilTrue(function() return bubbleTyper()~=typer or typer.sentence_index>index end,
+        label.." advanced")
 end
 
 local function run()
@@ -116,7 +120,8 @@ local function run()
     -- From here the player presses NOTHING: the blade has to fall by itself the
     -- moment "你要知道..." finishes typing. Under the old wave this never
     -- happened without a fourth confirm, so this is the check for that.
-    untilTrue(function() return lineTyped(bubbleTyper()) end, "intro line 4 typed out")
+    -- The inline slash callback dismisses the fourth line before its trailing
+    -- wait finishes; waiting for a completed bubble can skip the entire slash.
     local confirmed_at = 0
     untilTrue(function() return bladeSprite() ~= nil end, "blade falls with no confirm")
     print("[BLADE] spawned without a confirm after the fourth line finished typing")

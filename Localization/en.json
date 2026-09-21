@@ -38,6 +38,15 @@
   "Battle.Actions.Texts.Napstablook.Check": ["* NAPSTABLOOK[wait:0.5] - ATK 5 DEF 4[wait:0.35]\n* This ghost doesn't seem to want to be here."],
   "Battle.Actions.Texts.Napstablook.Applause": ["* You applaud.[wait:0.5]\n* Napstablook shrinks about two inches."],
   "Battle.Actions.Texts.Napstablook.Applause.Reply": ["oh......[wait:0.5] thanks.[wait:0.5]", "oh......[wait:0.5] sorry."],
+  "Battle.BarrageLab.Wave02.Intro": "[speed:0.03]Either you [colorHEX:ff0000]play by our rules[colorHEX:000000]...[wait:0.7]\nor you [colorHEX:ff0000]die trying[colorHEX:000000].[wait:0.5]",
+  "Battle.BarrageLab.Wave03.Intro": "[speed:0.035][colorHEX:ff0000]When you are in the dark,[wait:0.35]\nyou ought to tread carefully.[wait:0.6][colorHEX:000000]",
+  "Battle.BarrageLab.Wave03.Nap": "[speed:0.04]...[wait:0.4]maybe hold X to slow down...[wait:0.5]\nor something?[wait:0.5]",
+  "Battle.BarrageLab.Wave03.Chara": "[speed:0.03]Oh,[wait:0.2] hush![wait:0.35]\nI am still aiming![wait:0.5]",
+  "Battle.BarrageLab.Wave04.Intro": "[speed:0.03]What is a great performance...[wait:0.6]\nwithout a little dramatic shadow![wait:0.5]",
+  "Battle.BarrageLab.Wave04.Curtain": "[speed:0.035]Draw the curtain![wait:0.6]",
+  "Battle.BarrageLab.Wave04.Nap": "[speed:0.035]Um...[wait:0.4]with the curtain drawn,[wait:0.35]\nthe lit spots get really hot...[wait:0.6]",
+  "Battle.BarrageLab.Wave05.Intro": "[speed:0.03]My props love getting close to our guests![wait:0.6]\nEspecially their sharpest parts.[wait:0.6]",
+
   "Battle.Waves.Wave01.Intro": [
     "Looks like it's time\nto take the stage again!",
     "Welcome,[wait:0.35] welcome,[wait:0.35]\nour new friend!",

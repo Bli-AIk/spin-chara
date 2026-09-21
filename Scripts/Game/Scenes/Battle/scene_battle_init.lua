@@ -4,6 +4,11 @@ local scene = {}
 Battle = ImportFile("Battle")
 Battle.SetEndRoom("scene_end")
 Game = Battle.SetGame("dummy")
+local requestedWave=tonumber(os.getenv("SPIN_CHARA_WAVE"))
+if requestedWave and not _RELEASED then
+    assert(requestedWave%1==0 and Game.rounds[requestedWave],"Invalid starting wave")
+    Game.round=requestedWave-1
+end
 local items = require("Scripts.Game.Logics.battle_items").New()
 local acts = require("Scripts.Game.Logics.battle_acts").New()
 -- Indexed by enemy._id, then tag name; active only during the upcoming defense.
@@ -123,8 +128,15 @@ Battle.OnHit = OnHit
 -- SetGame loads the encounter before this scene installs its handlers.  Emit
 -- the initial round here so startup and later DEFENDING entries use the same
 -- round bookkeeping.
-if Battle.state == "DEFENDING" and Game.round == 0 then
+if Battle.state == "DEFENDING" and (Game.round == 0 or requestedWave and not _RELEASED) then
+    if requestedWave and not _RELEASED then
+        -- SetGame has already loaded the encounter's default wave01. Replace
+        -- that instance as well as the round number before the first update.
+        if Battle._wave.EndWave then Battle._wave.EndWave() end
+        Battle.ClearWaveModule(Battle.wave)
+    end
     EnterRound()
+    if requestedWave and not _RELEASED then Battle.Defending() end
 end
 
 

@@ -7,6 +7,7 @@ local phase = "intro"
 local blade, blade_x, blade_spent
 local warning_armed, slash_armed, slash_fired, finish_pending
 local intro_typer
+local ownedTypers={}
 local split_arena, split_settling
 local original_box
 
@@ -30,7 +31,11 @@ local function enemyDialogue(lines, callback)
     typer.auto_wrap = true
     typer:ShowBubble(on_left and "right" or "left", 0.5)
     typer.size[1] = width - 20
-    typer._onComplete = callback
+    ownedTypers[typer]=true
+    typer._onComplete = function()
+        ownedTypers[typer]=nil
+        if callback then callback() end
+    end
     return typer
 end
 
@@ -57,6 +62,7 @@ local function dismissBubble(typer)
     Audio.PlaySound("heavyswing.wav")
     typer:HideBubble()
     typer._onComplete = nil
+    ownedTypers[typer]=nil
     typer:Destroy()
     intro_typer = nil
 end
@@ -157,6 +163,12 @@ end
 
 table.insert(wave.objects, {
     Destroy = function()
+        for typer in pairs(ownedTypers) do
+            typer._onComplete=nil
+            typer:Destroy()
+        end
+        ownedTypers={}
+        intro_typer=nil
         restoreArena()
         _G.Wave01Slash = nil
         _G.Wave01Warning = nil

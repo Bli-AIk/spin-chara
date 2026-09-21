@@ -15,7 +15,8 @@ default: run
 # LÖVE 以 cwd 作为源目录，游戏里的 io.open(".reload_trigger") 和 Resources/
 # 相对路径都依赖这一点，所以先 cd 到 justfile 所在目录再启动。
 # `-l/--language` 可覆盖本次启动语言，例如 `just run -l en`。
-# `-w/--workspace` 指定窗口开在哪个工作区：数字 = 对应工作区（默认 9），
+# `-w/--wave` 直接进入指定回合，例如 `just run -w 3`。
+# `--workspace` 指定窗口开在哪个工作区：数字 = 对应工作区（默认 9），
 # auto = 当前工作区。做法是给本次启动一个专属窗口类（SDL_APP_ID），再向
 # Hyprland 注册一条"该类 -> 目标工作区"的运行时规则（no_initial_focus，
 # 不抢焦点）；规则不写进 hyprland 配置，reload 即消失；没有 hyprctl 或不
@@ -27,15 +28,22 @@ run *args:
     # shebang recipe 拿不到 just 的参数，跟原来的写法一样用 {{args}} 自己装回来
     set -- {{args}}
     command -v {{love_bin}} >/dev/null 2>&1 || { echo "找不到 {{love_bin}}：请先安装 AUR 包 love-git，或设 LOVE_BIN=love" >&2; exit 127; }
-    language=""; workspace="9"; previous=""
+    language=""; workspace="9"; wave=""; previous=""
     for argument in "$@"; do
       if [ "$previous" = "language" ]; then language="$argument"; previous=""
       elif [ "$previous" = "workspace" ]; then workspace="$argument"; previous=""
+      elif [ "$previous" = "wave" ]; then wave="$argument"; previous=""
       elif [ "$argument" = "-l" ] || [ "$argument" = "--language" ]; then previous="language"
-      elif [ "$argument" = "-w" ] || [ "$argument" = "--workspace" ]; then previous="workspace"
+      elif [ "$argument" = "-w" ] || [ "$argument" = "--wave" ]; then previous="wave"
+      elif [ "$argument" = "--workspace" ]; then previous="workspace"
       fi
     done
     [ "$previous" != "language" ] || { echo "-l/--language 缺少语言代码" >&2; exit 2; }
+    [ "$previous" != "wave" ] || { echo "-w/--wave 缺少回合编号" >&2; exit 2; }
+    case "$wave" in
+      ""|1|2|3|4|5|6|7|8|9|10) ;;
+      *) echo "-w/--wave 只接受 1–10：$wave" >&2; exit 2 ;;
+    esac
     [ "$previous" != "workspace" ] || { echo "-w/--workspace 缺少参数（数字或 auto）" >&2; exit 2; }
     [ -z "$language" ] || [ -f "{{justfile_directory()}}/Localization/$language.json" ] || { echo "不支持的语言：$language" >&2; exit 2; }
     [ -n "$workspace" ] || workspace="9"
@@ -50,7 +58,7 @@ run *args:
         fi
         ;;
     esac
-    cd "{{justfile_directory()}}" && SDL_APP_ID="$app_id" SPIN_CHARA_LANGUAGE="$language" {{love_bin}} . "$@"
+    cd "{{justfile_directory()}}" && SDL_APP_ID="$app_id" SPIN_CHARA_LANGUAGE="$language" SPIN_CHARA_WAVE="$wave" {{love_bin}} . "$@"
 
 # 默认严格度 3（love.js）；`just check --all` 三种严格度一次对比。
 # 只读，不改代码
