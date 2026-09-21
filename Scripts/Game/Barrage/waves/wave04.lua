@@ -24,6 +24,25 @@ local function randomTarget(m,lo,hi,from)
     if pick<leftLength then return lo+pick end
     return rightStart+(pick-leftLength)
 end
+-- Once the cloth hides the arena the light hunts the soul: it lands on the
+-- player's position at the moment the move begins instead of a random spot, so
+-- standing still is what invites it. The same minimum travel still applies --
+-- a soul already inside the strip is aimed at from the nearest legal distance
+-- and keeps a full-speed escape.
+local function aimedTarget(m,lo,hi,from)
+    local leftEnd=math.min(hi,from-W.minTravel)
+    local rightStart=math.max(lo,from+W.minTravel)
+    local leftLength=math.max(0,leftEnd-lo)
+    local rightLength=math.max(0,hi-rightStart)
+    if leftLength+rightLength<=0 then return math.abs(from-lo)>math.abs(hi-from) and lo or hi end
+    local x=math.max(lo,math.min(hi,m.player.x))
+    if leftLength>0 and x<=leftEnd then return x end
+    if rightLength>0 and x>=rightStart then return x end
+    -- Inside the dead ring the travel would be too short: take the nearer side.
+    if leftLength<=0 then return rightStart end
+    if rightLength<=0 then return leftEnd end
+    return x-leftEnd<rightStart-x and leftEnd or rightStart
+end
 -- Conservative horizontal refuge: before the cloth aim for the light centre;
 -- afterwards clear the lit blade strip including blade width and heart margin.
 function W.safeTargetAt(m,x)
@@ -62,7 +81,8 @@ function W.enter(m)
         m.vars.from=m.vars.centre
         local a=m.arena
         local lo,hi=a.x-a.w/2+m.config.radius+10,a.x+a.w/2-m.config.radius-10
-        local target=randomTarget(m,lo,hi,m.vars.from)
+        local aim=m.curtain and aimedTarget or randomTarget
+        local target=aim(m,lo,hi,m.vars.from)
         m.vars.target=target
         local distance=math.abs(target-m.vars.from)
         m.vars.travelSpeed=W.travelSpeed(distance)
