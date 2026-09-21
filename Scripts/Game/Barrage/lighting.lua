@@ -14,6 +14,11 @@ L.styles={
     {spread=10,middle=.18,outer=.045,floor=.56},
 }
 local shader,circle
+-- Match lightAt's outermost rendered disc, not the knife visibility cutoff.
+function L.outerRadius(radius,style)
+    local profile=L.styles[style or L.ADOPTED_STYLE]
+    return math.max(radius*(profile.coreScale or 1),profile.reach or radius+profile.spread)
+end
 local function lightingShader()
     if not shader then
         circle=love.graphics.newImage(L.circlePath)

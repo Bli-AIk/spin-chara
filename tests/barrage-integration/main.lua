@@ -22,10 +22,30 @@ local function run()
         Battle.ChangeState("DEFENDING")
         local seen,curtain,finished=false,false,false
         local openingSeen,transitionSeen=false,false
+        local radii,overlapping={},false
+        local fourthShots,entrySeen={},false
         for i=1,12000 do
             local m=Battle._wave and Battle._wave.barrage
             if m then
                 seen=true
+                if round==3 and m.vars.squeezeBounds then
+                    local b=m.vars.squeezeBounds
+                    assert(m.vars.squeezeEdge=="left" or m.vars.squeezeEdge=="right",
+                        "Third round may only compress a left or right edge")
+                    assert(math.abs(m.arena.y-m.arena.h/2-b.top)<1e-8
+                        and math.abs(m.arena.y+m.arena.h/2-b.bottom)<1e-8,
+                        "Third round top and bottom must remain fixed")
+                end
+                assert(m.borderThickness==Battle.mainarena.thickness,"Barrage frame must preserve engine border width")
+                if round==4 then
+                    if m.stage==2 then
+                        entrySeen=true
+                        assert(m.lights[1].y<=m.arena.y,"Fourth spotlight slides down into the box")
+                    end
+                    if m.stage==4 or m.stage==6 or m.stage==8 or m.stage==11 or m.stage==13 or m.stage==15 then
+                        fourthShots[m.stage]=true
+                    end
+                end
                 if m.opening then
                     openingSeen=true
                     local o=m.opening
@@ -43,6 +63,12 @@ local function run()
                 assert(m.round==round)
                 assert(m.config.label:sub(1,1)==(round==5 and "A" or round==4 and "D" or "C"))
                 curtain=curtain or m.curtain
+                if round==2 and m.stage>=3 and m.stage<=5 then
+                    radii[m.stage]=m.vars.target.r
+                    if m.phaseTime<m.vars.duration then
+                        for _,k in ipairs(m.knives) do overlapping=overlapping or k.active end
+                    end
+                end
                 Player.hp=20 -- Survive unattended attacks; still run real hit handling.
                 if i==600 then capture="round-"..round..".png" end
             elseif seen and Battle.state=="ACTIONSELECT" then finished=true; break end
@@ -50,6 +76,10 @@ local function run()
         end
         assert(seen and finished,"Real battle round did not finish: "..round)
         assert(openingSeen and transitionSeen,"Opening dialogue and eased resize must both run")
+        if round==2 then
+            assert(radii[3]>radii[4] and radii[4]>radii[5],"Three light moves progressively shrink the core")
+            assert(overlapping,"Knives must launch before the spotlight finishes moving")
+        end
         for _,typer in ipairs(Typers.EText.insts) do assert(not typer.bubble,"Wave left a speech bubble in the action menu") end
         print(string.format("[PROFILE] round %d draw CPU %.2f ms",round,1000*drawTime/math.max(1,drawCount)))
         print(string.format("[PROFILE] round %d update CPU %.2f ms",round,1000*updateTime/math.max(1,updateCount)))
@@ -57,7 +87,11 @@ local function run()
         updateTime,updateCount=0,0
         assert(Battle.mainarena.white.visible and Battle.mainarena.black.visible,
             "Arena visibility must be restored")
-        if round==4 then assert(curtain,"Adopted curtain was not used") end
+        if round==4 then
+            assert(curtain and entrySeen,"Fourth round needs curtain and spotlight entrance")
+            local count=0; for _ in pairs(fourthShots) do count=count+1 end
+            assert(count==6,"Fourth round needs three attacks before and three after the curtain")
+        end
         print("[OK] real round "..round..": selected preset, dialogue, render, completion and cleanup")
     end
     love.event.quit(0)

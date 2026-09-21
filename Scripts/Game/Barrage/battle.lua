@@ -73,6 +73,7 @@ function B.start(round)
     model.dark=false; model.darkAmount=0; model.lights={}; model.knives={}
     model.opening=opening
     wave.barrage=model
+    model.borderThickness=arena.thickness
     arena.move_player=false
     Player.canMove=true
     Player.sprite.Draw=function() end

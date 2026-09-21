@@ -1,4 +1,5 @@
 local C=require((...):match("(.-)[^%.]+$").."common")
+local Lighting=require((...):match("(.-)waves%.").."lighting")
 local W={arena={x=320,y=315,w=454,h=156},knifeEntryDistance=72,
     knifeExitDistance=620,normalSpeedMultiplier=2,minPlayerSpan=24,
     dropDuration=1.05,dropDistance=260,
@@ -23,12 +24,7 @@ end
 local function chooseSqueezeEdge(m)
     local a,p=m.arena,m.player
     local bounds={left=a.x-a.w/2,right=a.x+a.w/2,top=a.y-a.h/2,bottom=a.y+a.h/2}
-    local distances={left=p.x-bounds.left,right=bounds.right-p.x,
-        top=p.y-bounds.top,bottom=bounds.bottom-p.y}
-    local edge,best="left",distances.left
-    for _,name in ipairs({"right","top","bottom"}) do
-        if distances[name]<best then edge,best=name,distances[name] end
-    end
+    local edge=p.x-bounds.left<=bounds.right-p.x and "left" or "right"
     m.vars.squeezeBounds=bounds
     m.vars.squeezeEdge=edge
 end
@@ -37,9 +33,7 @@ local function squeezeArena(m)
     local p=C.ease(m.vars.squeezeTime/m.vars.squeezeDuration)
     local left,right,top,bottom=b.left,b.right,b.top,b.bottom
     if m.vars.squeezeEdge=="left" then left=C.lerp(left,right-W.minPlayerSpan,p)
-    elseif m.vars.squeezeEdge=="right" then right=C.lerp(right,left+W.minPlayerSpan,p)
-    elseif m.vars.squeezeEdge=="top" then top=C.lerp(top,bottom-W.minPlayerSpan,p)
-    else bottom=C.lerp(bottom,top+W.minPlayerSpan,p) end
+    else right=C.lerp(right,left+W.minPlayerSpan,p) end
     m.arena={x=(left+right)/2,y=(top+bottom)/2,w=right-left,h=bottom-top}
 end
 function W.enter(m)
@@ -55,7 +49,7 @@ function W.enter(m)
         layout(m,1); m.dark=true; m.darkAmount=0
         m.vars.rng=c.seed
         local a=m.otherArena
-        m.lights={C.light(a.x,a.y-a.h/2-110,c.radius)}
+        m.lights={C.light(a.x,a.y-a.h/2-Lighting.outerRadius(c.radius,m.lightStyle),c.radius)}
         m.vars.lightFrom={x=a.x,y=a.y}; m.vars.lightTarget=target(m); m.vars.lightTime=0
     elseif s==4 then
         m.caption={"Nap","Wave03.Nap"}
@@ -106,7 +100,7 @@ function W.lighting(m,dt)
         local a=m.otherArena
         local p=C.ease(m.phaseTime/1.2)
         m.darkAmount=p
-        m.lights={C.light(a.x,C.lerp(a.y-a.h/2-110,a.y,p),m.config.radius)}
+        m.lights={C.light(a.x,C.lerp(a.y-a.h/2-Lighting.outerRadius(m.config.radius,m.lightStyle),a.y,p),m.config.radius)}
         return
     end
     if m.stage==5 then

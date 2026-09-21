@@ -25,7 +25,8 @@ function R:draw(m,presentation,debugUnlit)
     local arenas={m.arena}
     if m.otherArena then arenas[#arenas+1]=m.otherArena end
     for _,box in ipairs(arenas) do
-        rect(box.x-box.w/2-4,box.y-box.h/2-4,box.w+8,box.h+8)
+        local border=m.borderThickness or 5
+        rect(box.x-box.w/2-border,box.y-box.h/2-border,box.w+border*2,box.h+border*2)
         rect(box.x-box.w/2,box.y-box.h/2,box.w,box.h,{0,0,0})
     end
     Clip.arenas(arenas)
