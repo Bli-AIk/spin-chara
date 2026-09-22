@@ -56,6 +56,10 @@ bar_kr:MoveTo(bar_pos[1], bar_pos[2])
 bar_kr.xpivot = 0
 bar_kr.xscale = 0
 bar_kr.yscale = 20
+local hp_shader = SE.graphics.newShader("Scripts/Shaders/HPBar.glsl")
+bar_maxhp:SetShaders(hp_shader)
+bar_hp.visible = false -- Keep its public geometry/color API; the shader draws the fill.
+local damage_serial, damage_from, damage_elapsed = 0, 0, 0.5
 
 local ui_font = SE.graphics.newFont("Resources/Fonts/Mars Needs Cunnilingus.ttf", 20, "mono")
 local lit_font = SE.graphics.newFont("Resources/Fonts/8bit-wonder.TTF", 12, "mono")
@@ -117,12 +121,14 @@ local krname = Layers.add_external(function ()
     end
 end, "TopAll")
 local hptext = Layers.add_external(function ()
+    local progress = 1 - math.min(1, Player.hurt_regular / Player.hurt_regular_duration)
+    local hp_color = {1, progress, progress}
     -- The numbers follow the right end of the HP bar; the KR variant leaves a
     -- wider gap because the KR value is appended to them.
     if (not kr_configuration) then
         pos_hptext[1] = text_pos[1] + 165 - ui_font:getWidth(Player.hp .. " / " .. Player.maxhp)
         pos_hptext[2] = text_pos[2] + 28
-        drawOutlinedText(ui_font, Global.GetVariable("MainColor"), Player.hp .. " / " .. Player.maxhp, pos_hptext[1], pos_hptext[2], 2)
+        drawOutlinedText(ui_font, hp_color, Player.hp .. " / " .. Player.maxhp, pos_hptext[1], pos_hptext[2], 2)
     else
         pos_hptext[1] = bar_maxhp.x + bar_maxhp.xscale + 45
         pos_hptext[2] = text_pos[2]
@@ -130,6 +136,7 @@ local hptext = Layers.add_external(function ()
         if (Player.kr > 0) then
             color_ = kr_color
         end
+        if Player.hurt_regular > 0 then color_ = hp_color end
         drawOutlinedText(ui_font, color_, Player.hp + Player.kr .. " / " .. Player.maxhp, pos_hptext[1], pos_hptext[2], 2)
     end
 end, "TopAll")
@@ -258,7 +265,7 @@ function ui.newMissText(text, pos)
     table.insert(ui._notbtexts, t)
 end
 
-function ui.barUpdate()
+function ui.barUpdate(dt)
     bar_maxhp.xscale = math.min(bar_maxlength, Player.maxhp * 1.21)
     bar_hp.xscale = Player.hp / Player.maxhp * bar_maxhp.xscale
 
@@ -284,6 +291,29 @@ function ui.barUpdate()
 
     bar_kr.x = bar_hp.x + bar_hp.xscale
     bar_kr.xscale = Player.kr / Player.maxhp * bar_maxhp.xscale
+
+    local crop = math.max(0, math.min(1, Player.hp / Player.maxhp))
+    if damage_serial ~= Player.hurt_serial then
+        damage_serial = Player.hurt_serial
+        damage_from = Player.hurt_from or crop
+        damage_elapsed = 0
+    else
+        damage_elapsed = math.min(0.5, damage_elapsed + (dt or 1 / 60))
+    end
+    -- Match the template's 0.5-second Ease.OutCirc damage trail.
+    -- Its lifetime is independent of invincibility and healing previews.
+    local t = damage_elapsed / 0.5
+    local ease = math.sqrt(1 - (t - 1) * (t - 1))
+    local trail = crop + math.max(0, damage_from - crop) * (1 - ease)
+    local preview = Battle.state == "ITEMMENU" and Player.hpbar_preview or nil
+    hp_shader:send("crop", crop)
+    hp_shader:send("flash", preview or trail)
+    hp_shader:send("isFlashing", preview and 1 or 0)
+    hp_shader:send("pulse_time", SE.timer.getTime() * 6)
+    local color = bar_hp.color
+    hp_shader:send("colorOn", {color[1], color[2], color[3], 1})
+    hp_shader:send("colorFlash", preview and {color[1], color[2], color[3], 1} or {1, 1, 1, 1})
+    hp_shader:send("colorUnder", {1, 0, 0, 1})
 end
 
 function ui.Update(dt)
@@ -291,7 +321,7 @@ function ui.Update(dt)
     ui.button_selecting = buttons.button_selecting
     state.Update(dt)
 
-    ui.barUpdate()
+    ui.barUpdate(dt)
 
     for i = #ui._bouncetexts, 1, -1
     do
@@ -427,7 +457,7 @@ function ui.GetHPBar()
     return bar_hp
 end
 
---- The max-HP (background) bar (red).
+--- The max-HP shader bar (red background, temporary white damage trail).
 ---@return Sprite
 function ui.GetMaxHPBar()
     return bar_maxhp

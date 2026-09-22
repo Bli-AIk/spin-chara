@@ -92,7 +92,9 @@ function W.enter(m)
         m.vars.safeX=W.safeTarget(m)
         m.vars.spawnDelay=0
         m.vars.shotSpeed=280
-        for x=a.x-a.w/2+5,a.x+a.w/2-5,m.config.spacing do
+        -- Both shadow and curtain volleys use tighter coverage between blades.
+        local spacing=m.config.spacing/2
+        for x=a.x-a.w/2+5,a.x+a.w/2-5,spacing do
             local inLight=false
             for _,l in ipairs(m.lights) do
                 if math.abs(x-l.x)<l.r+12 then inLight=true end

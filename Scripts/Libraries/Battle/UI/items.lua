@@ -57,6 +57,7 @@ local function fit(text, width)
 end
 
 function menu.Clear()
+    Player.hpbar_preview = nil
     for _, row in ipairs(menu.rows) do row.name:Destroy(); row.stat:Destroy() end
     menu.rows = {}
 end
@@ -114,6 +115,10 @@ function menu.Update()
         menu.Refresh()
     end
     UI.state.item_slot = menu.selected
+    local item = Battle.game.items[menu.selected]
+    local heal = item and item.heal
+    Player.hpbar_preview = type(heal) == "number" and heal > 0
+        and math.min(1, (Player.hp + heal) / Player.maxhp) or nil
     Player.sprite:MoveTo(nameX - 20, rowTop + 18 + (menu.selected - menu.first) * rowHeight)
     return menu.selected
 end

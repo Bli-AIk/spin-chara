@@ -22,6 +22,10 @@ local Player = {
     soul = nil,
 
     hurt_time = 0,
+    hurt_regular = 0,
+    hurt_punish = 0,
+    hurt_serial = 0,
+    hurt_regular_duration = 60,
     back_alpha = true,
 
     name = "Tester",
@@ -143,7 +147,17 @@ function Player.Heal(amount, use_sound)
     end
 end
 
-function Player.Hurt(amount, time, use_sound)
+function Player.Hurt(amount, time, use_sound, punish)
+    if amount > 0 then
+        if Player.hurt_time <= 0 and Player.hurt_regular > 0 then
+            amount = amount + Player.hurt_punish
+        end
+        Player.hurt_from = Player.hp / Player.maxhp
+        Player.hurt_serial = Player.hurt_serial + 1
+        Player.hurt_regular = math.max(60, time or 60)
+        Player.hurt_regular_duration = Player.hurt_regular
+        Player.hurt_punish = punish or 0
+    end
     Player.back_alpha = false
     Player.hp = math.max(0, Player.hp - amount)
     Player.hurt_time = (time or 60)
@@ -441,6 +455,8 @@ function Player.UpdatePlatforms(dt)
 end
 
 function Player.Update(dt)
+    Player.hurt_regular = math.max(0, Player.hurt_regular - 1)
+    if Player.hurt_regular == 0 then Player.hurt_punish = 0 end
     if (Player.hp + Player.kr <= 0) then
         Global.SetVariable("PlayerFinalThings", Player.sprite)
         Scenes.switchTo("scene_gameover")

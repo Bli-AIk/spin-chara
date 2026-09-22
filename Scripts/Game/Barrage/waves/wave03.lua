@@ -1,7 +1,7 @@
 local C=require((...):match("(.-)[^%.]+$").."common")
 local Lighting=require((...):match("(.-)waves%.").."lighting")
 local W={arena={x=320,y=315,w=454,h=156},knifeEntryDistance=72,
-    knifeExitDistance=620,normalSpeedMultiplier=2,minPlayerSpan=24,
+    knifeExitDistance=620,normalSpeedMultiplier=2,slowMultiplier=2,minPlayerSpan=24,
     dropDuration=1.05,dropDistance=260,
     stages={"竖劈","双框分离","彼岸亮灯","环刃","收束"}}
 local function layout(m,t)
@@ -137,7 +137,7 @@ function W.update(m,dt)
     elseif s==3 and m.phaseTime>=1.2 then m:next()
     elseif s==4 then
         if m.phaseTime>3 and m:dialogueDone() then m.caption={"Chara","Wave03.Chara"} end
-        m.vars.knifeTime=m.vars.knifeTime+dt*(m.slow and c.slowFactor or W.normalSpeedMultiplier)
+        m.vars.knifeTime=m.vars.knifeTime+dt*(m.slow and c.slowFactor*W.slowMultiplier or W.normalSpeedMultiplier)
         m.vars.squeezeTime=math.min(m.vars.squeezeDuration,m.vars.squeezeTime+dt)
         squeezeArena(m)
         local l=m.lights[1]

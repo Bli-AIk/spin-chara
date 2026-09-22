@@ -2,7 +2,7 @@
 local C={}
 local base={knifeSpeed=140,spacing=25,warning=.85,hold=.8,radius=38,
     lightSpeed=80,slowFactor=.35,orbitSpeed=42,triggerDistance=16,
-    thrustLength=14,thrustTime=.85,damage=1,seed=73,
+    thrustLength=14,thrustTime=.85,damage=3,hurtTime=30,punishDamage=2,seed=73,
     sweepDuration=2.25,stagger=.035,easing="cubic",lightDuration=2.8,
     ringGap=38,ringCount=9,ringDelay=.45,lightWander=2.8,alternate=false,phaseOffset=.23}
 C.presets={
