@@ -1,5 +1,24 @@
-local C=require((...):match("(.-)[^%.]+$").."common")
-local Lighting=require((...):match("(.-)waves%.").."lighting")
+local P="prototypes.barrage-lab.waves."
+local Baseline=require(P.."wave03-baseline")
+local Pattern=require(P.."wave03-pattern")
+local W={}
+for k,v in pairs(Baseline) do W[k]=v end
+function W.enter(m)
+    Baseline.enter(m)
+    if m.stage==4 then Pattern.enter(m) end
+end
+function W.lighting(m,dt)
+    local l=m.lights[1]
+    m.vars.previousLight=l and {x=l.x,y=l.y} or nil
+    Baseline.lighting(m,dt)
+end
+function W.update(m,dt)
+    if m.stage==4 then Pattern.update(m,dt) else Baseline.update(m,dt) end
+end
+return W
+-- Legacy implementation retained below in history; the adapter above is the
+-- only returned wave used by the live battle.
+--[[
 local W={arena={x=320,y=315,w=422,h=156},knifeEntryDistance=72,
     knifeExitDistance=620,normalSpeedMultiplier=2,slowMultiplier=2,minPlayerSpan=32,
     dropDuration=1.05,dropDistance=260,
@@ -189,3 +208,4 @@ function W.update(m,dt)
     end
 end
 return W
+]]
