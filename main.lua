@@ -136,6 +136,13 @@ function GetScreenScale()
     return ScreenScale
 end
 
+--- The 640x480 canvas every scene draws into, before the window scaling.
+--- Readback is what offline recording uses; see tests/wave03-record.
+---@return Canvas
+function GetMainCanvas()
+    return MAIN_CANVAS
+end
+
 function love.load()
     -- Load the initial (deferred) scene synchronously so scene_ is set before
     -- any love.* event (e.g. love.resize) can fire ahead of the first update.

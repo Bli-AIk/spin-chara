@@ -44,6 +44,9 @@ function B.start(round)
     end
     model=Model.new(round,Config.defaults(B.presets[round]),{
         mortal=true,
+        -- SPIN_CHARA_INVINCIBLE: knives still spawn and collide, they just
+        -- never reach Battle.OnHit, so the soul keeps its HP and its alpha.
+        invincible=Battle.Invincible,
         -- The engine already moves the real soul before wave.Update.
         move=function(p) p.x,p.y=Player.sprite.x,Player.sprite.y end,
         hit=function(m)

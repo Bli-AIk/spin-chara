@@ -23,6 +23,18 @@ moving and thrust before it arrives. Knife endpoints follow the live white core.
 Run a defense directly with `just run -w 2` (also 1 through 10). Window workspace
 selection remains available as `--workspace auto` or `--workspace 9`.
 
+`SPIN_CHARA_INVINCIBLE=1` (dev only, ignored in releases) adds `invincible` to the
+model's context, so `Model:hit` counts the contact but never damages, blinks or
+cries out. The gate sits before `player.hurt` is set, because the renderer reads
+that field for the soul's alpha. Use it to watch a defense play out whole:
+`SPIN_CHARA_INVINCIBLE=1 just run -w 3`.
+
+`just record-wave3` builds on it: it runs `tests/wave03-record` headless, takes
+one 1/60 step per drawn frame, reads the main canvas back to a numbered PNG
+sequence and encodes it with ffmpeg. Same command, same frames — the collector
+pins `math.randomseed` and `Controller.GetState`. `just record-wave3 out.mp4 1`
+writes 640x480 instead of the default 2x nearest-neighbour upscale.
+
 Run the real-engine integration check from the project root:
 `xvfb-run -a love-git tests/barrage-integration`.
 It exercises the chosen presets, dialogue, curtain, completion and cleanup.

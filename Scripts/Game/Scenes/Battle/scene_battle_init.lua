@@ -3,6 +3,11 @@ local scene = {}
 -- Import battle module
 Battle = ImportFile("Battle")
 Battle.SetEndRoom("scene_end")
+-- Debug switch for capturing a defense without the soul dying in the middle of
+-- it: `SPIN_CHARA_INVINCIBLE=1 just run -w 3`. Has to be set before SetGame,
+-- because the dummy encounter opens in DEFENDING and SetGame immediately runs
+-- ChangeState -> Defending -> Barrage.start.
+if os.getenv("SPIN_CHARA_INVINCIBLE") and not _RELEASED then Battle.Invincible = true end
 Game = Battle.SetGame("dummy")
 local requestedWave=tonumber(os.getenv("SPIN_CHARA_WAVE"))
 if requestedWave and not _RELEASED then

@@ -2,3 +2,6 @@
 .helix/
 
 /prototypes/
+
+# just record-wave3 的成片
+/recordings/
