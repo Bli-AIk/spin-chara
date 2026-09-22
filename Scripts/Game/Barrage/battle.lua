@@ -63,6 +63,11 @@ function B.start(round)
                 local a=m.wave.arena
                 fx=Slash.New({x=a.x,y=a.y,width=a.w,height=a.h,thickness=4})
                 fx:Strike()
+                -- This beat cuts the frame in two just like round one's opening
+                -- slash, so both of its samples play here, in the same order:
+                -- the swing lands with the blade and the cut with the box.
+                Audio.PlaySound("heavyswing.wav")
+                Audio.PlaySound("disappear.wav")
             end
         end,
         update=function(m)
