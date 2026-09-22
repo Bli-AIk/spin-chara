@@ -104,14 +104,14 @@ local function OnHit(bullet)
     color = color:lower()
 
     if (color == "normal") then
-        Player.Hurt(damage, bullet.spin_hurt_time, nil, bullet.spin_punish)
+        Player.Hurt(damage, bullet.spin_hurt_time, true, bullet.spin_punish)
     elseif (color == "blue" or color == "cyan") then
         if (Controller.GetState("arrows") > 0) then
-            Player.Hurt(damage, bullet.spin_hurt_time, nil, bullet.spin_punish)
+            Player.Hurt(damage, bullet.spin_hurt_time, true, bullet.spin_punish)
         end
     elseif (color == "orange") then
         if (Controller.GetState("arrows") <= 0) then
-            Player.Hurt(damage, bullet.spin_hurt_time, nil, bullet.spin_punish)
+            Player.Hurt(damage, bullet.spin_hurt_time, true, bullet.spin_punish)
         end
     end
 end
