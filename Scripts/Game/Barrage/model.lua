@@ -48,7 +48,7 @@ function Model:lit(x,y)
     end
     return false
 end
-function Model:hit()
+function Model:hit(amount)
     if self.player.hurt > 0 then return false end
     self.hits=self.hits+1
     -- Recording/debug: still count the contact, but never damage, blink or cry
@@ -56,7 +56,7 @@ function Model:hit()
     -- field to pick the soul's alpha, so leaving it set would pin the heart at
     -- 0.4 opacity for as long as it stays inside the knife field.
     if self.context.invincible then return true end
-    self.player.hp=math.max(0,self.player.hp-self.config.damage)
+    self.player.hp=math.max(0,self.player.hp-(amount or self.config.damage))
     self.player.hurt=1
     if self.context.hit then self.context.hit(self) end
     return true

@@ -1,7 +1,7 @@
 local C=require((...):match("(.-)[^%.]+$").."common")
 local Lighting=require((...):match("(.-)waves%.").."lighting")
-local W={arena={x=320,y=315,w=454,h=156},knifeEntryDistance=72,
-    knifeExitDistance=620,normalSpeedMultiplier=2,slowMultiplier=2,minPlayerSpan=24,
+local W={arena={x=320,y=315,w=422,h=156},knifeEntryDistance=72,
+    knifeExitDistance=620,normalSpeedMultiplier=2,slowMultiplier=2,minPlayerSpan=32,
     dropDuration=1.05,dropDistance=260,
     stages={"竖劈","双框分离","彼岸亮灯","环刃","收束"}}
 local function layout(m,t)
@@ -24,7 +24,10 @@ end
 local function chooseSqueezeEdge(m)
     local a,p=m.arena,m.player
     local bounds={left=a.x-a.w/2,right=a.x+a.w/2,top=a.y-a.h/2,bottom=a.y+a.h/2}
-    local edge=p.x-bounds.left<=bounds.right-p.x and "left" or "right"
+    -- Compress the player's box toward the spotlight box, independent of the
+    -- player's current position: left-side player pulls from the left wall,
+    -- right-side player pulls from the right wall.
+    local edge=m.vars.side==-1 and "left" or "right"
     m.vars.squeezeBounds=bounds
     m.vars.squeezeEdge=edge
 end
@@ -128,7 +131,7 @@ function W.update(m,dt)
     if s==1 then
         if m:dialogueDone() then m.vars.warnStart=m.vars.warnStart or m.phaseTime end
         if m.vars.warnStart and m.phaseTime-m.vars.warnStart>=.45 then
-            if math.abs(m.player.x-W.arena.x)<=3 then m:hit() end
+            if math.abs(m.player.x-W.arena.x)<=3 then m:hit(10) end
             m:next()
         end
     elseif s==2 then
