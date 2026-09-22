@@ -5,7 +5,12 @@ local W={}
 for k,v in pairs(Baseline) do W[k]=v end
 function W.enter(m)
     Baseline.enter(m)
-    if m.stage==4 then Pattern.enter(m) end
+    if m.stage==4 then
+        -- Live round three is the D demonstration, including its timing
+        -- variant, rather than the old production preset.
+        m.config.wave03Variant="reverseslow"
+        Pattern.enter(m)
+    end
 end
 function W.lighting(m,dt)
     local l=m.lights[1]
