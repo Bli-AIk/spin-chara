@@ -70,37 +70,6 @@ test:
     @cd "{{justfile_directory()}}" && xvfb-run -a env ALSOFT_DRIVERS=null {{love_bin}} tests/template-update
     @cd "{{justfile_directory()}}" && xvfb-run -a env ALSOFT_DRIVERS=null SPIN_TEST_RELEASE=1 {{love_bin}} tests/template-update
 
-# 录制第三回合完整弹幕（玩家无敌 + 逐帧 1:1 抓取），再合成 mp4。
-# 画面取自 640x480 的游戏主画布，用 ffmpeg 最近邻放大 scale 倍，因此不受窗口
-# 尺寸、合成器、虚拟屏分辨率和光标影响，同一命令重跑逐帧一致。
-# 用法：just record-wave3 [输出路径] [放大倍数]，例如 just record-wave3 out.mp4 1
-record-wave3 out="recordings/wave03-barrage.mp4" scale="2":
-    #!/bin/sh
-    set -eu
-    command -v {{love_bin}} >/dev/null 2>&1 || { echo "找不到 {{love_bin}}：请先安装 AUR 包 love-git，或设 LOVE_BIN=love" >&2; exit 127; }
-    command -v ffmpeg >/dev/null 2>&1 || { echo "找不到 ffmpeg" >&2; exit 127; }
-    # 帧目录交给 mktemp 管：上一轮残留的高编号帧会被 image2 解复用器一起编进去
-    frames=$(mktemp -d)
-    trap 'rm -rf "$frames"' EXIT INT TERM
-    cd "{{justfile_directory()}}"
-    xvfb-run -a env ALSOFT_DRIVERS=null \
-        SPIN_CHARA_WAVE=3 SPIN_CHARA_INVINCIBLE=1 SPIN_RECORD_DIR="$frames" \
-        {{love_bin}} tests/wave03-record
-    count=$(ls -1 "$frames" | wc -l)
-    [ "$count" -gt 1000 ] || { echo "帧数异常：$count" >&2; exit 1; }
-    if [ "{{scale}}" = "1" ]; then
-        vf="format=yuv420p"
-    else
-        vf="scale=iw*{{scale}}:ih*{{scale}}:flags=neighbor,format=yuv420p"
-    fi
-    mkdir -p "$(dirname '{{out}}')"
-    ffmpeg -y -framerate 60 -i "$frames/%05d.png" -vf "$vf" \
-        -c:v libx264 -preset slow -crf 12 -tune animation -movflags +faststart \
-        -r 60 "{{out}}"
-    ffprobe -v error -select_streams v:0 \
-        -show_entries stream=nb_frames,width,height,r_frame_rate:format=duration \
-        -of default=nw=1 "{{out}}"
-
 # 打包工具（tkinter GUI）
 pack:
     @cd "{{justfile_directory()}}" && python3 Packager/build_tool.py

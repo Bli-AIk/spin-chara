@@ -137,7 +137,6 @@ function GetScreenScale()
 end
 
 --- The 640x480 canvas every scene draws into, before the window scaling.
---- Readback is what offline recording uses; see tests/wave03-record.
 ---@return Canvas
 function GetMainCanvas()
     return MAIN_CANVAS

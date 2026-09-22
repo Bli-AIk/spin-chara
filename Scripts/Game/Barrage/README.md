@@ -29,12 +29,6 @@ cries out. The gate sits before `player.hurt` is set, because the renderer reads
 that field for the soul's alpha. Use it to watch a defense play out whole:
 `SPIN_CHARA_INVINCIBLE=1 just run -w 3`.
 
-`just record-wave3` builds on it: it runs `tests/wave03-record` headless, takes
-one 1/60 step per drawn frame, reads the main canvas back to a numbered PNG
-sequence and encodes it with ffmpeg. Same command, same frames — the collector
-pins `math.randomseed` and `Controller.GetState`. `just record-wave3 out.mp4 1`
-writes 640x480 instead of the default 2x nearest-neighbour upscale.
-
 Run the real-engine integration check from the project root:
 `xvfb-run -a love-git tests/barrage-integration`.
 It exercises the chosen presets, dialogue, curtain, completion and cleanup.
