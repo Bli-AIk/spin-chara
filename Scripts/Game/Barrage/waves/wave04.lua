@@ -75,7 +75,7 @@ function W.enter(m)
         m.curtain=true
         Curtain.applyAdopted(m)
         Curtain.transition(m,"enter")
-        m.caption={"Chara","Wave04.Curtain"}
+        m.caption={"Chara","Wave04.Curtain","intermediate"}
     elseif s==16 then
         Curtain.transition(m,"exit")
     elseif moving[s] then

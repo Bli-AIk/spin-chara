@@ -4,6 +4,7 @@ local Pattern=require(P.."wave03-pattern")
 local C=require((...):match("(.-)[^%.]+$").."common")
 local W={}
 for k,v in pairs(Baseline) do W[k]=v end
+W.minPlayerSpan=(W.minPlayerSpan or 32)*2
 -- Keep the orbit wider than the old random wander.
 local ORBIT_SCALE=1.8
 local ENTRY_DURATION=1.2
@@ -25,6 +26,7 @@ function W.enter(m)
     elseif m.stage==4 then
         -- Live round three is the D demonstration, including its timing
         -- variant, rather than the old production preset.
+        m.caption={"Nap","Wave03.Nap","intermediate"}
         m.config.wave03Variant="reverseslow"
         m.vars.lightOrbitTime=0
         Pattern.enter(m)

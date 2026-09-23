@@ -19,7 +19,7 @@
   "Battle.WinTexts1": "* 你赢了！[wait:0.5]\n* 你获得了 %s XP 和 %s 金钱。\n",
   "Battle.WinTexts2": "* 你的LOVE提升了！",
 
-  "Battle.GameoverText": ["* 我们的命运都\n  寄托于你...", "* %s![wait:0.5]\n  保持你的决心..."],
+  "Battle.GameoverText": ["不...\n  不要这样——", "%s![wait:0.5]\n  保持你的决心..."],
 
   "Battle.EnemiesName.Chara": "Chara",
   "Battle.EnemiesName.Napstablook": "Napstablook",

@@ -10,7 +10,7 @@ function B.start(round)
     local wave=ImportFile("Battle.Waves")
     local arena=Battle.mainarena
     local renderer=Renderer.new()
-    local model,bubble,caption,fx,overlay
+    local model,bubble,caption,captionKind,captionFinished,captionHold,fx,overlay
     local complete=true
     local oldDraw=Player.sprite.Draw
     local oldMove=arena.move_player
@@ -21,19 +21,51 @@ function B.start(round)
     end
     local function syncDialogue(m)
         local key=m.caption and m.caption[2]
-        if key==caption then return end
-        clearBubble(); caption=key; complete=not key
         if not key then return end
-        local nap=m.caption[1]=="Nap"
+        if key==caption then return end
+        clearBubble()
+        caption=key
+        captionKind=m.caption[3] or (m.stage==1 and "opening" or "final")
+        captionFinished=false
+        captionHold=0
+        complete=false
+        local speaker=m.caption[1]
+        local enemyIndex=speaker=="Nap" and 2 or 1
+        local enemy=Battle.game and Battle.game.enemies and Battle.game.enemies[enemyIndex]
+        local position=enemy and enemy.position or {speaker=="Nap" and 520 or 320,120}
+        local width,height=210,100
+        local x=math.max(25,position[1]-width-45)
+        local y=math.max(35,position[2]-height/2+10)
         local text=Localize.localizeText("Battle.BarrageLab."..key)
         assert(type(text)=="string","Missing barrage localization: "..key)
-        bubble=Typers.EText.New({"[colorHEX:000000]"..text.."[next]"},
-            {nap and 355 or 55,70},"BarrageDialogue",{210,100},"none")
+        bubble=Typers.EText.New({"[colorHEX:000000]"..text},
+            {x,y},"BarrageDialogue",{width,height},"none")
         bubble.font="speechbubble.ttf"; bubble.fontsize=13
         bubble.use_bondfont=false; bubble.scale=1; bubble.line_spacing=0
-        bubble.auto_wrap=true; bubble:ShowBubble(nap and "left" or "right",.5)
-        bubble.size[1]=190
-        bubble._onComplete=function() bubble=nil; complete=true end
+        bubble.skip.canskip=false
+        bubble.auto_wrap=true; bubble:ShowBubble("right",.5)
+        bubble.size[1]=width-20
+    end
+    local function updateDialogue(dt)
+        if not bubble then return end
+        -- A trailing [wait:] must finish before the line counts as spoken.
+        if bubble.counter<=#bubble.texts[1] or not bubble.cantype then return end
+        if not captionFinished then
+            captionFinished=true
+            if captionKind=="opening" then return end
+        end
+        if captionKind=="opening" then
+            if Controller.GetState("confirm")==1 then
+                clearBubble()
+                complete=true
+            end
+        else
+            complete=true
+            if captionKind=="final" then
+                captionHold=captionHold+dt
+                if captionHold>=2 then clearBubble() end
+            end
+        end
     end
     Layers.new_layer("BarrageDialogue",61)
     local function syncArena(m)
@@ -117,6 +149,7 @@ function B.start(round)
     function wave.Update(dt)
         model.player.hp=Player.hp
         model.player.hurt=math.max(0,Player.hurt_time/60)
+        updateDialogue(dt)
         if opening then
             -- Dialogue advances through the engine while the attack simulation
             -- remains stopped. Only start resizing after the final pause.
@@ -152,7 +185,7 @@ function B.start(round)
         end
         model:update(dt,{slow=Controller.GetState("cancel")>0})
         syncArena(model)
-        if model.done then wave.EndWave() end
+        if model.done and not bubble then wave.EndWave() end
     end
     return wave
 end

@@ -7,6 +7,8 @@ local phase = "intro"
 local blade, blade_x, blade_spent
 local warning_armed, slash_armed, slash_fired, finish_pending
 local intro_typer
+local intro_ready_index, intro_ready
+local outro_typer, outro_ready_index, outro_hold
 local ownedTypers={}
 local split_arena, split_settling
 local original_box
@@ -22,12 +24,13 @@ local function enemyDialogue(lines, callback)
     local colored = {}
     for i, line in ipairs(lines) do colored[i] = "[colorHEX:000000]" .. line end
     local typer = Typers.EText.New(colored,
-        {bx, math.max(35, y - height / 2 + 10)}, "UponArena", {width, height}, "manual")
+        {bx, math.max(35, y - height / 2 + 10)}, "UponArena", {width, height}, "none")
     typer.font = "speechbubble.ttf"
     typer.fontsize = 13
     typer.use_bondfont = false
     typer.scale = 1
     typer.line_spacing = 0
+    typer.skip.canskip = false
     typer.auto_wrap = true
     typer:ShowBubble(on_left and "right" or "left", 0.5)
     typer.size[1] = width - 20
@@ -55,16 +58,6 @@ end
 
 _G.Wave01Warning = function ()
     if not slash_fired and not blade then warning_armed = true end
-end
-
-local function dismissBubble(typer)
-    if (not typer) then return end
-    Audio.PlaySound("heavyswing.wav")
-    typer:HideBubble()
-    typer._onComplete = nil
-    ownedTypers[typer]=nil
-    typer:Destroy()
-    intro_typer = nil
 end
 
 local function removeBlade()
@@ -148,7 +141,10 @@ end
 
 local function startOutro()
     phase = "outro"
-    enemyDialogue(localizedLines("Battle.Waves.Wave01.Outro"), finishWave)
+    outro_typer = enemyDialogue(localizedLines("Battle.Waves.Wave01.Outro"), function()
+        outro_typer=nil
+        finishWave()
+    end)
 end
 
 local function introComplete()
@@ -186,17 +182,50 @@ function wave.Update(dt)
         startIntro()
     end
 
+    if intro_typer then
+        local index=intro_typer.sentence_index
+        if intro_ready_index~=index then
+            intro_ready_index=index
+            intro_ready=false
+        end
+        local line=intro_typer.texts[index]
+        local ready=line and intro_typer.counter>#line and intro_typer.cantype
+        if ready then
+            if intro_ready and Controller.GetState("confirm")==1 then
+                intro_typer.pending_next=true
+            end
+            intro_ready=true
+        else
+            intro_ready=false
+        end
+    end
+
+    if outro_typer then
+        local index=outro_typer.sentence_index
+        if outro_ready_index~=index then
+            outro_ready_index=index
+            outro_hold=0
+        end
+        local line=outro_typer.texts[index]
+        if line and outro_typer.counter>#line and outro_typer.cantype then
+            outro_hold=outro_hold+dt
+            if outro_hold>=(index==#outro_typer.texts and 2 or .5) then
+                outro_typer.pending_next=true
+            end
+        end
+    end
+
     if warning_armed then
         warning_armed = false
         if not blade and not slash_fired then startBlade() end
     end
 
-    if (slash_armed and not slash_fired) then
+    if (slash_armed and not slash_fired and not intro_typer) then
         slash_armed = false
         slash_fired = true
         if not blade then startBlade() end
         blade:Strike()
-        dismissBubble(intro_typer)
+        Audio.PlaySound("heavyswing.wav")
     end
 
     if blade then
