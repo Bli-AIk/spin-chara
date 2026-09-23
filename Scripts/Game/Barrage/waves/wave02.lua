@@ -1,11 +1,17 @@
 local C=require((...):match("(.-)[^%.]+$").."common")
 local Lighting=require((...):match("(.-)waves%.").."lighting")
+-- Five repositioning moves. The core shrinks evenly across them and ends at
+-- half the radius the three-move schedule's last move used to leave.
+local FIRST_MOVE,MOVES=3,5
+local LAST_MOVE,CLOSING=FIRST_MOVE+MOVES-1,FIRST_MOVE+MOVES
+local LAST_SCALE=.58/2
 -- The engine's own defense box, kept as it is: the barrage starts with the box
 -- already on screen, so nothing about it moves and the whole opening beat goes
 -- to the spotlight. Easing onto a box of nearly the same size only read as a
 -- twitch.
 local W={arena={x=320,y=315,w=155,h=130},reusesIncomingBox=true,entryDuration=1.5,
-    stages={"对白","关灯与聚光灯入场","第一次换位","第二次换位","第三次换位","收束"}}
+    stages={"对白","关灯与聚光灯入场","第一次换位","第二次换位","第三次换位",
+        "第四次换位","第五次换位","收束"}}
 local function randomTarget(a,from,radius)
     local margin=radius+6
     local best,bestDistance
@@ -26,8 +32,8 @@ function W.enter(m)
     if s==1 then m.lights={} end
     local l=m.lights[1] or C.light(W.arena.x,W.arena.y,c.radius)
     m.vars.from={x=l.x,y=l.y,r=l.r}
-    local attacking=s>=3 and s<=5
-    local radius=attacking and c.radius*({.88,.73,.58})[s-2] or l.r
+    local attacking=s>=FIRST_MOVE and s<=LAST_MOVE
+    local radius=attacking and c.radius*(1-(1-LAST_SCALE)*(s-FIRST_MOVE+1)/MOVES) or l.r
     m.vars.target=attacking and randomTarget(m.arena,m.vars.from,radius) or {x=l.x,y=l.y}
     m.vars.target.r=radius
     m.vars.duration=attacking and c.wave02Light or .4
@@ -94,7 +100,7 @@ function W.update(m)
         return
     end
     if #m.knives==0 then
-        if m.phaseTime>m.vars.duration+(s==6 and .10 or .35) then m:next() end
+        if m.phaseTime>m.vars.duration+(s==CLOSING and .10 or .35) then m:next() end
         return
     end
     local finished=true
@@ -112,7 +118,12 @@ function W.update(m)
             k.active=false
         elseif t<thrust then
             local light=m.lights[1]
-            local core=light.r*34/38
+            -- Blades ring the light on the white core's circle, and that circle
+            -- is never tighter than one blade: once the core shrinks below the
+            -- blade's own reach no knife crosses it any more, so the whole fan
+            -- would thrust past the light to the far edge instead of going
+            -- around it.
+            local core=math.max(light.r*34/38,30*k.scale)
             local perpendicularLight=k.axis=="x" and light.y or light.x
             local delta=math.abs(k.perpendicular-perpendicularLight)
             local desired

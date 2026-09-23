@@ -24,6 +24,8 @@ local function run()
         local openingSeen,transitionSeen=false,false
         local radii,overlapping={},false
         local fan={}
+        local ring={}
+        local lightRadius
         local fourthShots,entrySeen={},false
         for i=1,12000 do
             local m=Battle._wave and Battle._wave.barrage
@@ -70,8 +72,9 @@ local function run()
                 assert(m.round==round)
                 assert(m.config.label:sub(1,1)==(round==5 and "A" or round==4 and "D" or "C"))
                 curtain=curtain or m.curtain
-                if round==2 and m.stage>=3 and m.stage<=5 then
+                if round==2 and m.stage>=3 and m.stage<=7 then
                     radii[m.stage]=m.vars.target.r
+                    lightRadius=m.config.radius
                     if not fan[m.stage] and #m.knives>0 then
                         fan[m.stage]=true
                         -- The fan is centred on the box, so the blades straddle
@@ -93,6 +96,19 @@ local function run()
                     if m.phaseTime<m.vars.duration then
                         for _,k in ipairs(m.knives) do overlapping=overlapping or k.active end
                     end
+                    -- Once the thrust is over, the fan must still be skirting the
+                    -- light: a fan whose blades all travelled the same distance
+                    -- went straight past it and stabbed the far edge.
+                    if not ring[m.stage] and m.phaseTime>m.vars.duration+.15 then
+                        ring[m.stage]=true
+                        local near,far=math.huge,-1
+                        for _,k in ipairs(m.knives) do
+                            local travel=math.abs(k.stop-k.start)
+                            near,far=math.min(near,travel),math.max(far,travel)
+                        end
+                        assert(far-near>1e-9,
+                            "Round 2 knives must ring the light, not thrust past it")
+                    end
                 end
                 Player.hp=20 -- Survive unattended attacks; still run real hit handling.
                 if i==600 then capture="round-"..round..".png" end
@@ -103,7 +119,16 @@ local function run()
         assert(openingSeen,"Opening dialogue must run before the attacks")
         if round~=2 then assert(transitionSeen,"Opening resize must be eased, not snapped") end
         if round==2 then
-            assert(radii[3]>radii[4] and radii[4]>radii[5],"Three light moves progressively shrink the core")
+            local moves=0
+            for _ in pairs(radii) do moves=moves+1 end
+            assert(moves==5,"Round 2 must reposition the spotlight five times, saw "..moves)
+            for stage=4,7 do
+                assert(radii[stage-1]>radii[stage],"Every light move must shrink the core")
+            end
+            -- The five moves end at half the radius the three-move schedule
+            -- used to leave on its last move (58% of the full one).
+            assert(math.abs(radii[7]/lightRadius-.29)<1e-9,
+                "The fifth move must leave the core at half the old minimum")
             assert(overlapping,"Knives must launch before the spotlight finishes moving")
         end
         for _,typer in ipairs(Typers.EText.insts) do assert(not typer.bubble,"Wave left a speech bubble in the action menu") end
