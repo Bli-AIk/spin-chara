@@ -79,6 +79,9 @@ function B.start(round)
         end,
     })
     opening.target=Model.copy(model.arena)
+    -- A wave that keeps the incoming box has nothing to resize, so its opening
+    -- is only the hold that keeps the model paused for Chara's line.
+    opening.duration=model.wave.reusesIncomingBox and 0 or .8
     opening.dark,opening.darkAmount=model.dark,model.darkAmount
     opening.lights,opening.knives=model.lights,model.knives
     model.arena=Model.copy(opening.from)
@@ -113,7 +116,9 @@ function B.start(round)
             -- Dialogue advances through the engine while the attack simulation
             -- remains stopped. Only start resizing after the final pause.
             if complete then opening.time=math.min(opening.duration,opening.time+dt) end
-            local progress=Ease.curve("quart",opening.time/opening.duration)
+            -- A zero-length opening still has to wait for the line, so the
+            -- run is gated on `complete` and not on the clock alone.
+            local progress=opening.duration>0 and Ease.curve("quart",opening.time/opening.duration) or 1
             for _,key in ipairs({"x","y","w","h"}) do
                 model.arena[key]=Ease.lerp(opening.from[key],opening.target[key],progress)
             end
@@ -121,7 +126,7 @@ function B.start(round)
             model.player.x=math.max(a.x-a.w/2+8,math.min(a.x+a.w/2-8,Player.sprite.x))
             model.player.y=math.max(a.y-a.h/2+8,math.min(a.y+a.h/2-8,Player.sprite.y))
             syncArena(model)
-            if opening.time>=opening.duration then
+            if complete and progress>=1 then
                 model.dark,model.darkAmount=opening.dark,opening.darkAmount
                 model.lights,model.knives=opening.lights,opening.knives
                 model.opening=nil; opening=nil

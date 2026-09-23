@@ -23,6 +23,7 @@ local function run()
         local seen,curtain,finished=false,false,false
         local openingSeen,transitionSeen=false,false
         local radii,overlapping={},false
+        local fan={}
         local fourthShots,entrySeen={},false
         for i=1,12000 do
             local m=Battle._wave and Battle._wave.barrage
@@ -51,7 +52,13 @@ local function run()
                     local o=m.opening
                     assert(m.stage==1 and m.attackTime==0 and #m.knives==0,
                         "No attack may run during opening dialogue or resizing")
-                    if o.time==0 then
+                    if o.duration==0 then
+                        -- A wave that keeps the incoming box holds the model for
+                        -- the line alone, so the box may not move at all.
+                        assert(m.arena.x==o.from.x and m.arena.y==o.from.y
+                            and m.arena.w==o.from.w and m.arena.h==o.from.h,
+                            "Reusing the incoming box must not resize it")
+                    elseif o.time==0 then
                         assert(m.arena.w==o.from.w and m.arena.h==o.from.h,
                             "Opening dialogue must preserve the incoming arena")
                     elseif o.time<o.duration then
@@ -65,6 +72,24 @@ local function run()
                 curtain=curtain or m.curtain
                 if round==2 and m.stage>=3 and m.stage<=5 then
                     radii[m.stage]=m.vars.target.r
+                    if not fan[m.stage] and #m.knives>0 then
+                        fan[m.stage]=true
+                        -- The fan is centred on the box, so the blades straddle
+                        -- the centre line and an odd count puts one on it.
+                        local axis=m.knives[1].axis
+                        local centre=axis=="x" and m.arena.y or m.arena.x
+                        local positions={}
+                        for _,k in ipairs(m.knives) do positions[#positions+1]=k.perpendicular end
+                        table.sort(positions)
+                        for i=1,#positions do
+                            assert(math.abs(positions[i]+positions[#positions+1-i]-2*centre)<1e-9,
+                                "Round 2 knives must straddle the box centre symmetrically")
+                        end
+                        if #positions%2==1 then
+                            assert(math.abs(positions[(#positions+1)/2]-centre)<1e-9,
+                                "Round 2's middle knife must sit on the box centre line")
+                        end
+                    end
                     if m.phaseTime<m.vars.duration then
                         for _,k in ipairs(m.knives) do overlapping=overlapping or k.active end
                     end
@@ -75,7 +100,8 @@ local function run()
             frames(1)
         end
         assert(seen and finished,"Real battle round did not finish: "..round)
-        assert(openingSeen and transitionSeen,"Opening dialogue and eased resize must both run")
+        assert(openingSeen,"Opening dialogue must run before the attacks")
+        if round~=2 then assert(transitionSeen,"Opening resize must be eased, not snapped") end
         if round==2 then
             assert(radii[3]>radii[4] and radii[4]>radii[5],"Three light moves progressively shrink the core")
             assert(overlapping,"Knives must launch before the spotlight finishes moving")

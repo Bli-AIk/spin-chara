@@ -1,6 +1,10 @@
 local C=require((...):match("(.-)[^%.]+$").."common")
 local Lighting=require((...):match("(.-)waves%.").."lighting")
-local W={arena={x=320,y=290,w=180,h=156},entryDuration=1.5,
+-- The engine's own defense box, kept as it is: the barrage starts with the box
+-- already on screen, so nothing about it moves and the whole opening beat goes
+-- to the spotlight. Easing onto a box of nearly the same size only read as a
+-- twitch.
+local W={arena={x=320,y=315,w=155,h=130},reusesIncomingBox=true,entryDuration=1.5,
     stages={"对白","关灯与聚光灯入场","第一次换位","第二次换位","第三次换位","收束"}}
 local function randomTarget(a,from,radius)
     local margin=radius+6
@@ -35,14 +39,20 @@ function W.enter(m)
         local a=m.arena
         local tip=30*.78
         local start=horizontal and a.x-sign*(a.w/2+tip+1) or a.y-sign*(a.h/2+tip+1)
-        local lo=horizontal and a.y-a.h/2+10 or a.x-a.w/2+10
-        local hi=horizontal and a.y+a.h/2-10 or a.x+a.w/2-10
-        for v=lo,hi,c.spacing do
+        -- Lay the fan out about the middle of the box instead of stacking it
+        -- from one edge: a blade then sits on the centre line whenever the
+        -- count is odd, and both ends keep the same clearance.
+        local centre=horizontal and a.y or a.x
+        local span=(horizontal and a.h or a.w)-20
+        local count=math.floor(span/c.spacing)+1
+        local first=centre-(count-1)*c.spacing/2
+        for i=0,count-1 do
+            local v=first+i*c.spacing
             local k=m:knife(horizontal and start or v,horizontal and v or start,
                 horizontal and (sign<0 and math.pi or 0) or sign*math.pi/2,.78)
             k.start,k.stop,k.sign,k.axis=start,start,sign,horizontal and "x" or "y"
             k.perpendicular=v
-            local distanceFromCentre=math.abs(v-(lo+hi)/2)/c.spacing
+            local distanceFromCentre=math.abs(v-centre)/c.spacing
             if c.wave02Pattern=="centre" then
                 k.delay=distanceFromCentre*c.wave02Stagger
             elseif c.wave02Pattern=="alternate" then
@@ -58,7 +68,10 @@ function W.lighting(m)
     if m.stage==2 then
         local opening=C.curve("quart",m.phaseTime/W.entryDuration)
         m.darkAmount=opening
-        local light=C.light(320,C.lerp(m.arena.y-m.arena.h/2-Lighting.outerRadius(m.config.radius,m.lightStyle),290,opening),m.config.radius)
+        -- From one halo radius above the box's top edge down to the light's
+        -- resting place in the middle of the box.
+        local top=m.arena.y-m.arena.h/2
+        local light=C.light(320,C.lerp(top-Lighting.outerRadius(m.config.radius,m.lightStyle),m.arena.y,opening),m.config.radius)
         m.lights={light}
         return
     end
@@ -69,7 +82,11 @@ end
 function W.update(m)
     local s,c=m.stage,m.config
     if s==1 then
-        if m.phaseTime>.7 and m:dialogueDone() then m:next() end
+        -- The dialogue is the beat. The battle freezes this model for the whole
+        -- line, so a beat counted from phaseTime is served after it and reads
+        -- as a late spotlight: the entrance has to start on the first update
+        -- after the line closes.
+        if m:dialogueDone() then m:next() end
         return
     end
     if s==2 then
