@@ -1,7 +1,7 @@
 -- Round three cuts its frame in two just like round one's opening does, so it
--- has to sound exactly like it: the heavy swing and the cut both land on the
--- stage 1 -> 2 beat, each exactly once, while the warning stage before it stays
--- silent.
+-- has to sound exactly like it: the heavy swing and the cut's pair all land on
+-- the stage 1 -> 2 beat, each exactly once, while the warning stage before it
+-- stays silent.
 --
 -- Run from the project root:
 --   xvfb-run -a env ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=3 SPIN_CHARA_INVINCIBLE=1 \
@@ -12,9 +12,10 @@ local gameLoad,gameUpdate,gameDraw=love.load,love.update,love.draw
 local task
 
 -- Round one's opening slash, by name and in the order it plays them: the swing
--- goes with the blade, the cut with the box splitting in two.
-local SWING,CUT="heavyswing.wav","disappear.wav"
-local SAMPLES={SWING,CUT}
+-- goes with the blade, then the cut with the box splitting in two, which owns
+-- both of the samples left after it.
+local SWING,CUT,KNIFE="heavyswing.wav","disappear.wav","knife.wav"
+local SAMPLES={SWING,CUT,KNIFE}
 
 local function frames(n) for _=1,n do coroutine.yield() end end
 
@@ -45,7 +46,7 @@ local function run()
 
     local names,stop=recordSounds()
 
-    -- The warning stage is silent; both samples belong to the beat the slash
+    -- The warning stage is silent; every sample belongs to the beat the slash
     -- actually falls on, which is the first frame of the stage that splits the
     -- frame in two.
     local struckAt
@@ -60,10 +61,10 @@ local function run()
         assert(count(names,sample)==1,
             "round three must play "..sample.." once, got "..count(names,sample))
     end
-    print(string.format("[SLASH] %s + %s on frame %d, the frame is cut on stage %d",
-        SWING,CUT,struckAt,model.stage))
+    print(string.format("[SLASH] %s + %s + %s on frame %d, the frame is cut on stage %d",
+        SWING,CUT,KNIFE,struckAt,model.stage))
 
-    -- The slash keeps sweeping long after the cut; neither sample may retrigger
+    -- The slash keeps sweeping long after the cut; no sample may retrigger
     -- with it, the way round one's single blade only swings once.
     frames(60)
     for _,sample in ipairs(SAMPLES) do
@@ -85,7 +86,7 @@ local function run()
         print("[SAMPLE] "..sample.." -> "..resolved)
     end
 
-    print("[OK] round 3 slash plays round 1's "..SWING.." + "..CUT..", once each")
+    print("[OK] round 3 slash plays round 1's "..SWING.." + "..CUT.." + "..KNIFE..", once each")
     love.event.quit(0)
 end
 

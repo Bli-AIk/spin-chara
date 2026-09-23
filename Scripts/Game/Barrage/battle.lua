@@ -64,8 +64,9 @@ function B.start(round)
                 fx=Slash.New({x=a.x,y=a.y,width=a.w,height=a.h,thickness=4})
                 fx:Strike()
                 -- This beat cuts the frame in two just like round one's opening
-                -- slash, so both of its samples play here, in the same order:
-                -- the swing lands with the blade and the cut with the box.
+                -- slash, so all of its samples play here, in the same order:
+                -- the swing lands with the blade, then the cut's own pair, the
+                -- box vanishing and the knife that split it.
                 Audio.PlaySound("heavyswing.wav")
                 Audio.PlaySound("disappear.wav")
             end

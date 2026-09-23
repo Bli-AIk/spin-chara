@@ -103,6 +103,8 @@ local function layoutHalves(age)
 end
 
 local function cutArena()
+    -- Both samples belong to the cut, not the swing above it: the box vanishing
+    -- and the knife that split it.
     Audio.PlaySound("disappear.wav")
     local gap = Arena.thickness * 2 + 2
     local width = (original_box.width - gap) / 2
