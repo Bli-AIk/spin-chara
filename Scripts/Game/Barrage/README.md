@@ -36,6 +36,14 @@ afford that timer — there the model keeps running while the line plays — so 
 two copies differ here. `tests/wave02-entry` pins both halves: the box holds
 still and the entrance follows the line.
 
+Rounds two and four sound their blades leaving the box. A fan or a volley is one
+beat however many knives it holds, so the wave announces a launch and `knife.wav`
+plays once with the blades starting to move — not with the stage or the light
+that precedes them, and not once per blade. The box clips the blades until they
+cross its edge, so that sample lands while they are all still outside it: in
+round two on the fan's first blade, with the stagger behind it belonging to the
+same sound, and in round four as the volley's stage opens.
+
 Run a defense directly with `just run -w 2` (also 1 through 10). Window workspace
 selection remains available as `--workspace auto` or `--workspace 9`.
 
@@ -50,3 +58,5 @@ Run the real-engine integration check from the project root:
 It exercises the chosen presets, dialogue, curtain, completion and cleanup.
 Round 2's entrance timing has its own check:
 `SPIN_CHARA_WAVE=2 xvfb-run -a love-git tests/wave02-entry`.
+The launch sample has one too, for `SPIN_CHARA_WAVE` 2 and 4:
+`xvfb-run -a love-git tests/knife-launch-sound`.

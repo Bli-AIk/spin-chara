@@ -65,6 +65,11 @@ function Model:next() self.pending=true end
 function Model:dialogueDone()
     return not self.context.dialogueDone or self.context.dialogueDone(self)
 end
+-- The blades leave the box as one beat: round two's fan and round four's volley
+-- are each a single launch, however many knives one of them holds.
+function Model:launch()
+    if self.context.launch then self.context.launch(self) end
+end
 function Model:update(dt,input)
     if self.done or (self.context.mortal and self.player.hp <= 0) then return end
     input=input or {}

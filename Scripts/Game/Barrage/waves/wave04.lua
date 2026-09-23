@@ -92,6 +92,7 @@ function W.enter(m)
         m.vars.safeX=W.safeTarget(m)
         m.vars.spawnDelay=0
         m.vars.shotSpeed=280
+        m.vars.launched=false
         -- Both shadow and curtain volleys use tighter coverage between blades.
         local spacing=m.config.spacing/2
         for x=a.x-a.w/2+5,a.x+a.w/2-5,spacing do
@@ -137,7 +138,14 @@ function W.update(m)
         if m.phaseTime>=m.vars.duration then m:next() end
     else
         local waiting=m.phaseTime<m.vars.spawnDelay
-        if waiting then m.attackTime=0 end
+        if waiting then
+            m.attackTime=0
+        elseif not m.vars.launched then
+            -- The volley leaves on the first frame it is not held back; every
+            -- blade in it is the same beat.
+            m.vars.launched=true
+            m:launch()
+        end
         local gone=true
         for _,k in ipairs(m.knives) do
             k.active=not waiting

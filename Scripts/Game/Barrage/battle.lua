@@ -55,6 +55,10 @@ function B.start(round)
                     spin_punish=m.config.punishDamage})
             end
         end,
+        -- Rounds two and four send their blades out as one fan or one volley, so
+        -- the wave announces the launch and the sample lands with the blades
+        -- leaving the box rather than with the stage or the light.
+        launch=function(m) Audio.PlaySound("knife.wav") end,
         dialogueDone=function(m) syncDialogue(m); return complete end,
         enter=function(m)
             syncDialogue(m)
@@ -117,6 +121,18 @@ function B.start(round)
             -- Dialogue advances through the engine while the attack simulation
             -- remains stopped. Only start resizing after the final pause.
             if complete then opening.time=math.min(opening.duration,opening.time+dt) end
+            -- Round three's opening slash is part of the box entrance. Let the
+            -- warning advance with the resize; once it strikes, hand the arena
+            -- to the wave immediately so the split animation runs at full speed.
+            if round==3 and complete and model.stage==1 then
+                model:update(dt,{slow=Controller.GetState("cancel")>0})
+                if model.stage>1 then
+                    model.opening=nil
+                    opening=nil
+                    syncArena(model)
+                    return
+                end
+            end
             -- A zero-length opening still has to wait for the line, so the
             -- run is gated on `complete` and not on the clock alone.
             local progress=opening.duration>0 and Ease.curve("quart",opening.time/opening.duration) or 1

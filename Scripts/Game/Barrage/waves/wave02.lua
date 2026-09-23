@@ -39,6 +39,7 @@ function W.enter(m)
     m.vars.duration=attacking and c.wave02Light or .4
     m.caption=s==1 and {"Chara","Wave02.Intro"} or nil
     if attacking then
+        m.vars.launched=false
         local dx,dy=m.vars.target.x-l.x,m.vars.target.y-l.y
         local horizontal=math.abs(dx)>=math.abs(dy)
         local sign=(horizontal and dx or dy)>0 and 1 or -1
@@ -112,6 +113,12 @@ function W.update(m)
         local thrust=c.wave02Thrust
         local exit=thrust+c.wave02Hold
         k.alpha=C.ease(m.phaseTime/.12)
+        -- The fan leaves on its first blade; the staggered ripple behind it is
+        -- the same beat, not a second launch.
+        if t>=0 and not m.vars.launched then
+            m.vars.launched=true
+            m:launch()
+        end
         if t<0 then
             local anticipation=C.ease(m.phaseTime/attackStart)
             k[k.axis]=k.start-k.sign*6*anticipation
