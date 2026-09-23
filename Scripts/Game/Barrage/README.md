@@ -10,7 +10,7 @@ the encounter's enemies and HUD to the engine. `clip.lua` uses LÖVE 12 stencil
 state. Collision bounds reject distant knives before precise swept checks.
 No prototype hotkeys or debug UI are connected to gameplay.
 
-Except for round 3, the opening keeps the incoming defense box throughout Chara's dialogue and
+The opening keeps the incoming defense box throughout Chara's dialogue and
 pauses the attack model. Once the final dialogue pause ends, the box moves and
 resizes to the round's arena over 0.8 seconds with quartic in-out easing. Only
 after this transition do lighting and attacks begin. A wave that declares
@@ -36,15 +36,15 @@ afford that timer — there the model keeps running while the line plays — so 
 two copies differ here. `tests/wave02-entry` pins both halves: the box holds
 still and the entrance follows the line.
 
-Round 3 holds a 156×156 frame during Chara's opening line. A cross of
-knives emerges behind it, turns, pauses, then rushes through the centre as the
-frame widens to 288×156. Two rapid vertical cuts form left, middle and right
-areas. The soul stays in the area it occupied at the second cut. The 18px gaps
-leave 8px of visible black between the engine's 5px borders. The spotlight
-enters at the top of its orbit around the middle area; nine rings of knives
-follow it while the middle area swings from side to side. The other two areas
-then drift, tilt and slide down. X slows the ring knives in darkness; round 4
-still ramps the spotlight speed while X is held.
+Round 3 eases from the incoming defense box to a 156×156 frame after Chara's
+opening line. A cross of knives emerges behind it, turns, pauses, then rushes
+through the centre as the frame widens to 288×156. Two rapid vertical cuts form
+left, middle and right areas. The soul stays in the area it occupied at the
+second cut. The 18px gaps leave 8px of visible black between the engine's 5px
+borders. The spotlight enters at the top of its orbit around the middle area;
+nine rings of knives follow it while the middle area swings from side to side.
+The other two areas then drift, tilt and slide down. X slows the ring knives in
+darkness; round 4 still ramps the spotlight speed while X is held.
 
 Rounds two and four sound their blades leaving the box. A fan or a volley is one
 beat however many knives it holds, so the wave announces a launch and `knife.wav`

@@ -125,18 +125,13 @@ function B.start(round)
         end,
     })
     model.player.x,model.player.y=Player.sprite.x,Player.sprite.y
-    if round==3 then
-        -- Wave 03A shrinks its own frame while the opening line is spoken.
-        opening=nil
-    else
-        opening.target=Model.copy(model.arena)
-        opening.duration=model.wave.reusesIncomingBox and 0 or .8
-        opening.dark,opening.darkAmount=model.dark,model.darkAmount
-        opening.lights,opening.knives=model.lights,model.knives
-        model.arena=Model.copy(opening.from)
-        model.dark=false; model.darkAmount=0; model.lights={}; model.knives={}
-        model.opening=opening
-    end
+    opening.target=Model.copy(model.arena)
+    opening.duration=model.wave.reusesIncomingBox and 0 or .8
+    opening.dark,opening.darkAmount=model.dark,model.darkAmount
+    opening.lights,opening.knives=model.lights,model.knives
+    model.arena=Model.copy(opening.from)
+    model.dark=false; model.darkAmount=0; model.lights={}; model.knives={}
+    model.opening=opening
     wave.barrage=model
     model.borderThickness=arena.thickness
     arena.move_player=false
