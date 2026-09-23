@@ -36,6 +36,13 @@ afford that timer — there the model keeps running while the line plays — so 
 two copies differ here. `tests/wave02-entry` pins both halves: the box holds
 still and the entrance follows the line.
 
+Rounds 3 and 4 ramp the spotlight up to 1.5 times its movement speed while X is
+held. In round 3, the spotlight orbits the opposite box on a wide ellipse,
+clockwise or counterclockwise according to the player's side. It enters at the
+corresponding top or bottom of the orbit; a full turn takes 12 seconds before
+the X speed boost. Dark knife movement eases into and out of its X slow rate
+over 0.25 seconds in both rounds.
+
 Rounds two and four sound their blades leaving the box. A fan or a volley is one
 beat however many knives it holds, so the wave announces a launch and `knife.wav`
 plays once with the blades starting to move — not with the stage or the light

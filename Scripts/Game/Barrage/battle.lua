@@ -49,9 +49,9 @@ function B.start(round)
         invincible=Battle.Invincible,
         -- The engine already moves the real soul before wave.Update.
         move=function(p) p.x,p.y=Player.sprite.x,Player.sprite.y end,
-        hit=function(m)
+        hit=function(m,damage)
             if Player.hurt_time<=0 then
-                Battle.OnHit({spin_damage=m.config.damage,spin_hurt_time=m.config.hurtTime,
+                Battle.OnHit({spin_damage=damage or m.config.damage,spin_hurt_time=m.config.hurtTime,
                     spin_punish=m.config.punishDamage})
             end
         end,

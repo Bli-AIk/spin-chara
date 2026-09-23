@@ -1,24 +1,92 @@
 local P="prototypes.barrage-lab.waves."
 local Baseline=require(P.."wave03-baseline")
 local Pattern=require(P.."wave03-pattern")
+local C=require((...):match("(.-)[^%.]+$").."common")
 local W={}
 for k,v in pairs(Baseline) do W[k]=v end
+-- Keep the orbit wider than the old random wander.
+local ORBIT_SCALE=1.8
+local ENTRY_DURATION=1.2
+local ORBIT_PERIOD_SCALE=4
+
 function W.enter(m)
     Baseline.enter(m)
-    if m.stage==4 then
+    if m.stage==3 then
+        local v,a=m.vars,m.otherArena
+        -- Positive angles turn clockwise in screen coordinates; a soul on
+        -- the left selects that direction, and the right selects its reverse.
+        v.lightOrbitDirection=v.side==-1 and 1 or -1
+        v.lightOrbitStartAngle=v.lightOrbitDirection*math.pi/2
+        m.vars.lightEntryTime=0
+        m.vars.lightEntryFromY=m.lights[1].y
+        local ry=(a.h/2-m.config.radius-12)*ORBIT_SCALE
+        m.vars.lightEntryTargetX=a.x
+        m.vars.lightEntryTargetY=a.y+math.sin(v.lightOrbitStartAngle)*ry
+    elseif m.stage==4 then
         -- Live round three is the D demonstration, including its timing
         -- variant, rather than the old production preset.
         m.config.wave03Variant="reverseslow"
+        m.vars.lightOrbitTime=0
         Pattern.enter(m)
+    elseif m.stage==5 then
+        m.vars.dropTime=0
     end
 end
 function W.lighting(m,dt)
+    dt=dt or 0
     local l=m.lights[1]
     m.vars.previousLight=l and {x=l.x,y=l.y} or nil
-    Baseline.lighting(m,dt)
+    local speed=m.lightSpeedMultiplier or 1
+    if m.stage==3 then
+        local v,a=m.vars,m.otherArena
+        v.lightEntryTime=v.lightEntryTime+dt*speed
+        local p=C.ease(v.lightEntryTime/ENTRY_DURATION)
+        m.darkAmount=p
+        m.lights={C.light(C.lerp(a.x,v.lightEntryTargetX,p),
+            C.lerp(v.lightEntryFromY,v.lightEntryTargetY,p),m.config.radius)}
+    elseif m.stage==4 then
+        local v,c=m.vars,m.config
+        local a=m.otherArena
+        v.lightOrbitTime=v.lightOrbitTime+dt*speed
+        local angle=v.lightOrbitStartAngle+2*math.pi*v.lightOrbitTime/(c.lightWander*ORBIT_PERIOD_SCALE)*v.lightOrbitDirection
+        local rx=(a.w/2-c.radius-12)*ORBIT_SCALE
+        local ry=(a.h/2-c.radius-12)*ORBIT_SCALE
+        m.darkAmount=1
+        m.lights={C.light(a.x+math.cos(angle)*rx,
+            a.y+math.sin(angle)*ry,c.radius)}
+    elseif m.stage==5 then
+        local v=m.vars
+        v.dropTime=v.dropTime+dt*speed
+        local p=C.curve("quart",v.dropTime/Baseline.dropDuration)
+        m.darkAmount=1
+        m.lights[1].y=v.dropLightY+Baseline.dropDistance*p
+    else
+        Baseline.lighting(m,dt)
+    end
+    for _,light in ipairs(m.lights) do light.fadeRadius=380 end
 end
 function W.update(m,dt)
-    if m.stage==4 then Pattern.update(m,dt) else Baseline.update(m,dt) end
+    if m.stage==3 then
+        if m.vars.lightEntryTime>=ENTRY_DURATION then m:next() end
+    elseif m.stage==4 then
+        -- The baseline pattern checks this boolean, so preserve it through the
+        -- 0.25-second blend while its speed multiplier approaches normal.
+        local wasSlow,slowFactor=m.slow,m.config.slowFactor
+        local blend=m.slowBlend or (wasSlow and 1 or 0)
+        if blend>0 then
+            m.slow=true
+            m.config.slowFactor=1+(slowFactor-1)*blend
+        end
+        Pattern.update(m,dt)
+        m.slow,m.config.slowFactor=wasSlow,slowFactor
+    elseif m.stage==5 then
+        local v=m.vars
+        local p=C.curve("quart",v.dropTime/Baseline.dropDuration)
+        m.otherArena.y=v.dropArenaY+Baseline.dropDistance*p
+        if v.dropTime>Baseline.dropDuration then m:next() end
+    else
+        Baseline.update(m,dt)
+    end
 end
 return W
 -- Legacy implementation retained below in history; the adapter above is the

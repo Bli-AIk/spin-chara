@@ -3,11 +3,39 @@ local Knife = require(prefix .. "knife")
 local Lighting = require(prefix .. "lighting")
 local Model = {}
 Model.__index = Model
+local SPEED_BLEND_TIME = .25
 local function copy(t)
     if type(t) ~= "table" then return t end
     local out = {}; for k,v in pairs(t) do out[k] = copy(v) end; return out
 end
 Model.copy = copy
+-- Retarget from the current blend value so brief key taps stay continuous.
+local function blendSpeed(vars, key, target, dt)
+    local value = vars[key] or 0
+    local transitionKey = key .. "Transition"
+    local transition = vars[transitionKey]
+    if not transition or transition.target ~= target then
+        local targetValue = target and 1 or 0
+        if math.abs(value - targetValue) < 1e-9 then
+            vars[key] = targetValue
+            vars[transitionKey] = nil
+            return targetValue
+        end
+        transition = {from=value, target=target, time=0}
+        vars[transitionKey] = transition
+    end
+    transition.time = math.min(SPEED_BLEND_TIME, transition.time + dt)
+    local t = transition.time / SPEED_BLEND_TIME
+    t = t * t * (3 - 2 * t)
+    local targetValue = transition.target and 1 or 0
+    value = transition.from + (targetValue - transition.from) * t
+    if transition.time >= SPEED_BLEND_TIME then
+        value = targetValue
+        vars[transitionKey] = nil
+    end
+    vars[key] = value
+    return value
+end
 function Model.new(round, config, context)
     local self = setmetatable({round=round, lightStyle=Lighting.ADOPTED_STYLE,
         config=copy(config), context=context or {},
@@ -50,15 +78,16 @@ function Model:lit(x,y)
 end
 function Model:hit(amount)
     if self.player.hurt > 0 then return false end
+    amount=amount or self.config.damage
     self.hits=self.hits+1
     -- Recording/debug: still count the contact, but never damage, blink or cry
     -- out. The gate has to sit before `hurt` is set: the renderer reads that
     -- field to pick the soul's alpha, so leaving it set would pin the heart at
     -- 0.4 opacity for as long as it stays inside the knife field.
     if self.context.invincible then return true end
-    self.player.hp=math.max(0,self.player.hp-(amount or self.config.damage))
+    self.player.hp=math.max(0,self.player.hp-amount)
     self.player.hurt=1
-    if self.context.hit then self.context.hit(self) end
+    if self.context.hit then self.context.hit(self,amount) end
     return true
 end
 function Model:next() self.pending=true end
@@ -84,10 +113,15 @@ function Model:update(dt,input)
     local a=self.arena
     p.x=math.max(a.x-a.w/2+8, math.min(a.x+a.w/2-8,p.x))
     p.y=math.max(a.y-a.h/2+8, math.min(a.y+a.h/2-8,p.y))
+    self.xHeld = not not input.slow
+    self.vars.xSpeedBlend = blendSpeed(self.vars,"xSpeedBlend",self.xHeld,dt)
+    self.lightSpeedMultiplier = 1 + .5*self.vars.xSpeedBlend
     self.elapsed,self.phaseTime=self.elapsed+dt,self.phaseTime+dt
     if self.wave.lighting then self.wave.lighting(self,dt) end
     self.slow=self.round>=3 and self.dark and input.slow and not self:lit(p.x,p.y)
-    local bulletDt=dt*(self.slow and self.config.slowFactor or 1)
+    self.slowBlend = blendSpeed(self.vars,"slowBlend",self.slow,dt)
+    local slowSpeed=1+(self.config.slowFactor-1)*self.slowBlend
+    local bulletDt=dt*slowSpeed
     self.attackTime=self.attackTime+bulletDt
     for _,k in ipairs(self.knives) do k.oldX,k.oldY,k.oldAngle=k.x,k.y,k.angle end
     self.wave.update(self,dt,bulletDt)

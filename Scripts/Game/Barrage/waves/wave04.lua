@@ -69,6 +69,7 @@ function W.enter(m)
         m.caption={"Chara","Wave04.Intro"}
     elseif s==2 then
         m.dark=true; m.darkAmount=0
+        m.vars.lightMoveTime=0
         W.lighting(m)
     elseif s==9 then
         m.curtain=true
@@ -87,6 +88,7 @@ function W.enter(m)
         local distance=math.abs(target-m.vars.from)
         m.vars.travelSpeed=W.travelSpeed(distance)
         m.vars.duration=distance/m.vars.travelSpeed
+        m.vars.moveTime=0
     else
         local a=m.arena
         m.vars.safeX=W.safeTarget(m)
@@ -113,14 +115,16 @@ function W.enter(m)
         end
     end
 end
-function W.lighting(m)
+function W.lighting(m,dt)
     local s=m.stage
     if s==2 then
-        local p=C.curve("quart",m.phaseTime/W.entryDuration)
+        m.vars.lightMoveTime=(m.vars.lightMoveTime or 0)+(dt or 0)*(m.lightSpeedMultiplier or 1)
+        local p=C.curve("quart",m.vars.lightMoveTime/W.entryDuration)
         m.darkAmount=p
         m.lights={C.light(m.arena.x,C.lerp(m.arena.y-m.arena.h/2-Lighting.outerRadius(m.config.radius,m.lightStyle),m.arena.y,p),m.config.radius)}
     elseif moving[s] then
-        m.vars.centre=C.lerp(m.vars.from,m.vars.target,C.curve("quart",m.phaseTime/m.vars.duration))
+        m.vars.moveTime=(m.vars.moveTime or 0)+(dt or 0)*(m.lightSpeedMultiplier or 1)
+        m.vars.centre=C.lerp(m.vars.from,m.vars.target,C.curve("quart",m.vars.moveTime/m.vars.duration))
         lights(m,m.vars.centre)
     end
 end
@@ -131,11 +135,11 @@ function W.update(m)
             m.caption={"Nap","Wave04.Nap"}
         elseif m.phaseTime>(s==9 and Curtain.ENTER_TIME or 0) and m:dialogueDone() then m:next() end
     elseif s==2 then
-        if m.phaseTime>=W.entryDuration then m.darkAmount=1; m:next() end
+        if m.vars.lightMoveTime>=W.entryDuration then m.darkAmount=1; m:next() end
     elseif s==16 then
         if m.phaseTime>1.0 then m.curtain=false; m:next() end
     elseif moving[s] then
-        if m.phaseTime>=m.vars.duration then m:next() end
+        if m.vars.moveTime>=m.vars.duration then m:next() end
     else
         local waiting=m.phaseTime<m.vars.spawnDelay
         if waiting then
