@@ -39,6 +39,25 @@ local buttons = {
     animations = {}
 }
 
+-- The Chinese light battle button art uses the same three visual states as
+-- the default buttons: idle, highlighted, and disabled. Use the current game
+-- language so English and other translations retain the original artwork.
+local function getButtonSprites()
+    local language = Global.GetVariable("Language")
+    if language == "zh_CN" or language == "zh_hans" then
+        local prefix = "UI/LightBattle/btn/"
+        return {
+            {prefix .. "fight.png", prefix .. "fight_h.png"},
+            {prefix .. "act.png", prefix .. "act_h.png"},
+            {prefix .. "item.png", prefix .. "item_h.png"},
+            {prefix .. "mercy.png", prefix .. "mercy_h.png"}
+        }
+    end
+    return buttons.sprites
+end
+
+buttons.sprites = getButtonSprites()
+
 local fight = Sprites.CreateSprite(buttons.sprites[1][2], "UI")
 fight:MoveTo(554, 288)
 local act = Sprites.CreateSprite(buttons.sprites[2][1], "UI")
