@@ -6,14 +6,14 @@ function W.enter(m)
     m.lights={C.light(a.x,a.y-a.h/2+55,c.radius)}
     m.caption=m.stage==1 and {"Chara","Wave05.Intro"} or nil
     for x=a.x-a.w/2+12,a.x+a.w/2-12,c.spacing do
-        local k=m:knife(x,a.y-a.h/2-8,math.pi/2,.7)
+        local k=m:knife(x,a.y-a.h/2-8,math.pi/2,1)
         k.kind,k.baseY,k.state,k.clock="top",k.y,"idle",0
     end
     if m.stage>=2 and m.stage<=5 then
         local level=a.y+a.h/2-22-(m.stage-2)*45
         for row=0,1 do
             for x=a.x-a.w/2+12,a.x+a.w/2-12,c.spacing do
-                local k=m:knife(x,level+row*24,-math.pi/2,.65)
+                local k=m:knife(x,level+row*24,-math.pi/2,1)
                 k.kind,k.baseY,k.row="bottom",k.y,row
             end
         end

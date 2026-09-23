@@ -109,7 +109,7 @@ function W.enter(m)
                 for _,l in ipairs(m.lights) do if math.abs(x-l.x)<l.r-12 then spawn=true end end
             end
             if spawn then
-                local k=m:knife(x,a.y-a.h/2-30,math.pi/2,.65)
+                local k=m:knife(x,a.y-a.h/2-30,math.pi/2,1)
                 k.start=k.y; k.alpha=0
             end
         end

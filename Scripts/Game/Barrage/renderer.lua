@@ -24,19 +24,32 @@ function R:draw(m,presentation,debugUnlit)
     -- DEFENDING layout: centred arena, lower-right status, no action menu.
     local arenas={m.arena}
     if m.otherArena then arenas[#arenas+1]=m.otherArena end
+    if m.thirdArena then arenas[#arenas+1]=m.thirdArena end
+    for _,k in ipairs(m.knives) do
+        if k.backdrop then
+            g.setColor(1,1,1,k.alpha or 1)
+            g.draw(a.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
+        end
+    end
     for _,box in ipairs(arenas) do
         local border=m.borderThickness or 5
-        rect(box.x-box.w/2-border,box.y-box.h/2-border,box.w+border*2,box.h+border*2)
-        rect(box.x-box.w/2,box.y-box.h/2,box.w,box.h,{0,0,0})
+        g.push()
+        g.translate(box.x,box.y)
+        g.rotate(box.rotation or 0)
+        rect(-box.w/2-border,-box.h/2-border,box.w+border*2,box.h+border*2)
+        rect(-box.w/2,-box.h/2,box.w,box.h,{0,0,0})
+        g.pop()
     end
     Clip.arenas(arenas)
     if not debugUnlit then Lighting.drawLights(m.lights,m.lightStyle) end
     local pixelLighting=Lighting.beginBullets(m.lights,m.lightStyle,dark,m.player)
     for _,k in ipairs(m.knives) do
-        local opacity=(k.alpha or (k.warning and .5 or 1))
-        if not pixelLighting then opacity=opacity*Lighting.bulletAlpha(m.lights,k.x,k.y,dark) end
-        g.setColor(1,1,1,opacity)
-        g.draw(a.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
+        if not k.backdrop or k.visibleInside then
+            local opacity=(k.alpha or (k.warning and .5 or 1))
+            if not pixelLighting then opacity=opacity*Lighting.bulletAlpha(m.lights,k.x,k.y,dark) end
+            g.setColor(1,1,1,opacity)
+            g.draw(a.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
+        end
     end
     Lighting.endBullets(pixelLighting)
     g.setStencilState()

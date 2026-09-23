@@ -21,4 +21,17 @@ function C.defaults(index)
     for k,v in pairs(C.presets[index or 1]) do out[k]=v end
     return out
 end
+function C.wave03A()
+    local out=C.defaults(3)
+    out.label="A · 柔缓先手"
+    out.wave03Prototype={
+        emerge=.36,spin=.42,pause=.13,burst=.60,expand=.27,edgeDelay=.24,
+        horizontalAppearDelay=.24,horizontalEmerge=.16,
+        slashAt=.30,firstCut=.06,cutGap=.10,cutSettle=.24,lightEntry=1.0,
+        orbitPeriod=3.75,lightRadiusX=29,lightRadiusY=29,
+        swayPeriod=2.55,swayAmplitude=16,swayRamp=.85,
+        ringSpeed=1.03,ringDelay=.9,
+    }
+    return out
+end
 return C

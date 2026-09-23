@@ -44,7 +44,7 @@ function W.enter(m)
         local horizontal=math.abs(dx)>=math.abs(dy)
         local sign=(horizontal and dx or dy)>0 and 1 or -1
         local a=m.arena
-        local tip=30*.78
+        local tip=30
         local start=horizontal and a.x-sign*(a.w/2+tip+1) or a.y-sign*(a.h/2+tip+1)
         -- Lay the fan out about the middle of the box instead of stacking it
         -- from one edge: a blade then sits on the centre line whenever the
@@ -56,7 +56,7 @@ function W.enter(m)
         for i=0,count-1 do
             local v=first+i*c.spacing
             local k=m:knife(horizontal and start or v,horizontal and v or start,
-                horizontal and (sign<0 and math.pi or 0) or sign*math.pi/2,.78)
+                horizontal and (sign<0 and math.pi or 0) or sign*math.pi/2,1)
             k.start,k.stop,k.sign,k.axis=start,start,sign,horizontal and "x" or "y"
             k.perpendicular=v
             local distanceFromCentre=math.abs(v-centre)/c.spacing

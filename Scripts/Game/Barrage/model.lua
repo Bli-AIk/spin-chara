@@ -51,7 +51,8 @@ function Model:enter(stage)
     if stage > #self.wave.stages then self.done=true; self.knives={}; return end
     self.stage, self.phaseTime, self.attackTime = stage, 0, 0
     self.pending, self.knives, self.caption = false, {}, nil
-    self.checkpoint = copy({arena=self.arena,otherArena=self.otherArena,player=self.player,vars=self.vars,
+    self.checkpoint = copy({arena=self.arena,otherArena=self.otherArena,thirdArena=self.thirdArena,
+        areas=self.areas,player=self.player,vars=self.vars,
         lights=self.lights,dark=self.dark,curtain=self.curtain,clothTransition=self.clothTransition,elapsed=self.elapsed})
     self.wave.enter(self)
     self.player.oldX, self.player.oldY = self.player.x, self.player.y
@@ -60,13 +61,13 @@ end
 function Model:retry(config)
     if self.clothState then self.clothState:destroy(); self.clothState=nil end
     local s = self.checkpoint
-    for _, key in ipairs({"arena","otherArena","player","vars","lights","dark","curtain","clothTransition","elapsed"}) do self[key]=copy(s[key]) end
+    for _, key in ipairs({"arena","otherArena","thirdArena","areas","player","vars","lights","dark","curtain","clothTransition","elapsed"}) do self[key]=copy(s[key]) end
     if config then self.config=copy(config) end
     self.done, self.hits, self.player.hp, self.player.hurt = false, 0, 20, 0
     self:enter(self.stage)
 end
 function Model:knife(x,y,angle,scale)
-    local k={x=x,y=y,angle=angle or 0,scale=scale or .7,active=false}
+    local k={x=x,y=y,angle=angle or 0,scale=scale or 1,active=false}
     self.knives[#self.knives+1]=k
     return k
 end

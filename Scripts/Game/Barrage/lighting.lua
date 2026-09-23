@@ -33,7 +33,7 @@ local function lightingShader()
             extern vec3 extent;
             extern vec3 soul;
             extern int renderPass;
-            extern vec4 arenas[2];
+            extern vec4 arenas[3];
             extern int arenaCount;
             float disc(vec2 p,vec2 centre,float radius) {
                 if(radius<=0.0) return 0.0;
@@ -77,7 +77,7 @@ local function lightingShader()
                 }
                 if(renderPass==1) {
                     float inside=0.0;
-                    for(int i=0;i<2;i++) {
+                    for(int i=0;i<3;i++) {
                         if(i<arenaCount) {
                             vec4 box=arenas[i];
                             inside=max(inside,step(box.x,screen.x)*step(box.y,screen.y)
@@ -120,12 +120,12 @@ local function prepare(lights,style,renderPass,player,darkAmount,arenas)
     s:send("lamps",lamp(a),lamp(b))
     s:send("darkAmount",darkAmount or 1)
     s:send("renderPass",renderPass)
-    local first,second=arenas and arenas[1],arenas and arenas[2]
+    local first,second,third=arenas and arenas[1],arenas and arenas[2],arenas and arenas[3]
     local function box(arena)
         return arena and {arena.x-arena.w/2,arena.y-arena.h/2,arena.w,arena.h} or {0,0,0,0}
     end
-    s:send("arenaCount",arenas and math.min(2,#arenas) or 0)
-    s:send("arenas",box(first),box(second))
+    s:send("arenaCount",arenas and math.min(3,#arenas) or 0)
+    s:send("arenas",box(first),box(second),box(third))
     return s
 end
 local function drawPass(lights,style,pass,darkAmount,arenas)

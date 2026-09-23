@@ -1,286 +1,336 @@
-local P="prototypes.barrage-lab.waves."
-local Baseline=require(P.."wave03-baseline")
-local Pattern=require(P.."wave03-pattern")
-local C=require((...):match("(.-)[^%.]+$").."common")
-local W={}
-for k,v in pairs(Baseline) do W[k]=v end
-W.minPlayerSpan=(W.minPlayerSpan or 32)*2
--- Keep the orbit wider than the old random wander.
-local ORBIT_SCALE=1.8
-local ENTRY_DURATION=1.2
-local ORBIT_PERIOD_SCALE=4
+local P=(...):match("(.-)[^%.]+$")
+local C=require(P.."common")
+local Lighting=require((...):match("(.-)waves%.").."lighting")
+
+local W={
+    arena={x=320,y=315,w=156,h=156},
+    -- The engine draws a 5px border outside each piece; 18px leaves an 8px
+    -- visible gutter between adjacent frames after both borders are drawn.
+    expandedWidth=288,sideWidth=64,gap=18,dialogueShrink=.7,
+    verticalLaneCount=10,verticalLaneRadius=70,
+    stages={"方框对白","十字刀阵","双重竖劈","聚光灯入场","环刃与摆框","空框滑落"},
+}
+local TAU=2*math.pi
+local DROP_HOLD=0.7
+local DROP_DURATION=1.9/math.sqrt(1.7)
+local function variant(m) return m.config.wave03Prototype or {} end
+local function box(left,right,y,h) return {x=(left+right)/2,y=y,w=right-left,h=h} end
+
+local function bind(m)
+    if not m.areas then return end
+    local zone=m.vars.zone
+    m.arena=m.areas[zone]
+    local empty={}
+    for i=1,3 do if i~=zone then empty[#empty+1]=m.areas[i] end end
+    m.otherArena,m.thirdArena=empty[1],empty[2]
+end
+
+local function frameGeometry(m,offset)
+    local centre=W.arena.x
+    local outerL,outerR=centre-W.expandedWidth/2,centre+W.expandedWidth/2
+    local cutL=outerL+W.sideWidth+W.gap/2+offset
+    local cutR=outerR-W.sideWidth-W.gap/2+offset
+    local y,h=W.arena.y,W.arena.h
+    return box(outerL,cutL-W.gap/2,y,h),
+        box(cutL+W.gap/2,cutR-W.gap/2,y,h),
+        box(cutR+W.gap/2,outerR,y,h),cutL,cutR
+end
+
+local function selectZone(m,areas)
+    local x=m.player.x
+    if x<areas[1].x+areas[1].w/2+W.gap/2 then return 1 end
+    if x>areas[3].x-areas[3].w/2-W.gap/2 then return 3 end
+    return 2
+end
+
+local function setAreas(m,offset)
+    local l,c,r=frameGeometry(m,offset)
+    if m.areas then
+        for i,new in ipairs({l,c,r}) do
+            local old=m.areas[i]
+            old.x,old.y,old.w,old.h=new.x,new.y,new.w,new.h
+        end
+    else m.areas={l,c,r} end
+    bind(m)
+end
+
+local function offscreenDistance(dx,dy,laneX)
+    -- Clear the entire 60px sprite beyond whichever screen edge the blade
+    -- reaches first.
+    local margin=48
+    local vx,vy=-dx,-dy
+    local originX=W.arena.x+(laneX or 0)
+    local tx=vx>1e-8 and (640+margin-originX)/vx
+        or vx< -1e-8 and (-margin-originX)/vx or math.huge
+    local ty=vy>1e-8 and (480+margin-W.arena.y)/vy
+        or vy< -1e-8 and (-margin-W.arena.y)/vy or math.huge
+    return math.min(tx,ty)
+end
+
+local function openingBlades(m,t)
+    local v=variant(m)
+    local spin=v.spin or .38
+    local burstAt,duration=m.vars.burstAt,m.vars.burstDuration
+    if t>=burstAt then m.vars.burstStarted=true end
+    if m.vars.burstStarted and m.stage==2 then
+        local p=C.curve("quart",(t-burstAt)/(v.expand or .27))
+        m.arena.w=C.lerp(W.arena.w,W.expandedWidth,p)
+    end
+    for _,k in ipairs(m.knives) do
+        local emerge=k.emergeDuration or v.emerge or .36
+        local prepareTime=t-(k.appearDelay or k.launchDelay or 0)
+        local launchTime=t-(k.launchDelay or 0)
+        local dx,dy=k.dx,k.dy
+        local facing=math.atan2(-dy,-dx)
+        local originX=W.arena.x+(k.laneX or 0)
+        local originY=W.arena.y+(k.laneY or 0)
+        if launchTime>=burstAt then
+            local age=launchTime-burstAt
+            local p=C.ease(age/duration)
+            local distance=C.lerp(115,-k.exitDistance,p)
+            k.x,k.y=originX+dx*distance,originY+dy*distance
+            k.angle=facing+4*math.pi
+            k.active=age<duration
+            k.visibleInside=true
+        elseif prepareTime<emerge then
+            local distance=C.lerp(52,115,C.ease(prepareTime/emerge))
+            k.x,k.y=originX+dx*distance,originY+dy*distance
+            k.angle=facing+math.pi; k.active=false
+        elseif prepareTime<emerge+spin then
+            local p=C.curve("quart",(prepareTime-emerge)/spin)
+            k.x,k.y=originX+dx*115,originY+dy*115
+            k.angle=facing+math.pi+3*math.pi*p; k.active=false
+        else
+            k.x,k.y=originX+dx*115,originY+dy*115
+            k.angle=facing+4*math.pi; k.active=false
+        end
+    end
+end
+
+local function strike(m,index)
+    local cut=index==1 and m.vars.leftCut or m.vars.rightCut
+    if math.abs(m.player.x-cut)<10 then m:hit(10) end
+    m.vars.slashCount=index
+    if index==1 then
+        local left=frameGeometry(m,0)
+        local outerR=W.arena.x+W.expandedWidth/2
+        local remainder=box(left.x+left.w/2+W.gap,outerR,W.arena.y,W.arena.h)
+        if m.player.x<cut then m.arena,m.otherArena=left,remainder
+        else m.arena,m.otherArena=remainder,left end
+    else
+        local l,c,r=frameGeometry(m,0)
+        m.areas={l,c,r}
+        m.vars.zone=selectZone(m,m.areas)
+        setAreas(m,0)
+    end
+end
+
+local function createRings(m)
+    local v,c=variant(m),m.config
+    local light=m.lights[1]
+    local omega=math.rad(c.orbitSpeed*(v.ringSpeed or 1))
+    local latest=0
+    m.knives={}
+    for ring=1,c.ringCount do
+        local radius=c.radius+24+(ring-1)*c.ringGap
+        local count=math.floor(5*radius/(c.radius+24)+.5)
+        local sign=c.alternate and ring%2==0 and 1 or -1
+        if v.reverseRings and ring%2==0 then sign=-sign end
+        local entryAngle=math.pi/4+(ring-1)*c.phaseOffset
+        local tangent=entryAngle+sign*math.pi/2
+        local entryDistance=math.max(190,radius+90)
+        local entryDuration=entryDistance/(omega*radius)
+        local orbitDuration=TAU/omega
+        local exitDistance=580
+        local exitDuration=exitDistance/(omega*radius)
+        for blade=0,count-1 do
+            local k=m:knife(light.x+math.cos(entryAngle)*radius-math.cos(tangent)*entryDistance,
+                light.y+math.sin(entryAngle)*radius-math.sin(tangent)*entryDistance,tangent,1)
+            k.ring,k.radius,k.baseAngle=ring,radius,entryAngle
+            k.sign,k.omega,k.tangent=sign,omega,tangent
+            k.entryDistance,k.entryDuration=entryDistance,entryDuration
+            k.orbitDuration,k.exitDistance,k.exitDuration=orbitDuration,exitDistance,exitDuration
+            local jitter=0
+            if v.ringJitter then jitter=((ring*17+blade*11)%7-3)*v.ringJitter end
+            k.born=(ring-1)*c.ringDelay*(v.ringDelay or 1)+blade*TAU/(count*omega)+jitter
+            k.alpha=0
+            latest=math.max(latest,k.born+entryDuration+orbitDuration+exitDuration)
+        end
+    end
+    m.vars.knifeTime=0
+    m.vars.knifeClearTime=latest
+    m.vars.ringTotal=#m.knives
+end
 
 function W.enter(m)
-    Baseline.enter(m)
-    if m.stage==3 then
-        local v,a=m.vars,m.otherArena
-        -- Positive angles turn clockwise in screen coordinates; a soul on
-        -- the left selects that direction, and the right selects its reverse.
-        v.lightOrbitDirection=v.side==-1 and 1 or -1
-        v.lightOrbitStartAngle=v.lightOrbitDirection*math.pi/2
-        m.vars.lightEntryTime=0
-        m.vars.lightEntryFromY=m.lights[1].y
-        local ry=(a.h/2-m.config.radius-12)*ORBIT_SCALE
-        m.vars.lightEntryTargetX=a.x
-        m.vars.lightEntryTargetY=a.y+math.sin(v.lightOrbitStartAngle)*ry
-    elseif m.stage==4 then
-        -- Live round three is the D demonstration, including its timing
-        -- variant, rather than the old production preset.
-        m.caption={"Nap","Wave03.Nap","intermediate"}
-        m.config.wave03Variant="reverseslow"
-        m.vars.lightOrbitTime=0
-        Pattern.enter(m)
-    elseif m.stage==5 then
-        m.vars.dropTime=0
-    end
-end
-function W.lighting(m,dt)
-    dt=dt or 0
-    local l=m.lights[1]
-    m.vars.previousLight=l and {x=l.x,y=l.y} or nil
-    local speed=m.lightSpeedMultiplier or 1
-    if m.stage==3 then
-        local v,a=m.vars,m.otherArena
-        v.lightEntryTime=v.lightEntryTime+dt*speed
-        local p=C.ease(v.lightEntryTime/ENTRY_DURATION)
-        m.darkAmount=p
-        m.lights={C.light(C.lerp(a.x,v.lightEntryTargetX,p),
-            C.lerp(v.lightEntryFromY,v.lightEntryTargetY,p),m.config.radius)}
-    elseif m.stage==4 then
-        local v,c=m.vars,m.config
-        local a=m.otherArena
-        v.lightOrbitTime=v.lightOrbitTime+dt*speed
-        local angle=v.lightOrbitStartAngle+2*math.pi*v.lightOrbitTime/(c.lightWander*ORBIT_PERIOD_SCALE)*v.lightOrbitDirection
-        local rx=(a.w/2-c.radius-12)*ORBIT_SCALE
-        local ry=(a.h/2-c.radius-12)*ORBIT_SCALE
-        m.darkAmount=1
-        m.lights={C.light(a.x+math.cos(angle)*rx,
-            a.y+math.sin(angle)*ry,c.radius)}
-    elseif m.stage==5 then
-        local v=m.vars
-        v.dropTime=v.dropTime+dt*speed
-        local p=C.curve("quart",v.dropTime/Baseline.dropDuration)
-        m.darkAmount=1
-        m.lights[1].y=v.dropLightY+Baseline.dropDistance*p
-    else
-        Baseline.lighting(m,dt)
-    end
-    for _,light in ipairs(m.lights) do light.fadeRadius=380 end
-end
-function W.update(m,dt)
-    if m.stage==3 then
-        if m.vars.lightEntryTime>=ENTRY_DURATION then m:next() end
-    elseif m.stage==4 then
-        -- The baseline pattern checks this boolean, so preserve it through the
-        -- 0.25-second blend while its speed multiplier approaches normal.
-        local wasSlow,slowFactor=m.slow,m.config.slowFactor
-        local blend=m.slowBlend or (wasSlow and 1 or 0)
-        if blend>0 then
-            m.slow=true
-            m.config.slowFactor=1+(slowFactor-1)*blend
-        end
-        Pattern.update(m,dt)
-        m.slow,m.config.slowFactor=wasSlow,slowFactor
-    elseif m.stage==5 then
-        local v=m.vars
-        local p=C.curve("quart",v.dropTime/Baseline.dropDuration)
-        m.otherArena.y=v.dropArenaY+Baseline.dropDistance*p
-        if v.dropTime>Baseline.dropDuration then m:next() end
-    else
-        Baseline.update(m,dt)
-    end
-end
-return W
--- Legacy implementation retained below in history; the adapter above is the
--- only returned wave used by the live battle.
---[[
-local W={arena={x=320,y=315,w=422,h=156},knifeEntryDistance=72,
-    knifeExitDistance=620,normalSpeedMultiplier=2,slowMultiplier=2,minPlayerSpan=32,
-    dropDuration=1.05,dropDistance=260,
-    stages={"竖劈","双框分离","彼岸亮灯","环刃","收束"}}
-local function layout(m,t)
-    local original=W.arena
-    local gap=C.lerp(0,18,C.ease(t))
-    local width=(original.w-gap)/2
-    local offset=(width+gap)/2
-    m.arena={x=original.x+m.vars.side*offset,y=original.y,w=width,h=original.h}
-    m.otherArena={x=original.x-m.vars.side*offset,y=original.y,w=width,h=original.h}
-end
-local function random(m)
-    m.vars.rng=(m.vars.rng*48271)%2147483647
-    return (m.vars.rng-1)/2147483646
-end
-local function target(m)
-    local a=m.otherArena
-    return {x=a.x+(random(m)*2-1)*(a.w/2-m.config.radius-12),
-        y=a.y+(random(m)*2-1)*(a.h/2-m.config.radius-12)}
-end
-local function chooseSqueezeEdge(m)
-    local a,p=m.arena,m.player
-    local bounds={left=a.x-a.w/2,right=a.x+a.w/2,top=a.y-a.h/2,bottom=a.y+a.h/2}
-    -- Compress the player's box toward the spotlight box, independent of the
-    -- player's current position: left-side player pulls from the left wall,
-    -- right-side player pulls from the right wall.
-    local edge=m.vars.side==-1 and "left" or "right"
-    m.vars.squeezeBounds=bounds
-    m.vars.squeezeEdge=edge
-end
-local function squeezeArena(m)
-    local b=m.vars.squeezeBounds
-    local p=C.ease(m.vars.squeezeTime/m.vars.squeezeDuration)
-    local left,right,top,bottom=b.left,b.right,b.top,b.bottom
-    if m.vars.squeezeEdge=="left" then left=C.lerp(left,right-W.minPlayerSpan,p)
-    else right=C.lerp(right,left+W.minPlayerSpan,p) end
-    m.arena={x=(left+right)/2,y=(top+bottom)/2,w=right-left,h=bottom-top}
-end
-function W.enter(m)
-    local s,c=m.stage,m.config
+    local s,v=m.stage,variant(m)
     if s==1 then
-        m.dark=false; m.darkAmount=0; m.lights={}; m.otherArena=nil
-        m.vars.warnStart=nil
+        m.arena={x=W.arena.x,y=W.arena.y,w=W.expandedWidth,h=W.arena.h}
+        m.otherArena,m.thirdArena,m.areas=nil,nil,nil
+        m.lights={}; m.dark=false; m.darkAmount=0
         m.caption={"Chara","Wave03.Intro"}
     elseif s==2 then
-        m.vars.side=m.player.x<W.arena.x and -1 or 1
-        layout(m,0)
+        m.vars.burstStarted=false
+        m.vars.burstAt=(v.emerge or .42)+(v.spin or .38)+(v.pause or .22)
+        m.vars.burstDuration=v.burst or .52
+        local function blade(dx,dy,laneX,delay,scale,laneY,appearDelay,emergeDuration)
+            laneX=laneX or 0
+            laneY=laneY or 0
+            local k=m:knife(W.arena.x+laneX+dx*52,W.arena.y+laneY+dy*52,
+                math.atan2(dy,dx),1)
+            k.dx,k.dy=dx,dy
+            k.laneX,k.laneY,k.launchDelay=laneX,laneY,delay or 0
+            k.appearDelay,k.emergeDuration=appearDelay,emergeDuration
+            k.exitDistance=offscreenDistance(dx,dy,laneX)
+            k.alpha=1; k.active=false; k.backdrop=true; k.visibleInside=false
+        end
+        local horizontalY=m.config.horizontalYOffsets or {0,0}
+        local appear=v.horizontalAppearDelay or .24
+        local quick=v.horizontalEmerge or .16
+        blade(-1,0,0,0,1,horizontalY[1],appear,quick)
+        blade(1,0,0,v.pairDelay or 0,1,horizontalY[2],appear,quick)
+        -- Ten lanes on each edge retain the ±70px span. Only spacing changes.
+        local count,radius=W.verticalLaneCount,W.verticalLaneRadius
+        local inner=radius/(count-1)
+        for i=0,count-1 do
+            local lane=-radius+2*radius*i/(count-1)
+            local delay=(math.abs(lane)-inner)/(radius-inner)*(v.edgeDelay or .20)
+            blade(0,-1,lane,delay,1)
+            blade(0,1,lane,delay,1)
+        end
+        m.vars.openingBlades=m.knives
     elseif s==3 then
-        layout(m,1); m.dark=true; m.darkAmount=0
-        m.vars.rng=c.seed
-        local a=m.otherArena
-        m.lights={C.light(a.x,a.y-a.h/2-Lighting.outerRadius(c.radius,m.lightStyle),c.radius)}
-        m.vars.lightFrom={x=a.x,y=a.y}; m.vars.lightTarget=target(m); m.vars.lightTime=0
+        m.knives=m.vars.openingBlades
+        m.arena={x=W.arena.x,y=W.arena.y,w=W.expandedWidth,h=W.arena.h}
+        m.otherArena,m.thirdArena=nil,nil
+        m.vars.slashCount=0
+        m.vars.leftCut=W.arena.x-W.expandedWidth/2+W.sideWidth+W.gap/2
+        m.vars.rightCut=W.arena.x+W.expandedWidth/2-W.sideWidth-W.gap/2
     elseif s==4 then
-        m.caption={"Nap","Wave03.Nap"}
-        chooseSqueezeEdge(m)
-        m.vars.knifeTime,m.vars.squeezeTime=0,0
-        local lastBorn,lastFinish=0,0
-        for ring=1,c.ringCount do
-            local radius=c.radius+24+(ring-1)*c.ringGap
-            local count=math.floor(5*radius/(c.radius+24)+.5)
-            -- One stream feeds each ring through a shared tangent point.  The
-            -- default direction matches the reference: lower-left to upper-right.
-            local direction=c.alternate and ring%2==0 and 1 or -1
-            local entryAngle=math.pi/4+(ring-1)*c.phaseOffset
-            local tangent=entryAngle+math.pi/2*direction
-            local omega=math.rad(c.orbitSpeed)
-            for blade=0,count-1 do
-                local l=m.lights[1]
-                local k=m:knife(l.x+math.cos(entryAngle)*radius-math.cos(tangent)*W.knifeEntryDistance,
-                    l.y+math.sin(entryAngle)*radius-math.sin(tangent)*W.knifeEntryDistance,
-                    tangent,.72)
-                local spacingTime=(math.pi*2/count)/omega
-                k.ring,k.radius,k.baseAngle=ring,radius,entryAngle
-                k.direction=direction
-                k.entryDuration=W.knifeEntryDistance/(omega*radius)
-                k.orbitDuration=math.pi*2/omega
-                k.exitDuration=W.knifeExitDistance/(omega*radius)
-                k.born=(ring-1)*c.ringDelay+blade*spacingTime
-                lastBorn=math.max(lastBorn,k.born)
-                lastFinish=math.max(lastFinish,k.born+k.entryDuration+k.orbitDuration+k.exitDuration)
-                k.alpha=0
+        m.vars.openingBlades=nil
+        setAreas(m,0)
+        local centre=m.areas[2]
+        m.dark=true; m.darkAmount=0
+        m.vars.lightStartY=centre.y-centre.h/2-Lighting.outerRadius(m.config.radius,m.lightStyle)
+        m.vars.lightTargetY=centre.y-(v.lightRadiusY or 20)
+        m.lights={C.light(centre.x,m.vars.lightStartY,m.config.radius)}
+    elseif s==5 then
+        setAreas(m,0)
+        m.caption={"Nap","Wave03.Nap","intermediate"}
+        m.vars.lightAngle=-math.pi/2
+        createRings(m)
+    elseif s==6 then
+        m.knives={}
+        m.vars.falling={}
+        local centre=m.areas[2]
+        m.vars.dropLightOffset={
+            x=m.lights[1].x-centre.x,y=m.lights[1].y-centre.y,
+        }
+        for i,area in ipairs(m.areas) do
+            if i~=m.vars.zone then
+                m.vars.falling[#m.vars.falling+1]={area=area,x=area.x,y=area.y,
+                    sign=i==1 and -1 or i==3 and 1 or (m.vars.zone==1 and 1 or -1)}
             end
         end
-        m.vars.knifeEmissionStop=lastBorn
-        m.vars.knifeClearTime=lastFinish
-        -- Under normal play the frame reaches its near-final span just after
-        -- the last knife clears. Slow mode may make knives take longer, so the
-        -- frame holds there instead of coupling its motion to bullet time.
-        m.vars.squeezeDuration=lastFinish/W.normalSpeedMultiplier+.2
-    elseif s==5 then
-        m.vars.dropArenaY=m.otherArena.y
-        m.vars.dropLightY=m.lights[1].y
     end
 end
+
 function W.lighting(m,dt)
-    if m.stage<3 then return end
-    local v=m.vars
-    if m.stage==3 then
-        local a=m.otherArena
-        local p=C.ease(m.phaseTime/1.2)
+    local s,v=m.stage,variant(m)
+    if s==4 then
+        local duration=v.lightEntry or 1.2
+        local p=C.ease(m.phaseTime/duration)
+        local centre=m.areas[2]
         m.darkAmount=p
-        m.lights={C.light(a.x,C.lerp(a.y-a.h/2-Lighting.outerRadius(m.config.radius,m.lightStyle),a.y,p),m.config.radius)}
-        return
-    end
-    if m.stage==5 then
-        local p=C.curve("quart",m.phaseTime/W.dropDuration)
+        m.lights={C.light(centre.x,C.lerp(m.vars.lightStartY,m.vars.lightTargetY,p),m.config.radius)}
+    elseif s==5 then
+        local ramp=C.clamp(m.phaseTime/(v.swayRamp or .65))
+        local envelope=ramp*ramp*ramp*(ramp*(ramp*6-15)+10)
+        local offset=math.sin(TAU*m.phaseTime/(v.swayPeriod or 2.2))
+            *(v.swayAmplitude or 16)*envelope
+        setAreas(m,offset)
+        local centre=m.areas[2]
+        local speed=TAU/(v.orbitPeriod or 3.8)
+        m.vars.lightAngle=m.vars.lightAngle+dt*speed*(v.orbitDirection or 1)
+        local angle=m.vars.lightAngle
+        local rx,ry=v.lightRadiusX or 26,v.lightRadiusY or 20
+        m.lights={C.light(centre.x+math.cos(angle)*rx,
+            centre.y+math.sin(angle)*ry,m.config.radius)}
         m.darkAmount=1
-        m.lights[1].y=m.vars.dropLightY+W.dropDistance*p
-        return
+    elseif s==6 then
+        local light=m.lights[1]
+        local centre=m.areas[2]
+        if m.vars.zone~=2 then
+            light.x=centre.x+m.vars.dropLightOffset.x
+            light.y=centre.y+m.vars.dropLightOffset.y
+        end
     end
-    m.darkAmount=1
-    v.lightTime=v.lightTime+dt
-    if v.lightTime>=m.config.lightWander then
-        v.lightTime=v.lightTime-m.config.lightWander
-        v.lightFrom=v.lightTarget; v.lightTarget=target(m)
-    end
-    local p=C.ease(v.lightTime/m.config.lightWander)
-    m.lights={C.light(C.lerp(v.lightFrom.x,v.lightTarget.x,p),C.lerp(v.lightFrom.y,v.lightTarget.y,p),m.config.radius)}
-end
-local updateLighting=W.lighting
-function W.lighting(m,dt)
-    updateLighting(m,dt)
     for _,light in ipairs(m.lights) do light.fadeRadius=380 end
 end
+
 function W.update(m,dt)
-    local s,c=m.stage,m.config
+    local s,v=m.stage,variant(m)
     if s==1 then
-        if m:dialogueDone() then m.vars.warnStart=m.vars.warnStart or m.phaseTime end
-        if m.vars.warnStart and m.phaseTime-m.vars.warnStart>=.45 then
-            if math.abs(m.player.x-W.arena.x)<=3 then m:hit(10) end
+        m.arena.w=C.lerp(W.expandedWidth,W.arena.w,
+            C.curve("quart",m.phaseTime/W.dialogueShrink))
+        if m:dialogueDone() then m:next() end
+    elseif s==2 then
+        openingBlades(m,m.phaseTime)
+        if m.phaseTime>=m.vars.burstAt+(v.slashAt or .27) then
+            m.vars.openingTimeline=m.phaseTime
             m:next()
         end
-    elseif s==2 then
-        layout(m,m.phaseTime/.5)
-        if m.phaseTime>.7 then m:next() end
-    elseif s==3 and m.phaseTime>=1.2 then m:next()
+    elseif s==3 then
+        openingBlades(m,m.vars.openingTimeline+m.phaseTime)
+        local first=v.firstCut or .16
+        local second=first+(v.cutGap or .12)
+        if m.vars.slashCount==0 and m.phaseTime>=first then strike(m,1) end
+        if m.vars.slashCount==1 and m.phaseTime>=second then strike(m,2) end
+        local flightDone=m.vars.openingTimeline+m.phaseTime
+            >=m.vars.burstAt+m.vars.burstDuration
+                +math.max(v.edgeDelay or .20,v.pairDelay or 0)
+        if flightDone and m.phaseTime>=second+(v.cutSettle or .28) then m:next() end
     elseif s==4 then
-        if m.phaseTime>3 and m:dialogueDone() then m.caption={"Chara","Wave03.Chara"} end
-        m.vars.knifeTime=m.vars.knifeTime+dt*(m.slow and c.slowFactor*W.slowMultiplier or W.normalSpeedMultiplier)
-        m.vars.squeezeTime=math.min(m.vars.squeezeDuration,m.vars.squeezeTime+dt)
-        squeezeArena(m)
-        local l=m.lights[1]
+        if m.phaseTime>=(v.lightEntry or 1.2) then m:next() end
+    elseif s==5 then
+        if m.phaseTime>3 and m:dialogueDone() then
+            m.caption={"Chara","Wave03.Chara","intermediate"}
+        end
+        local rate=m.slow and m.config.slowFactor*2 or 2
+        m.vars.knifeTime=m.vars.knifeTime+dt*rate
+        local light=m.lights[1]
         for _,k in ipairs(m.knives) do
             local age=m.vars.knifeTime-k.born
-            local direction=k.direction
-            local tangent=k.baseAngle+math.pi/2*direction
             if age<0 then
-                k.alpha=0; k.active=false
+                k.active=false; k.alpha=0
             elseif age<k.entryDuration then
-                local p=age/k.entryDuration
-                local targetX=l.x+math.cos(k.baseAngle)*k.radius
-                local targetY=l.y+math.sin(k.baseAngle)*k.radius
-                k.x=targetX-math.cos(tangent)*W.knifeEntryDistance*(1-p)
-                k.y=targetY-math.sin(tangent)*W.knifeEntryDistance*(1-p)
-                k.angle=tangent
-                k.alpha=1; k.active=true
-            else
-                -- Rotation starts only after this knife reaches its circle.
-                local orbitAge=age-k.entryDuration
-                if orbitAge<k.orbitDuration then
-                    local angle=k.baseAngle+math.rad(c.orbitSpeed)*orbitAge*direction
-                    k.x,k.y=l.x+math.cos(angle)*k.radius,l.y+math.sin(angle)*k.radius
-                    k.angle=angle+math.pi/2*direction
-                    k.alpha=1; k.active=true
-                else
-                    local exitAge=orbitAge-k.orbitDuration
-                    if exitAge<k.exitDuration then
-                        local tangent=k.baseAngle+math.pi/2*direction
-                        local distance=W.knifeExitDistance*exitAge/k.exitDuration
-                        k.x=l.x+math.cos(k.baseAngle)*k.radius+math.cos(tangent)*distance
-                        k.y=l.y+math.sin(k.baseAngle)*k.radius+math.sin(tangent)*distance
-                        k.angle=tangent
-                        k.alpha=1; k.active=true
-                    else
-                        k.alpha=0; k.active=false
-                    end
-                end
-            end
+                local remaining=k.entryDistance*(1-age/k.entryDuration)
+                k.x=light.x+math.cos(k.baseAngle)*k.radius-math.cos(k.tangent)*remaining
+                k.y=light.y+math.sin(k.baseAngle)*k.radius-math.sin(k.tangent)*remaining
+                k.angle=k.tangent; k.active=true; k.alpha=1
+            elseif age<k.entryDuration+k.orbitDuration then
+                local angle=k.baseAngle+k.sign*k.omega*(age-k.entryDuration)
+                k.x,k.y=light.x+math.cos(angle)*k.radius,light.y+math.sin(angle)*k.radius
+                k.angle=angle+k.sign*math.pi/2
+                k.active=true; k.alpha=1
+            elseif age<k.entryDuration+k.orbitDuration+k.exitDuration then
+                local d=k.exitDistance*(age-k.entryDuration-k.orbitDuration)/k.exitDuration
+                k.x=light.x+math.cos(k.baseAngle)*k.radius+math.cos(k.tangent)*d
+                k.y=light.y+math.sin(k.baseAngle)*k.radius+math.sin(k.tangent)*d
+                k.angle=k.tangent; k.active=true; k.alpha=1
+            else k.active=false; k.alpha=0 end
         end
         if m.vars.knifeTime>m.vars.knifeClearTime and m:dialogueDone() then m:next() end
-    elseif s==5 then
-        local p=C.curve("quart",m.phaseTime/W.dropDuration)
-        m.otherArena.y=m.vars.dropArenaY+W.dropDistance*p
-        if m.phaseTime>W.dropDuration then m:next() end
+    elseif s==6 then
+        local progress=C.clamp((m.phaseTime-DROP_HOLD)/DROP_DURATION)
+        local descent=progress*progress
+        for _,f in ipairs(m.vars.falling) do
+            f.area.x=f.x+f.sign*10*descent
+            f.area.y=f.y+300*descent
+            f.area.rotation=f.sign*math.rad(6)*descent
+        end
+        if m.phaseTime>DROP_HOLD+DROP_DURATION then m:next() end
     end
 end
+
 return W
-]]

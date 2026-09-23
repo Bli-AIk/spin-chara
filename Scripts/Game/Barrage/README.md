@@ -1,8 +1,8 @@
 # Adopted battle barrages
 
-Copied from the independent barrage-lab repository at `b30e7e4`.
-Rounds 2 and 3 use preset C; round 4 uses preset D. Round 5 uses the prototype's
-default preset A with the same dialogue-first arena transition.
+Originally copied from the independent barrage-lab repository. Round 3 now uses
+prototype 03A from `54a798a`; round 2 uses preset C, round 4 preset D, and
+round 5 preset A. All knife sprites in rounds 2–5 use scale 1.
 
 `battle.lua` bridges the model to real Player movement, Battle.OnHit, localized
 EText dialogue and wave cleanup. Rendering draws only barrage content, leaving
@@ -10,7 +10,7 @@ the encounter's enemies and HUD to the engine. `clip.lua` uses LÖVE 12 stencil
 state. Collision bounds reject distant knives before precise swept checks.
 No prototype hotkeys or debug UI are connected to gameplay.
 
-The opening keeps the incoming defense box throughout Chara's dialogue and
+Except for round 3, the opening keeps the incoming defense box throughout Chara's dialogue and
 pauses the attack model. Once the final dialogue pause ends, the box moves and
 resizes to the round's arena over 0.8 seconds with quartic in-out easing. Only
 after this transition do lighting and attacks begin. A wave that declares
@@ -36,12 +36,15 @@ afford that timer — there the model keeps running while the line plays — so 
 two copies differ here. `tests/wave02-entry` pins both halves: the box holds
 still and the entrance follows the line.
 
-Rounds 3 and 4 ramp the spotlight up to 1.5 times its movement speed while X is
-held. In round 3, the spotlight orbits the opposite box on a wide ellipse,
-clockwise or counterclockwise according to the player's side. It enters at the
-corresponding top or bottom of the orbit; a full turn takes 12 seconds before
-the X speed boost. Dark knife movement eases into and out of its X slow rate
-over 0.25 seconds in both rounds.
+Round 3 shrinks to a 156×156 square during Chara's opening line. A cross of
+knives emerges behind it, turns, pauses, then rushes through the centre as the
+frame widens to 288×156. Two rapid vertical cuts form left, middle and right
+areas. The soul stays in the area it occupied at the second cut. The 18px gaps
+leave 8px of visible black between the engine's 5px borders. The spotlight
+enters at the top of its orbit around the middle area; nine rings of knives
+follow it while the middle area swings from side to side. The other two areas
+then drift, tilt and slide down. X slows the ring knives in darkness; round 4
+still ramps the spotlight speed while X is held.
 
 Rounds two and four sound their blades leaving the box. A fan or a volley is one
 beat however many knives it holds, so the wave announces a launch and `knife.wav`

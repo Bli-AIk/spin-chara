@@ -19,7 +19,7 @@
   "Battle.WinTexts1": "* You WON![wait:0.5]\n* You earned %s XP and %s Gold.\n",
   "Battle.WinTexts2": "* Your LOVE increased!",
 
-  "Battle.GameoverText": ["* No...\n  Don't do this—", "* %s![wait:0.5]\n  stay determined..."],
+  "Battle.GameoverText": ["* No...\nDon't do this—", "* %s![wait:0.5]\n  stay determined..."],
 
   "Battle.EnemiesName.Chara": "Chara",
   "Battle.EnemiesName.Napstablook": "Napstablook",

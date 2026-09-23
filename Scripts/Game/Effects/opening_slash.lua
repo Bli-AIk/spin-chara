@@ -50,7 +50,16 @@ function Slash.New(arena)
     local ownedShake, previousShake
 
     local function releaseShake()
-        if ownedShake and Camera.shaker == ownedShake then Camera.shaker = previousShake end
+        if ownedShake then
+            ownedShake._slashReleased = true
+            if Camera.shaker == ownedShake then
+                local previous = previousShake
+                while previous and previous._slashReleased do
+                    previous = previous._slashPrevious
+                end
+                Camera.shaker = previous
+            end
+        end
         ownedShake, previousShake = nil, nil
     end
 
@@ -102,7 +111,8 @@ function Slash.New(arena)
         if a >= 0 and a < 0.18 then
             if not ownedShake then
                 previousShake = Camera.shaker
-                ownedShake = {_time = 0, x = 0, y = 0}
+                ownedShake = {_time = 0, x = 0, y = 0,
+                    _slashPrevious = previousShake}
                 Camera.shaker = ownedShake
             end
             local decay = (1 - a / 0.18) ^ 2

@@ -75,7 +75,7 @@ function C.new(style)
         self.knives={}
         for row=0,5 do for col=0,5 do
             self.knives[#self.knives+1]={x=178+col*57+8*math.sin(t*.7+row),
-                y=120+row*50,angle=-math.pi/3+.2*math.sin(t*.8),scale=.72}
+                y=120+row*50,angle=-math.pi/3+.2*math.sin(t*.8),scale=1}
         end end
         C.updateCloth(self,dt,previousPlayer,previousKnives)
     end

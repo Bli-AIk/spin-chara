@@ -10,7 +10,8 @@ function B.start(round)
     local wave=ImportFile("Battle.Waves")
     local arena=Battle.mainarena
     local renderer=Renderer.new()
-    local model,bubble,caption,captionKind,captionFinished,captionHold,fx,overlay
+    local model,bubble,caption,captionKind,captionFinished,captionHold,overlay
+    local effects,seenSlash,openingLaunchPlayed={},0,false
     local complete=true
     local oldDraw=Player.sprite.Draw
     local oldMove=arena.move_player
@@ -61,7 +62,7 @@ function B.start(round)
             end
         else
             complete=true
-            if captionKind=="final" then
+            if captionKind=="final" or captionKind=="intermediate" then
                 captionHold=captionHold+dt
                 if captionHold>=2 then clearBubble() end
             end
@@ -74,7 +75,11 @@ function B.start(round)
         arena.white.visible=false; arena.black.visible=false
         Player.sprite:MoveTo(m.player.x,m.player.y)
     end
-    model=Model.new(round,Config.defaults(B.presets[round]),{
+    local config=round==3 and Config.wave03A() or Config.defaults(B.presets[round])
+    if round==3 then
+        config.horizontalYOffsets={love.math.random(-48,48),love.math.random(-48,48)}
+    end
+    model=Model.new(round,config,{
         mortal=true,
         -- SPIN_CHARA_INVINCIBLE: knives still spawn and collide, they just
         -- never reach Battle.OnHit, so the soul keeps its HP and its alpha.
@@ -87,44 +92,51 @@ function B.start(round)
                     spin_punish=m.config.punishDamage})
             end
         end,
-        -- Rounds two and four send their blades out as one fan or one volley, so
-        -- the wave announces the launch and the sample lands with the blades
-        -- leaving the box rather than with the stage or the light.
+        -- Play one launch sample per volley, not one sample per knife.
         launch=function(m) Audio.PlaySound("knife.wav") end,
         dialogueDone=function(m) syncDialogue(m); return complete end,
         enter=function(m)
             syncDialogue(m)
-            if fx then fx:Destroy(); fx=nil end
-            if round==3 and m.stage==2 then
-                local a=m.wave.arena
-                fx=Slash.New({x=a.x,y=a.y,width=a.w,height=a.h,thickness=4})
-                fx:Strike()
-                -- This beat cuts the frame in two just like round one's opening
-                -- slash, so all of its samples play here, in the same order:
-                -- the swing lands with the blade, then the cut's own pair, the
-                -- box vanishing and the knife that split it.
-                Audio.PlaySound("heavyswing.wav")
-                Audio.PlaySound("disappear.wav")
+            if round==3 and m.stage==3 then seenSlash=0 end
+            if round==3 and m.stage==5 then
+                for _,effect in ipairs(effects) do effect:Destroy() end
+                effects={}
             end
         end,
         update=function(m)
             syncDialogue(m)
-            if round==3 and m.stage==1 and m.vars.warnStart and not fx then
-                local a=m.arena
-                fx=Slash.New({x=a.x,y=a.y,width=a.w,height=a.h,thickness=4})
+            if round==3 and m.stage==2 and m.vars.burstStarted and not openingLaunchPlayed then
+                openingLaunchPlayed=true
+                m:launch()
+            end
+            if round==3 and m.stage==3 then
+                while seenSlash<(m.vars.slashCount or 0) do
+                    seenSlash=seenSlash+1
+                    local cut=seenSlash==1 and m.vars.leftCut or m.vars.rightCut
+                    local a=m.wave.arena
+                    local effect=Slash.New({x=cut,y=a.y,width=m.wave.expandedWidth,
+                        height=a.h,thickness=4})
+                    effect:Strike()
+                    effects[#effects+1]=effect
+                    Audio.PlaySound("heavyswing.wav")
+                    Audio.PlaySound("disappear.wav")
+                end
             end
         end,
     })
-    opening.target=Model.copy(model.arena)
-    -- A wave that keeps the incoming box has nothing to resize, so its opening
-    -- is only the hold that keeps the model paused for Chara's line.
-    opening.duration=model.wave.reusesIncomingBox and 0 or .8
-    opening.dark,opening.darkAmount=model.dark,model.darkAmount
-    opening.lights,opening.knives=model.lights,model.knives
-    model.arena=Model.copy(opening.from)
     model.player.x,model.player.y=Player.sprite.x,Player.sprite.y
-    model.dark=false; model.darkAmount=0; model.lights={}; model.knives={}
-    model.opening=opening
+    if round==3 then
+        -- Wave 03A shrinks its own frame while the opening line is spoken.
+        opening=nil
+    else
+        opening.target=Model.copy(model.arena)
+        opening.duration=model.wave.reusesIncomingBox and 0 or .8
+        opening.dark,opening.darkAmount=model.dark,model.darkAmount
+        opening.lights,opening.knives=model.lights,model.knives
+        model.arena=Model.copy(opening.from)
+        model.dark=false; model.darkAmount=0; model.lights={}; model.knives={}
+        model.opening=opening
+    end
     wave.barrage=model
     model.borderThickness=arena.thickness
     arena.move_player=false
@@ -137,7 +149,7 @@ function B.start(round)
         if destroyed then return end
         destroyed=true
         clearBubble()
-        if fx then fx:Destroy(); fx=nil end
+        for _,effect in ipairs(effects) do effect:Destroy() end
         Layers.remove_external(overlay)
         model:destroy()
         Player.sprite.Draw=oldDraw
@@ -154,18 +166,6 @@ function B.start(round)
             -- Dialogue advances through the engine while the attack simulation
             -- remains stopped. Only start resizing after the final pause.
             if complete then opening.time=math.min(opening.duration,opening.time+dt) end
-            -- Round three's opening slash is part of the box entrance. Let the
-            -- warning advance with the resize; once it strikes, hand the arena
-            -- to the wave immediately so the split animation runs at full speed.
-            if round==3 and complete and model.stage==1 then
-                model:update(dt,{slow=Controller.GetState("cancel")>0})
-                if model.stage>1 then
-                    model.opening=nil
-                    opening=nil
-                    syncArena(model)
-                    return
-                end
-            end
             -- A zero-length opening still has to wait for the line, so the
             -- run is gated on `complete` and not on the clock alone.
             local progress=opening.duration>0 and Ease.curve("quart",opening.time/opening.duration) or 1
