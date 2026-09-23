@@ -36,7 +36,7 @@ afford that timer — there the model keeps running while the line plays — so 
 two copies differ here. `tests/wave02-entry` pins both halves: the box holds
 still and the entrance follows the line.
 
-Round 3 shrinks to a 156×156 square during Chara's opening line. A cross of
+Round 3 holds a 156×156 frame during Chara's opening line. A cross of
 knives emerges behind it, turns, pauses, then rushes through the centre as the
 frame widens to 288×156. Two rapid vertical cuts form left, middle and right
 areas. The soul stays in the area it occupied at the second cut. The 18px gaps

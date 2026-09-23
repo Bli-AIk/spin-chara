@@ -6,7 +6,7 @@ local W={
     arena={x=320,y=315,w=156,h=156},
     -- The engine draws a 5px border outside each piece; 18px leaves an 8px
     -- visible gutter between adjacent frames after both borders are drawn.
-    expandedWidth=288,sideWidth=64,gap=18,dialogueShrink=.7,
+    expandedWidth=288,sideWidth=64,gap=18,
     verticalLaneCount=10,verticalLaneRadius=70,
     stages={"方框对白","十字刀阵","双重竖劈","聚光灯入场","环刃与摆框","空框滑落"},
 }
@@ -165,7 +165,7 @@ end
 function W.enter(m)
     local s,v=m.stage,variant(m)
     if s==1 then
-        m.arena={x=W.arena.x,y=W.arena.y,w=W.expandedWidth,h=W.arena.h}
+        m.arena={x=W.arena.x,y=W.arena.y,w=W.arena.w,h=W.arena.h}
         m.otherArena,m.thirdArena,m.areas=nil,nil,nil
         m.lights={}; m.dark=false; m.darkAmount=0
         m.caption={"Chara","Wave03.Intro"}
@@ -189,10 +189,10 @@ function W.enter(m)
         local quick=v.horizontalEmerge or .16
         blade(-1,0,0,0,1,horizontalY[1],appear,quick)
         blade(1,0,0,v.pairDelay or 0,1,horizontalY[2],appear,quick)
-        -- Ten lanes on each edge retain the ±70px span. Only spacing changes.
+        -- Keep the original lane spacing, omitting both outermost lanes.
         local count,radius=W.verticalLaneCount,W.verticalLaneRadius
         local inner=radius/(count-1)
-        for i=0,count-1 do
+        for i=1,count-2 do
             local lane=-radius+2*radius*i/(count-1)
             local delay=(math.abs(lane)-inner)/(radius-inner)*(v.edgeDelay or .20)
             blade(0,-1,lane,delay,1)
@@ -271,8 +271,6 @@ end
 function W.update(m,dt)
     local s,v=m.stage,variant(m)
     if s==1 then
-        m.arena.w=C.lerp(W.expandedWidth,W.arena.w,
-            C.curve("quart",m.phaseTime/W.dialogueShrink))
         if m:dialogueDone() then m:next() end
     elseif s==2 then
         openingBlades(m,m.phaseTime)
