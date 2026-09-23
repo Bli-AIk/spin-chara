@@ -560,7 +560,10 @@ function typers.New(text, position, layer, size, opts, mode)
             typer.skip.skipping = true
         end
 
-        if (typer.time >= typer.interval and typer.sentence_index <= #typer.texts) then
+        -- A pending skip also opens the gate: a cancel press that lands during a
+        -- wait must not sit out the rest of that pause before the burst that
+        -- clears the sentence can start.
+        if ((typer.time >= typer.interval or typer.skip.skipping) and typer.sentence_index <= #typer.texts) then
             typer.cantype = true
             typer.interval = typer.dint
             local raw_sentence = typer.texts[typer.sentence_index]
@@ -598,8 +601,11 @@ function typers.New(text, position, layer, size, opts, mode)
                                 if (opt.scale) then typer.scale = opt.scale end
                                 if (opt.autowrap ~= nil) then typer.auto_wrap = opt.autowrap end
                                 if (opt.wait) then
-                                    typer.interval = opt.wait
-                                    typer.cantype = false
+                                    -- A skip burst runs straight through the pause, same as "^" below.
+                                    if (not typer.skip.skipping) then
+                                        typer.interval = opt.wait
+                                        typer.cantype = false
+                                    end
                                 end
                                 if (opt.effect) then typer.effect = opt.effect end
                                 if (opt.voice) then typer.voices = {opt.voice} end

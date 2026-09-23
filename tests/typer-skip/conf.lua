@@ -5,7 +5,7 @@ _RELEASED = os.getenv("SPIN_TEST_RELEASE") == "1"
 local configure = love.conf
 function love.conf(t)
     configure(t)
-    t.identity = "spin-chara-bubble-check"
+    t.identity = "spin-chara-typer-skip"
 end
 
 function love.errorhandler(message)

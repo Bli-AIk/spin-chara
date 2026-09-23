@@ -329,7 +329,8 @@ local function applyTag(typer, tag_name, tag_value)
     tag_name = tag_name:lower()
     if (tag_name == "wait" and tag_value) then
         local val = tonumber(tag_value)
-        if (val) then
+        -- A skip burst runs straight through the pause, same as "^" below.
+        if (val and not typer.skip.skipping) then
             typer.interval = val
             typer.cantype = false
         end
@@ -818,7 +819,10 @@ function typers.New(text, position, layer, size, mode)
             typer.skip.skipping = true
         end
 
-        if (typer.time >= typer.interval and typer.sentence_index <= #typer.texts) then
+        -- A pending skip also opens the gate: a cancel press that lands during a
+        -- [wait:] (or "^") pause must not sit out the rest of that pause before
+        -- the burst that clears the sentence can start.
+        if ((typer.time >= typer.interval or typer.skip.skipping) and typer.sentence_index <= #typer.texts) then
             typer.cantype = true
             typer.interval = typer.dint
             local raw_sentence = typer.texts[typer.sentence_index]

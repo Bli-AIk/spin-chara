@@ -700,7 +700,10 @@ function typers.New(fn, position, layer, size, mode)
         end
 
         -- Process queue items (repeat loop handles skip-mode burst typing)
-        if (typer.time >= typer.interval and typer.queue_index <= #typer.queue) then
+        -- A pending skip also opens the gate: a cancel press that lands during a
+        -- setWaitTime pause must not sit out the rest of that pause; the "wait"
+        -- items below are already stepped over while skipping.
+        if ((typer.time >= typer.interval or typer.skip.skipping) and typer.queue_index <= #typer.queue) then
             repeat
                 typer.interval = typer.dint
                 local item = typer.queue[typer.queue_index]
