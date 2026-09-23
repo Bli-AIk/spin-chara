@@ -64,8 +64,9 @@ if (_controllerSim) then
 end
 
 -- 触屏虚拟按键：本作不要它自己弹出来。两条自动路径都关掉——触屏设备上的自动
--- 检测，以及收到真实触摸（桌面端鼠标按下也算）就自动启用——只留手动开关：F9
--- （VirtualKeyboard.toggleKey），或 conf_pure.lua 里 ControllerSimulation.virtualKeyboard。
+-- 检测，以及收到真实触摸（桌面端鼠标按下也算）就自动启用——只留手动开关：
+-- F9 / PGUP / PGDN（VirtualKeyboard.toggleKey，可改成别的键），
+-- 或 conf_pure.lua 里 ControllerSimulation.virtualKeyboard。
 -- 想恢复自动弹出，把下面两行删掉即可。
 VirtualKeyboard.autoDetect = false          -- 触屏设备上不自动打开
 VirtualKeyboard.autoEnableOnTouch = false   -- 首个触摸不自动打开
@@ -316,7 +317,7 @@ function love.keypressed(key, scancode, isrepeat)
         require("conf_pure")
         Scenes.switchTo(Global.GetVariable("F2Room"))
     elseif (VirtualKeyboard.HandleKey(key, isrepeat)) then
-        -- 触屏虚拟按键开关（默认 F9，改 VirtualKeyboard.toggleKey）。
+        -- 触屏虚拟按键开关（默认 F9 / PGUP / PGDN，改 VirtualKeyboard.toggleKey）。
         -- 手机在 Termux:X11 里收到真实触摸时会自动打开，这个键用来手动开关。
         return
     end

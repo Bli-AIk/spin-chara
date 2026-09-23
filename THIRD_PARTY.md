@@ -9,7 +9,7 @@
   见 Bli-AIk/thrash-machine 的 `libraries/virtualkeyboard`。
 - **本仓库的 SoulEngine 适配**：沿用同一套素材与坐标约定，改为接入 SoulEngine 的
   `Keyboard.SimulatePress` / `SimulateRelease`、640x480 画布与 `ScreenScale` 缩放，
-  并增加 F9 开关与触摸自动启用。
+  并增加 F9 / PGUP / PGDN 开关与触摸自动启用。
 
 素材文件：`Resources/Sprites/UI/vk/buttons/*.png`（方向箭头与 Z/X/C，含按下帧 `*1.png`）、
 `Resources/Sprites/UI/vk/joystick/*.png`（摇杆底盘与手柄）。使用时请保留本文件中的署名。

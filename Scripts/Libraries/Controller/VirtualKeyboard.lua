@@ -16,7 +16,7 @@
       - 窗口够宽（两侧留白 ≥ 240 设计像素）时控件画在两侧空白区，否则画在 640x480 画面内
       - 桌面调试：鼠标左键等同触摸，可以直接点着试位置
 
-    开关：F9（VirtualKeyboard.toggleKey 可改），或 VirtualKeyboard.Toggle()。
+    开关：F9 / PGUP / PGDN（VirtualKeyboard.toggleKey 可改），或 VirtualKeyboard.Toggle()。
     模拟输入仍走 Keyboard.SimulatePress / SimulateRelease，与真键盘同一套状态。
 --]]
 
@@ -38,7 +38,7 @@ local VirtualKeyboard = {
     visible = true,           -- 是否绘制（enabled 且 visible 才生效）
     autoDetect = true,        -- Android/iOS 上自动打开
     autoEnableOnTouch = true, -- 任何平台：一旦真收到触摸事件就自动打开（Termux:X11 靠这条）
-    toggleKey = "f9",         -- 开关键（在 main.lua 的 keypressed 里调 HandleKey）
+    toggleKey = { "f9", "pageup", "pagedown" },  -- 开关键：字符串或数组（在 main.lua 的 keypressed 里调 HandleKey）
     layout = "buttons",       -- "buttons" | "joystick"
     target = "Keyboard",      -- "Keyboard"（模拟按键）| "Joystick"（模拟手柄）
     alpha = 0.78,
@@ -647,11 +647,26 @@ function VirtualKeyboard.Configure(opts)
     if (opts.visible ~= nil) then VirtualKeyboard.SetVisible(opts.visible) end
 end
 
---- 开关键：在 main.lua 的 love.keypressed 里调，返回 true 表示这个键被吃掉了
+--- 这个键是不是开关键（toggleKey 写字符串或数组都行）
+---@return boolean
+function VirtualKeyboard.IsToggleKey(key)
+    local tk = VirtualKeyboard.toggleKey
+    if (type(tk) == "string") then return key == tk end
+    if (type(tk) == "table") then
+        for i = 1, #tk do
+            if (key == tk[i]) then return true end
+        end
+    end
+    return false
+end
+
+--- 开关键：在 main.lua 的 love.keypressed 里调，返回 true 表示这个键被吃掉了。
+--- 默认 {"f9","pageup","pagedown"} —— 平板/手机在 Termux:X11 里按不到 F9，
+--- 而 Termux:X11 的软键盘上有 PGUP / PGDN。
 ---@return boolean handled
 function VirtualKeyboard.HandleKey(key, isrepeat)
     if (isrepeat) then return false end
-    if (type(VirtualKeyboard.toggleKey) == "string" and key == VirtualKeyboard.toggleKey) then
+    if (VirtualKeyboard.IsToggleKey(key)) then
         VirtualKeyboard.Toggle()
         return true
     end
