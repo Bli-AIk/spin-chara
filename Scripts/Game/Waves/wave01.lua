@@ -13,7 +13,11 @@ local ownedTypers={}
 local split_arena, split_settling
 local original_box
 
-local function enemyDialogue(lines, callback)
+---@param autoClose boolean|nil Append [next] to the last line, so the typer
+---advances past the end of the script the moment that line is on screen and
+---the bubble closes by itself. The bubble's own confirm handling cannot do
+---this: the typer runs in "none" mode, where [next] is the only advance.
+local function enemyDialogue(lines, callback, autoClose)
     local enemy = Battle.game and Battle.game.enemies and Battle.game.enemies[1]
     local position = (enemy and enemy.position) or {320, 120}
     local x, y = position[1], position[2]
@@ -22,7 +26,9 @@ local function enemyDialogue(lines, callback)
     local bx = on_left and math.max(25, x - width - 45)
         or math.min(615 - width, x + 65)
     local colored = {}
-    for i, line in ipairs(lines) do colored[i] = "[colorHEX:000000]" .. line end
+    for i, line in ipairs(lines) do
+        colored[i] = "[colorHEX:000000]" .. line .. ((autoClose and i == #lines) and "[next]" or "")
+    end
     local typer = Typers.EText.New(colored,
         {bx, math.max(35, y - height / 2 + 10)}, "UponArena", {width, height}, "none")
     typer.font = "speechbubble.ttf"
@@ -156,7 +162,11 @@ local function introComplete()
 end
 
 local function startIntro()
-    intro_typer = enemyDialogue(localizedLines("Battle.Waves.Wave01.Intro"), introComplete)
+    -- The bubble closes itself on the fourth line, which is also the line that
+    -- arms the blade: she stops talking and starts performing on the same beat,
+    -- with nothing for the player to press. The first three lines stay on
+    -- confirm.
+    intro_typer = enemyDialogue(localizedLines("Battle.Waves.Wave01.Intro"), introComplete, true)
 end
 
 table.insert(wave.objects, {
@@ -189,7 +199,11 @@ function wave.Update(dt)
             intro_ready=false
         end
         local line=intro_typer.texts[index]
-        local ready=line and intro_typer.counter>#line and intro_typer.cantype
+        -- A line is ready the moment it is fully on screen. Its trailing
+        -- [wait:] is part of the line's own rhythm, not a gate on the player:
+        -- the typer's manual mode advances on the press regardless, and a press
+        -- landing during that pause must not be swallowed.
+        local ready=line and intro_typer.counter>#line
         if ready then
             if intro_ready and Controller.GetState("confirm")==1 then
                 intro_typer.pending_next=true
