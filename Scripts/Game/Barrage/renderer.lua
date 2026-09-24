@@ -43,12 +43,6 @@ function R:draw(m,presentation,debugUnlit)
     Clip.arenas(arenas)
     if not debugUnlit then Lighting.drawLights(m.lights,m.lightStyle) end
     if m.round==3 and m.stage==5 and m.vars.targetX then
-        -- An outline marks the next light position, not an already safe lane.
-        local light=m.lights[1]
-        if math.abs(light.x-m.vars.targetX)>2 then
-            g.setColor(1,1,1,.65)
-            g.circle("line",m.vars.targetX,light.y,6)
-        end
         for _,fan in ipairs(m.vars.fans) do
             if m.vars.beatTime<fan.launchAt then
                 local y=m.wave.arena.y-fan.sign*(m.wave.arena.h/2-8)

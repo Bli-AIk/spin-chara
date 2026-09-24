@@ -45,8 +45,8 @@ enters the middle strip and glides left or right while vertical knife rows attac
 from the corresponding edge. Upper and lower strips receive only their outward
 attack direction; the middle alternates. The five beats tighten their travel
 time, so X is required to slow the blade rows and create a safe timing window.
-A small ring marks the light's next position, and orange chevrons mark the edge
-the next row will enter from before it launches.
+Orange chevrons mark the edge the next row will enter from before it launches;
+where the light will stop is left unmarked.
 
 Rounds two and four sound their blades leaving the box. A fan or a volley is one
 beat however many knives it holds, so the wave announces a launch and `knife.wav`
