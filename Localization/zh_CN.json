@@ -1,6 +1,5 @@
 {
   "Battle.Narration.Default": "* 看来你上台了。[wait:1.5]\n* 祝你演出成功呀...[wait:0.5]\n  别把自己的骨头摔散了。",
-
   "Battle.Narration.Random": [
     "* 闻起来有舞台烟雾的味道...[wait:1.0]\n  还有巧克力？",
     "* 聚光灯正打在你的\n  头盖骨上。",
@@ -10,7 +9,6 @@
     "* 感觉这次试镜，[wait:0.35]你怕是要被刷下来了。\n[wait:1.5]* 一片一片地。",
     "* Chara正在思考\n  各种用刀的方法。"
   ],
-
   "Battle.Spare": "饶恕",
   "Battle.Flee": "逃跑",
   "Battle.HP.NotFull": "* 你回复了%sHP!",
@@ -18,35 +16,55 @@
   "Battle.Items.Page": "第 %s 页",
   "Battle.WinTexts1": "* 你赢了！[wait:0.5]\n* 你获得了 %s XP 和 %s 金钱。\n",
   "Battle.WinTexts2": "* 你的LOVE提升了！",
-
-  "Battle.GameoverText": ["不...\n不要这样——", "%s![wait:0.5]\n  保持你的决心..."],
-
+  "Battle.GameoverText": [
+    "不...\n不要这样——",
+    "%s![wait:0.5]\n  保持你的决心..."
+  ],
   "Battle.EnemiesName.Chara": "Chara",
   "Battle.EnemiesName.Napstablook": "Napstablook",
-  
   "Battle.Actions.Names.Check": "查看",
   "Battle.Actions.Names.Applause": "鼓掌",
   "Battle.Actions.Names.Boo": "喝倒彩",
-
-  "Battle.Actions.Texts.Chara.Check": ["* CHARA[wait:0.5] - LV 1[wait:0.35]\n* 一个似乎对你怀有\n  深仇大恨的神秘表演者。"],
-  "Battle.Actions.Texts.Chara.Applause": ["* 你鼓起掌来。[wait:0.5]\n* Chara朝着空无一人的片场\n  深深鞠了一躬。"],
-  "Battle.Actions.Texts.Chara.Applause.Reply": ["哦亲爱的，[wait:0.35]你可真捧场。", "继续拍吧，[wait:0.35]我的好搭档。", "这样我瞄准你的时候，[wait:0.35]能方便不少。"],
-  "Battle.Actions.Texts.Chara.Applause.Effect": ["* Chara的动作变慢了，但瞄的更精准了！"],
-  "Battle.Actions.Texts.Chara.Boo": ["* 你喝了倒彩。[wait:0.5]\n* Chara倒吸一口凉气，[wait:0.35]\n  好像你犯天条了一样。"],
-  "Battle.Actions.Texts.Chara.Boo.Reply": ["我的好搭档，[wait:0.35]你太没品味了。[wait:0.5]", "空场而已。[wait:0.5]只是观众还没跟上我的格调。"],
+  "Battle.Actions.Texts.Chara.Check": [
+    "* CHARA[wait:0.5] - LV 1[wait:0.35]\n* 一个似乎对你怀有\n  深仇大恨的神秘表演者。"
+  ],
+  "Battle.Actions.Texts.Chara.Applause": [
+    "* 你鼓起掌来。[wait:0.5]\n* Chara朝着空无一人的片场\n  深深鞠了一躬。"
+  ],
+  "Battle.Actions.Texts.Chara.Applause.Reply": [
+    "哦亲爱的，[wait:0.35]你可真捧场。",
+    "继续拍吧，[wait:0.35]我的好搭档。",
+    "这样我瞄准你的时候，[wait:0.35]能方便不少。"
+  ],
+  "Battle.Actions.Texts.Chara.Applause.Effect": [
+    "* Chara的动作变慢了，但瞄的更精准了！"
+  ],
+  "Battle.Actions.Texts.Chara.Boo": [
+    "* 你喝了倒彩。[wait:0.5]\n* Chara倒吸一口凉气，[wait:0.35]\n  好像你犯天条了一样。"
+  ],
+  "Battle.Actions.Texts.Chara.Boo.Reply": [
+    "我的好搭档，[wait:0.35]你太没品味了。[wait:0.5]",
+    "空场而已。[wait:0.5]只是观众还没跟上我的格调。"
+  ],
   "Battle.Actions.Texts.Chara.Boo.Effect": ["* Chara下一回合的伤害提高了！"],
-  "Battle.Actions.Texts.Napstablook.Check": ["* NAPSTABLOOK[wait:0.5] - 攻击 5 防御 4[wait:0.35]\n* 这只幽灵似乎并不想待在这儿。"],
-  "Battle.Actions.Texts.Napstablook.Applause": ["* 你鼓起掌来。[wait:0.5]\n* Napstablook当场缩水了两寸。"],
-  "Battle.Actions.Texts.Napstablook.Applause.Reply": ["哦...[wait:0.5]谢谢。[wait:0.5]", "哦...[wait:0.5]对不起。"],
-  "Battle.BarrageLab.Wave02.Intro": "[speed:0.045]要么你[colorHEX:ff0000]跟上我们的规则[colorHEX:000000]...[wait:0.7]\n要么[colorHEX:ff0000]死路一条[colorHEX:000000]。[wait:0.5]",
-  "Battle.BarrageLab.Wave03.Intro": "[speed:0.055][colorHEX:ff0000]如果身处黑暗，[wait:0.35]\n就得小心行事。[wait:0.6][colorHEX:000000]",
+  "Battle.Actions.Texts.Napstablook.Check": [
+    "* NAPSTABLOOK[wait:0.5] - 攻击 5 防御 4[wait:0.35]\n* 这只幽灵似乎并不想待在这儿。"
+  ],
+  "Battle.Actions.Texts.Napstablook.Applause": [
+    "* 你鼓起掌来。[wait:0.5]\n* Napstablook当场缩水了两寸。"
+  ],
+  "Battle.Actions.Texts.Napstablook.Applause.Reply": [
+    "哦...[wait:0.5]谢谢。[wait:0.5]",
+    "哦...[wait:0.5]对不起。"
+  ],
+  "Battle.BarrageLab.Wave02.Intro": "[speed:0.045]要么你[colorHEX:00ff00]跟上[colorHEX:000000]我们的[colorHEX:ff0000]规则[colorHEX:000000]...[wait:0.7]\n要么死路一条。[wait:0.5]",
+  "Battle.BarrageLab.Wave03.Intro": "[speed:0.055]如果[colorHEX:00ff00]身处黑暗[colorHEX:000000]，[wait:0.35]\n就得[colorHEX:00ff00]小心行事[colorHEX:000000]。",
   "Battle.BarrageLab.Wave03.Nap": "[speed:0.055]...[wait:0.4]你该按住 X（减速）之类的...[wait:0.5]\n吧？[wait:0.5]",
   "Battle.BarrageLab.Wave03.Chara": "[speed:0.04]啊呀！[wait:0.35]不要吵，[wait:0.3]\n我还在瞄准！[wait:0.5]",
-  "Battle.BarrageLab.Wave04.Intro": "[speed:0.04]一场精彩的演出，[wait:0.3]\n怎么能少得了...[wait:0.6]戏剧性的阴影！[wait:0.5]",
-  "Battle.BarrageLab.Wave04.Curtain": "[speed:0.045]拉上幕布！[wait:0.6]",
-  "Battle.BarrageLab.Wave04.Nap": "[speed:0.05]呃...[wait:0.4]幕布拉上的时候，[wait:0.35]\n灯光照射的地方会变得很烫...[wait:0.6]",
+  "Battle.BarrageLab.Wave04.Intro": "[speed:0.04]一场精彩的演出，[wait:0.3]\n怎么能少得了...[wait:0.6]\n戏剧性的阴影！[wait:0.5]",
+  "Battle.BarrageLab.Wave04.Curtain": "[speed:0.045]拉上[colorHEX:00ff00]幕布[colorHEX:000000]！[wait:0.6]",
+  "Battle.BarrageLab.Wave04.Nap": "[speed:0.05]呃...[wait:0.4]幕布拉上的时候，[wait:0.35]\n[colorHEX:00ff00]灯光照射[colorHEX:000000]的地方\n会变得[colorHEX:00ff00]很烫[colorHEX:000000]...[wait:0.6]",
   "Battle.BarrageLab.Wave05.Intro": "[speed:0.04]我的道具最喜欢和嘉宾“亲密接触”了！[wait:0.6]\n尤其是最尖锐的部分。[wait:0.6]",
-
   "Battle.Waves.Wave01.Intro": [
     "看来，[wait:0.35]又到了\n上台表演的时候啦！",
     "欢迎欢迎，[wait:0.35]\n我们的新朋友！",
@@ -58,7 +76,6 @@
     "[speed:0.033]最好的节目效果，\n[wait:0.35]当然是嘉宾面临\n真实的致命危机时\n的表情啦！",
     "为什么不笑一下呢，[wait:0.35]嗯？"
   ],
-
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",
   "Battle.Items.Stew.Name": "一锅乱炖",
@@ -83,7 +100,6 @@
   "Battle.Items.Chocolate.FinishOff": "* 你把它吃干净了。[wait:0.35]\n%s",
   "Battle.Items.Chocolate.Finish": "* 你把它吃完了。[wait:0.35]\n%s",
   "Items": {},
-
   "Overworld.Menu.Buttons": ["物品", "状态", "电话"],
   "Overworld.Menu.Item": "使用   查看   丢弃",
   "Overworld.Menu.Interval": [215, 322, 430],
