@@ -4,6 +4,10 @@ local Lighting=require((...):match("(.-)waves%.").."lighting")
 local W={arena={x=320,y=315,w=156,h=156},expandedWidth=288,
     outerHeight=38,gap=12,horizontalLaneCount=10,horizontalLaneRadius=54,
     horizontalSplit=true,
+    -- The frame stays the incoming defense box until the blades are about to
+    -- sweep, then opens to the attack size on its own. The engine adapter only
+    -- holds that incoming box for the opening line.
+    animatesOpeningBox=true,
     stages={"方框对白","横向密刀","双重横劈","聚光灯入场","追光与纵刺","空框滑落"}}
 local function variant(m) return m.config.wave03Prototype end
 local function box(top,bottom) return {x=W.arena.x,y=(top+bottom)/2,w=W.expandedWidth,h=bottom-top} end
@@ -32,8 +36,20 @@ end
 local function opening(m,t)
     local v=variant(m)
     if t>=m.vars.burstAt then m.vars.burstStarted=true end
-    if m.stage==2 and m.vars.burstStarted then
-        m.arena.w=C.lerp(W.arena.w,W.expandedWidth,C.curve("quart",(t-m.vars.burstAt)/v.expand))
+    -- Height only, and only over the last growTime before the sweep: the frame
+    -- grows to the round's square exactly as the blades leave, instead of
+    -- changing shape while nothing is coming. It leaves at full speed rather
+    -- than easing in, because every frame of it has to read as movement. The
+    -- width is left alone here: it expands after the sweep, not before it.
+    if m.stage==2 then
+        local from=m.vars.boxFrom
+        if t>=m.vars.growStart then
+            local p=1-(1-C.clamp((t-m.vars.growStart)/v.growTime))^3
+            m.arena.y=C.lerp(from.y,W.arena.y,p); m.arena.h=C.lerp(from.h,W.arena.h,p)
+        end
+        if m.vars.burstStarted then
+            m.arena.w=C.lerp(from.w,W.expandedWidth,C.curve("quart",(t-m.vars.burstAt)/v.expand))
+        end
     end
     for _,k in ipairs(m.knives) do
         local age=t-k.delay
@@ -195,12 +211,15 @@ end
 function W.enter(m)
     local s,v=m.stage,variant(m)
     if s==1 then
-        m.arena={x=W.arena.x,y=W.arena.y,w=W.arena.w,h=W.arena.h}
+        -- Whatever box the battle handed over is the one the round opens in;
+        -- stage 2 is where it starts moving.
         m.areas,m.otherArena,m.thirdArena=nil,nil,nil
         m.lights={}; m.dark=false; m.darkAmount=0
         m.caption={"Chara","Wave03.Intro"}
     elseif s==2 then
         m.vars.burstAt=v.emerge+v.spin+v.pause
+        m.vars.growStart=math.max(0,m.vars.burstAt-v.growTime)
+        m.vars.boxFrom={x=m.arena.x,y=m.arena.y,w=m.arena.w,h=m.arena.h}
         m.vars.burstStarted=false
         local function blade(dx,dy,laneX,laneY,delay)
             local x,y=W.arena.x+laneX,W.arena.y+laneY

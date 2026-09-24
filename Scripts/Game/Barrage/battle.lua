@@ -136,6 +136,13 @@ function B.start(round)
     model.player.x,model.player.y=Player.sprite.x,Player.sprite.y
     opening.target=Model.copy(model.arena)
     opening.duration=model.wave.reusesIncomingBox and 0 or .8
+    if model.wave.animatesOpeningBox then
+        -- A wave that scales its own frame gets no resize from here: this hold
+        -- keeps the box the battle came in with, and the wave takes it over the
+        -- moment the line closes.
+        opening.target=Model.copy(opening.from)
+        opening.duration=0
+    end
     opening.dark,opening.darkAmount=model.dark,model.darkAmount
     opening.lights,opening.knives=model.lights,model.knives
     model.arena=Model.copy(opening.from)

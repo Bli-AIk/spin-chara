@@ -14,7 +14,9 @@ The opening keeps the incoming defense box throughout Chara's dialogue and
 pauses the attack model. Once the final dialogue pause ends, the box moves and
 resizes to the round's arena over 0.8 seconds with quartic in-out easing. Only
 after this transition do lighting and attacks begin. A wave that declares
-`reusesIncomingBox` has nothing to resize: its opening is the hold alone.
+`reusesIncomingBox` has nothing to resize: its opening is the hold alone. A wave
+that declares `animatesOpeningBox` scales the frame itself, so the hold keeps the
+box the battle came in with and the wave takes over the moment the line closes.
 
 Round 2 builds on C with five randomized spotlight destinations. Its radius
 shrinks evenly across the five moves and ends at 29% of the initial radius —
@@ -36,11 +38,14 @@ afford that timer — there the model keeps running while the line plays — so 
 two copies differ here. `tests/wave02-entry` pins both halves: the box holds
 still and the entrance follows the line.
 
-Round 3 eases from the incoming defense box to the prototype's fixed 156×156
-square, independent of the incoming size. The opening uses dense horizontal
-rows, with the outer two rows removed, then widens to 288×156. Two rapid
-horizontal cuts form upper, middle and lower areas, 38 / 56 / 38px high with
-12px gaps. The soul stays in the strip it occupied at the second cut. The spotlight
+Round 3 opens and reads its blades in the incoming defense box, which does not
+move while the line is spoken or while the rows emerge and spin up. In the last
+quarter second before the sweep it grows to the round's square height, at full
+speed, so the change of shape lands on the attack instead of running while
+nothing is coming. Its width is left alone until after the sweep, when the frame
+expands to 288 as the rows cross it. Two rapid horizontal cuts form upper, middle
+and lower areas, 38 / 56 / 38px high with 12px gaps. The soul stays in the strip
+it occupied at the second cut. The spotlight
 enters the middle strip and glides left or right while vertical knife rows attack
 from the corresponding edge. Upper and lower strips receive only their outward
 attack direction; the middle alternates. The five beats tighten their travel

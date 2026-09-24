@@ -27,9 +27,11 @@ function C.wave03A()
     out.label="B · 滑灯截刀"
     out.radius,out.spacing=22,12
     out.wave03Prototype={
-        -- The opener's wind-up is introHold + emerge + spin + pause.
+        -- The opener's wind-up is introHold + emerge + spin + pause. The frame
+        -- grows to the round's square over the last growTime of it, landing on
+        -- the sweep; expand is the width it takes on after that sweep.
         introHold=.18,
-        emerge=.22,spin=.26,pause=.06,burst=.60,expand=.27,edgeDelay=.20,
+        emerge=.22,spin=.26,pause=.06,burst=.60,growTime=.25,expand=.27,edgeDelay=.20,
         slashAt=.30,firstCut=.06,cutGap=.10,cutSettle=.24,lightEntry=1.0,
         moveTime=.90,launchAt=.18,beats=5,hold=.16,retract=.34,
         kind="glide",flights={1.85,1.65,1.45,1.30,1.24},
