@@ -5,14 +5,19 @@ function W.enter(m)
     local a,c=m.arena,m.config
     m.lights={C.light(a.x,a.y-a.h/2+55,c.radius)}
     m.caption=m.stage==1 and {"Chara","Wave05.Intro"} or nil
-    for x=a.x-a.w/2+6,a.x+a.w/2-6,c.spacing do
+    -- Both rows span the strip the soul can stand in, centred on the box: a row
+    -- that stops short of one wall at a wider blade pitch leaves a lane to hide.
+    local first,count=Knife.row(a.x,a.w-16,c.spacing)
+    for i=0,count-1 do
+        local x=first+i*c.spacing
         local k=m:knife(x,a.y-a.h/2-8,math.pi/2,1)
         k.kind,k.baseY,k.state,k.clock="top",k.y,"idle",0
     end
     if m.stage>=2 and m.stage<=5 then
         local level=a.y+a.h/2-22-(m.stage-2)*45
         for row=0,1 do
-            for x=a.x-a.w/2+6,a.x+a.w/2-6,c.spacing do
+            for i=0,count-1 do
+                local x=first+i*c.spacing
                 local k=m:knife(x,level+row*24,-math.pi/2,1)
                 k.kind,k.baseY,k.row="bottom",k.y,row
             end

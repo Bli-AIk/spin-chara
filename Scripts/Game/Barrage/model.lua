@@ -66,9 +66,12 @@ function Model:retry(config)
     self.done, self.hits, self.player.hp, self.player.hurt = false, 0, 20, 0
     self:enter(self.stage)
 end
+-- The scale argument is live, not decorative: hitbox, tip and renderer all read
+-- k.scale. The pitch every row and fan is laid out on assumes the authored
+-- sprite size, so a wave that passes another scale has to lay its own row out
+-- on Knife.pitch(scale) instead of the config's spacing.
 function Model:knife(x,y,angle,scale)
-    -- All battle barrage knives use the authored sprite size.
-    local k={x=x,y=y,angle=angle or 0,scale=1,active=false}
+    local k={x=x,y=y,angle=angle or 0,scale=scale or 1,active=false}
     self.knives[#self.knives+1]=k
     return k
 end

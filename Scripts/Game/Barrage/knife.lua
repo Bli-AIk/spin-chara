@@ -1,6 +1,40 @@
 -- Blade geometry in source pixels, relative to the 60x60 image centre.
--- Handle, guard and transparent padding are deliberately excluded.
-local K = {polygon = {-16,-2, -14,-4, 30,-4, 24,2, 16,6, -10,6, -16,2}}
+-- Handle, guard and transparent padding are deliberately excluded, but the
+-- outline does cover the whole drawn blade's cross-section: it spans y -6..+7,
+-- the 14px the sprite draws between the guard bar and the tip's taper.
+local K = {polygon = {-16,-2, -14,-6, 30,-6, 24,2, 16,7, -10,7, -16,2}}
+-- Width of that cross-section, and the pitch rows and fans lay blades out on:
+-- one blade plus a 2px seam. The outline may not be narrowed below this without
+-- re-deriving the pitch, because the seam is what keeps a row impassable -- the
+-- soul is a 4x4 square, so a seam of 4px or more is a hole to slip through.
+-- The coordinates are pixel indices, so the drawn blade is one pixel thicker
+-- than the span between its outermost outline rows: 14px, like the sprite.
+local low, high = math.huge, -math.huge
+for i = 2, #K.polygon, 2 do
+    low, high = math.min(low, K.polygon[i]), math.max(high, K.polygon[i])
+end
+K.low, K.high = low, high
+K.width = high - low + 1
+function K.pitch(scale) return K.width * (scale or 1) + 2 end
+-- Where a row of blades centred on `centre` starts, and how many it holds, so
+-- that the outlines span a `span` the soul can occupy without leaving a gap at
+-- either end to hide in. Counting blades out of the span the other way round --
+-- dividing it and stepping across it -- is what puts blades on fractional
+-- positions, and what lets a row stop short of an edge.
+function K.row(centre,span,pitch)
+    local count = math.ceil(math.max(span + 2*K.low, span - 2*K.high)/pitch) + 1
+    return centre - (count-1)*pitch/2, count
+end
+-- The same guarantee for a row that has to start at a given edge, like the two
+-- flanks of a lane a light keeps clear: the first blade sits on `edge`, the rest
+-- step away from it by `sign` (+1 right, -1 left), and the count is whatever the
+-- last one needs for its outline to reach `limit`. Positions stay on whole
+-- pixels as long as the edge is.
+function K.edge(edge,limit,pitch,sign)
+    local reach = sign > 0 and K.high or -K.low
+    local span = (limit - edge) * sign
+    return edge, math.max(1, math.ceil((span - reach)/pitch) + 1)
+end
 function K.vertices(k, x, y, angle)
     local vertices, c, s = {}, math.cos(angle or k.angle), math.sin(angle or k.angle)
     for i = 1, #K.polygon, 2 do

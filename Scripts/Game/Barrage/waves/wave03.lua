@@ -1,8 +1,13 @@
 local P=(...):match("(.-)[^%.]+$")
 local C=require(P.."common")
+local Knife=require((...):match("(.-)waves%.").."knife")
 local Lighting=require((...):match("(.-)waves%.").."lighting")
+-- The opening's horizontal rows are ordinary knife rows: one blade pitch apart,
+-- so they sit side by side without touching. The lattice is ten lanes wide and
+-- only the central six of them are kept.
+local pitch=Knife.pitch()
 local W={arena={x=320,y=315,w=156,h=156},expandedWidth=288,
-    outerHeight=38,gap=12,horizontalLaneCount=10,horizontalLaneRadius=54,
+    outerHeight=38,gap=12,horizontalLaneCount=10,horizontalLaneRadius=4.5*pitch,
     horizontalSplit=true,
     -- The frame stays the incoming defense box until the blades are about to
     -- sweep, then opens to the attack size on its own. The engine adapter only
@@ -98,10 +103,13 @@ local function createFan(m,sign,launchAt,flight)
     local far=a.y+sign*(a.h/2-8)
     local speed=math.abs(far-(start+sign*30))/flight
     local fan={launchAt=launchAt,age=0,sign=sign,speed=speed,flight=flight,knives={}}
-    local span=W.expandedWidth-8
-    local intervals=math.ceil(span/m.config.spacing)
-    for i=0,intervals do
-        local x=W.arena.x-span/2+i*span/intervals
+    -- Row of blades about the middle of the frame: whole-pixel positions off the
+    -- blade pitch, and wide enough to cover the strip the soul can stand in, so
+    -- neither end of the frame is a place to hide from it.
+    local span=m.arena.w-16
+    local first,count=Knife.row(W.arena.x,span,m.config.spacing)
+    for i=0,count-1 do
+        local x=first+i*m.config.spacing
         local k=m:knife(x,start,sign*math.pi/2,1)
         k.startY,k.stopY,k.launchAt=start,(sign>0 and bottom or top)-sign*30,launchAt
         k.alpha=0; k.active=false
@@ -236,7 +244,9 @@ function W.enter(m)
         -- only edge clutter and made the opening read too dense vertically.
         for i=2,W.horizontalLaneCount-3 do
             local y=-W.horizontalLaneRadius+2*W.horizontalLaneRadius*i/(W.horizontalLaneCount-1)
-            local delay=(math.abs(y)-6)/48*v.edgeDelay
+            -- Outermost rows of the six leave last; the stagger is measured in
+            -- pitches, not in pixels, so it survives a change of blade size.
+            local delay=(math.abs(y)-pitch/2)/(4*pitch)*v.edgeDelay
             blade(-1,0,0,y,delay); blade(1,0,0,y,delay)
         end
         m.vars.openingBlades=m.knives

@@ -12,7 +12,11 @@ function R.new()
     local self=setmetatable({assets={}},R)
     for key,path in pairs({knife="Attacks/Monsters/spr_dummyknife_0.png",
         heart="Soul Library Sprites/spr_default_heart.png"}) do
-        self.assets[key]=g.newImage("Resources/Sprites/"..path)
+        local image=g.newImage("Resources/Sprites/"..path)
+        -- Pixel art, like every sprite the engine loads: a blade sweeps through
+        -- positions between pixels, and a linear filter smears the sprite there.
+        image:setFilter("nearest","nearest")
+        self.assets[key]=image
     end
     return self
 end
@@ -42,18 +46,6 @@ function R:draw(m,presentation,debugUnlit)
     end
     Clip.arenas(arenas)
     if not debugUnlit then Lighting.drawLights(m.lights,m.lightStyle) end
-    if m.round==3 and m.stage==5 and m.vars.targetX then
-        for _,fan in ipairs(m.vars.fans) do
-            if m.vars.beatTime<fan.launchAt then
-                local y=m.wave.arena.y-fan.sign*(m.wave.arena.h/2-8)
-                g.setColor(1,.65,.4,.7)
-                for x=m.wave.arena.x-m.wave.expandedWidth/2+8,
-                    m.wave.arena.x+m.wave.expandedWidth/2-8,12 do
-                    g.line(x-3,y-fan.sign*4,x,y,x+3,y-fan.sign*4)
-                end
-            end
-        end
-    end
     local pixelLighting=Lighting.beginBullets(m.lights,m.lightStyle,dark,m.player)
     for _,k in ipairs(m.knives) do
         if not k.backdrop or k.visibleInside then

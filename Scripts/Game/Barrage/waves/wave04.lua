@@ -1,4 +1,5 @@
 local C=require((...):match("(.-)[^%.]+$").."common")
+local Knife=require((...):match("(.-)waves%.").."knife")
 local Lighting=require((...):match("(.-)waves%.").."lighting")
 local Curtain=require((...):match("(.-)waves%.").."curtain-preview")
 local W={arena={x=320,y=315,w=280,h=84},minTravel=58,entryDuration=1.2,
@@ -95,23 +96,37 @@ function W.enter(m)
         m.vars.spawnDelay=0
         m.vars.shotSpeed=280
         m.vars.launched=false
+        local function blade(x)
+            local k=m:knife(x,a.y-a.h/2-30,math.pi/2,1)
+            k.start=k.y; k.alpha=0
+        end
         -- Both shadow and curtain volleys cover every horizontal dodge lane.
-        local spacing=m.config.spacing
-        for x=a.x-a.w/2+5,a.x+a.w/2-5,spacing do
-            local inLight=false
-            for _,l in ipairs(m.lights) do
-                if math.abs(x-l.x)<l.r+12 then inLight=true end
+        if m.curtain then
+            -- Inside the light only, so their width cannot leak into the safe
+            -- shadow beside it.
+            local first,count=Knife.row(a.x,a.w-16,m.config.spacing)
+            for i=0,count-1 do
+                local x=first+i*m.config.spacing
+                for _,l in ipairs(m.lights) do
+                    if math.abs(x-l.x)<l.r-12 then blade(x); break end
+                end
             end
-            -- Before the curtain avoid the entire light; afterwards put blades
-            -- well inside it so their width cannot leak into the safe shadow.
-            local spawn=not m.curtain and not inLight
-            if m.curtain then
-                for _,l in ipairs(m.lights) do if math.abs(x-l.x)<l.r-12 then spawn=true end end
-            end
-            if spawn then
-                local k=m:knife(x,a.y-a.h/2-30,math.pi/2,1)
-                k.start=k.y; k.alpha=0
-            end
+        else
+            -- Before the curtain the light is the round's one refuge, so the
+            -- volley stops clear of it and picks up again on the lane's own
+            -- edge, stepping away on the blade pitch. A row run across the box
+            -- as one lattice would leave the strip between its last blade and
+            -- the lane open -- somewhere to stand outside the light and never
+            -- be touched. The lane is whole pixels too, so no blade lands
+            -- between them. The beat before a volley is the light's slide, so
+            -- there is always one up to anchor to.
+            local l=m.lights[1]
+            local pitch=m.config.spacing
+            local lo,hi=a.x-a.w/2+8,a.x+a.w/2-8
+            local edge,count=Knife.edge(math.floor(l.x-l.r-12+.5),lo,pitch,-1)
+            for i=0,count-1 do blade(edge-i*pitch) end
+            edge,count=Knife.edge(math.floor(l.x+l.r+12+.5),hi,pitch,1)
+            for i=0,count-1 do blade(edge+i*pitch) end
         end
     end
 end

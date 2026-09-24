@@ -1,7 +1,11 @@
 -- Authored alternatives; no user-facing tuning panel.
+local Knife=require("Scripts.Game.Barrage.knife")
 local C={}
--- A 12px pitch overlaps the blade's 10px cross-section plus the soul hitbox.
-local base={knifeSpeed=140,spacing=12,warning=.85,hold=.8,radius=38,
+-- The pitch the blade sprite asks for: its own 14px cross-section plus a 2px
+-- seam, so a row or fan reads as separate blades instead of one squeezed mass.
+-- The outline is grown with the sprite (see knife.lua), so the seam stays too
+-- narrow for the soul to slip between two blades.
+local base={knifeSpeed=140,spacing=Knife.pitch(),warning=.85,hold=.8,radius=38,
     lightSpeed=80,slowFactor=.35,orbitSpeed=42,triggerDistance=16,
     thrustLength=14,thrustTime=.85,damage=3,hurtTime=30,punishDamage=2,seed=73,
     sweepDuration=2.25,stagger=.035,easing="cubic",lightDuration=2.8,
@@ -25,7 +29,8 @@ end
 function C.wave03A()
     local out=C.defaults(3)
     out.label="B · 滑灯截刀"
-    out.radius,out.spacing=22,12
+    -- Only the light shrinks; the rows keep the shared blade pitch.
+    out.radius=22
     out.wave03Prototype={
         -- The opener's wind-up is introHold + emerge + spin + pause. The frame
         -- grows to the round's square over the last growTime of it, landing on

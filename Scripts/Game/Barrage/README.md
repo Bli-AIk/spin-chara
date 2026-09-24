@@ -2,7 +2,20 @@
 
 Originally copied from the independent barrage-lab repository. Round 3 now uses
 prototype B; round 2 uses preset C, round 4 preset D, and round 5 preset A.
-All knife sprites in rounds 2–5 use scale 1.
+All knife sprites in rounds 2–5 use scale 1, which is also the size the rows and
+fans are laid out for: `Model:knife` honours any other scale, but a wave that
+passes one has to lay that row out on `Knife.pitch(scale)` itself or its blades
+will overlap.
+
+Rows and fans sit on the blade's own pitch — `knife.lua`'s `K.pitch`, the
+sprite's 14px cross-section plus a 2px seam. The collision outline covers that
+cross-section, so the seam between two neighbours stays narrower than the soul's
+4x4 square: a row is a wall, and each row is laid out from a known end on whole
+pixels rather than by dividing its span between blades, which is what used to
+let a row stop short of a wall and leave a strip to stand in. Round 4's volleys
+before the cloth stop clear of the light's lane and pick up again on the lane's
+own edge for the same reason: the one refuge that round offers cannot be
+undercut by a strip of dark that no blade reaches.
 
 `battle.lua` bridges the model to real Player movement, Battle.OnHit, localized
 EText dialogue and wave cleanup. Rendering draws only barrage content, leaving
@@ -50,8 +63,8 @@ enters the middle strip and glides left or right while vertical knife rows attac
 from the corresponding edge. Upper and lower strips receive only their outward
 attack direction; the middle alternates. The five beats tighten their travel
 time, so X is required to slow the blade rows and create a safe timing window.
-Orange chevrons mark the edge the next row will enter from before it launches;
-where the light will stop is left unmarked.
+The rows carry no mark on the edge they enter from — the beat is read from the
+light alone, and where the light will stop is deliberately left unmarked.
 
 Rounds two and four sound their blades leaving the box. A fan or a volley is one
 beat however many knives it holds, so the wave announces a launch and `knife.wav`

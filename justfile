@@ -17,10 +17,11 @@ default: run
 # `-l/--language` 可覆盖本次启动语言，例如 `just run -l en`。
 # `-w/--wave` 直接进入指定回合，例如 `just run -w 3`。
 # `--workspace` 指定窗口开在哪个工作区：数字 = 对应工作区（默认 9），
-# auto = 当前工作区。做法是给本次启动一个专属窗口类（SDL_APP_ID），再向
-# Hyprland 注册一条"该类 -> 目标工作区"的运行时规则（no_initial_focus，
-# 不抢焦点）；规则不写进 hyprland 配置，reload 即消失；没有 hyprctl 或不
-# 在 Hyprland 下会退化成普通启动，不影响游戏本身。
+# auto = 当前工作区。注意工作区只有长选项，`-w` 已被上面的 `--wave` 占用，
+# `just run -w auto` 会被当成回合号 auto 报错。做法是给本次启动一个专属窗口
+# 类（SDL_APP_ID），再向 Hyprland 注册一条"该类 -> 目标工作区"的运行时规则
+# （no_initial_focus，不抢焦点）；规则不写进 hyprland 配置，reload 即消失；
+# 没有 hyprctl 或不在 Hyprland 下会退化成普通启动，不影响游戏本身。
 # 其他参数仍会透传给 LÖVE，例如 `just run -- --fused`。
 run *args:
     #!/bin/sh
@@ -44,12 +45,12 @@ run *args:
       ""|1|2|3|4|5|6|7|8|9|10) ;;
       *) echo "-w/--wave 只接受 1–10：$wave" >&2; exit 2 ;;
     esac
-    [ "$previous" != "workspace" ] || { echo "-w/--workspace 缺少参数（数字或 auto）" >&2; exit 2; }
+    [ "$previous" != "workspace" ] || { echo "--workspace 缺少参数（数字或 auto）" >&2; exit 2; }
     [ -z "$language" ] || [ -f "{{justfile_directory()}}/Localization/$language.json" ] || { echo "不支持的语言：$language" >&2; exit 2; }
     [ -n "$workspace" ] || workspace="9"
     case "$workspace" in
       auto) app_id="spin-chara-auto" ;;
-      *[!0-9]*) echo "-w/--workspace 只接受数字或 auto：$workspace" >&2; exit 2 ;;
+      *[!0-9]*) echo "--workspace 只接受数字或 auto：$workspace" >&2; exit 2 ;;
       *)
         app_id="spin-chara-ws$workspace"
         if command -v hyprctl >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then

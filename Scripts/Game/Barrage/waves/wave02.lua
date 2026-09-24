@@ -1,4 +1,5 @@
 local C=require((...):match("(.-)[^%.]+$").."common")
+local Knife=require((...):match("(.-)waves%.").."knife")
 local Lighting=require((...):match("(.-)waves%.").."lighting")
 -- Five repositioning moves. The core shrinks evenly across them and ends at
 -- half the radius the three-move schedule's last move used to leave.
@@ -48,11 +49,11 @@ function W.enter(m)
         local start=horizontal and a.x-sign*(a.w/2+tip+1) or a.y-sign*(a.h/2+tip+1)
         -- Lay the fan out about the middle of the box instead of stacking it
         -- from one edge: a blade then sits on the centre line whenever the
-        -- count is odd, and both ends keep the same clearance.
+        -- count is odd, and both ends keep the same clearance. The span is the
+        -- one the soul itself can reach, 8px clear of each wall, so the fan
+        -- leaves it no strip to stand in outside the blades.
         local centre=horizontal and a.y or a.x
-        local span=(horizontal and a.h or a.w)-20
-        local count=math.floor(span/c.spacing)+1
-        local first=centre-(count-1)*c.spacing/2
+        local first,count=Knife.row(centre,(horizontal and a.h or a.w)-16,c.spacing)
         for i=0,count-1 do
             local v=first+i*c.spacing
             local k=m:knife(horizontal and start or v,horizontal and v or start,
