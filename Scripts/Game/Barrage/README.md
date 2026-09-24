@@ -63,6 +63,9 @@ enters the middle strip and glides left or right while vertical knife rows attac
 from the corresponding edge. Upper and lower strips receive only their outward
 attack direction; the middle alternates. The five beats tighten their travel
 time, so X is required to slow the blade rows and create a safe timing window.
+Every row then stands still where its blades stopped for a quarter second before
+withdrawing, so the ring it formed is readable and the move to the light's next
+position can begin.
 The rows carry no mark on the edge they enter from — the beat is read from the
 light alone, and where the light will stop is deliberately left unmarked.
 
