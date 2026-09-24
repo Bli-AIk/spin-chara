@@ -273,7 +273,7 @@ end
 function W.update(m,dt,bulletDt)
     local s,v=m.stage,variant(m)
     if s==1 then
-        if m.phaseTime>=.4 and m:dialogueDone() then m:next() end
+        if m.phaseTime>=v.introHold and m:dialogueDone() then m:next() end
     elseif s==2 then
         opening(m,m.phaseTime)
         if m.phaseTime>=m.vars.burstAt+v.slashAt then
