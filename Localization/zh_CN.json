@@ -59,7 +59,7 @@
   ],
   "Battle.BarrageLab.Wave02.Intro": "[speed:0.045]要么你[colorHEX:00ff00]跟上[colorHEX:000000]我们的[colorHEX:ff0000]规则[colorHEX:000000]...[wait:0.7]\n要么死路一条。[wait:0.5]",
   "Battle.BarrageLab.Wave03.Intro": "[speed:0.055]如果[colorHEX:00ff00]身处黑暗[colorHEX:000000]，[wait:0.35]\n就得[colorHEX:00ff00]小心行事[colorHEX:000000]。",
-  "Battle.BarrageLab.Wave03.Nap": "[speed:0.055]...[wait:0.4]你该按住 X（减速）之类的...[wait:0.5]\n吧？[wait:0.5]",
+  "Battle.BarrageLab.Wave03.Nap": "[speed:0.055]...[wait:0.4]你该按住 [colorHEX:ff0000]X键[colorHEX:000000] 之类的\n来减速...[wait:0.5]吧？[wait:0.5]",
   "Battle.BarrageLab.Wave03.Chara": "[speed:0.04]啊呀！[wait:0.35]不要吵，[wait:0.3]\n我还在瞄准！[wait:0.5]",
   "Battle.BarrageLab.Wave04.Intro": "[speed:0.04]一场精彩的演出，[wait:0.3]\n怎么能少得了...[wait:0.6]\n戏剧性的阴影！[wait:0.5]",
   "Battle.BarrageLab.Wave04.Curtain": "[speed:0.045]拉上[colorHEX:00ff00]幕布[colorHEX:000000]！[wait:0.6]",
