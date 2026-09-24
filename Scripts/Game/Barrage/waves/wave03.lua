@@ -236,6 +236,7 @@ function W.enter(m)
         m.lights={C.light(a.x,m.vars.lightStartY,m.config.radius)}
     elseif s==5 then
         setAreas(m)
+        m.caption={"Nap","Wave03.Nap","intermediate"}
         m.vars.completedBeats=0; m.vars.lessonUsed=0
         m.vars.restTime=0
         beginBeat(m,1)
@@ -287,6 +288,9 @@ function W.update(m,dt,bulletDt)
     elseif s==4 then
         if m.phaseTime>=v.lightEntry then m:next() end
     elseif s==5 then
+        if m.phaseTime>3 and m:dialogueDone() then
+            m.caption={"Chara","Wave03.Chara","intermediate"}
+        end
         if m.slow then m.vars.xUsed=true end
         if updateFans(m,dt,bulletDt or dt) then
             m.vars.restTime=(m.vars.restTime or 0)+dt
