@@ -77,7 +77,7 @@ function B.start(round)
     end
     local config=round==3 and Config.wave03A() or Config.defaults(B.presets[round])
     if round==3 then
-        config.horizontalYOffsets={love.math.random(-48,48),love.math.random(-48,48)}
+        config.verticalXOffsets={love.math.random(-48,48),love.math.random(-48,48)}
     end
     model=Model.new(round,config,{
         mortal=true,
@@ -112,10 +112,19 @@ function B.start(round)
             if round==3 and m.stage==3 then
                 while seenSlash<(m.vars.slashCount or 0) do
                     seenSlash=seenSlash+1
-                    local cut=seenSlash==1 and m.vars.leftCut or m.vars.rightCut
+                    local cut=seenSlash==1 and m.vars.topCut or m.vars.bottomCut
                     local a=m.wave.arena
-                    local effect=Slash.New({x=cut,y=a.y,width=m.wave.expandedWidth,
-                        height=a.h,thickness=4})
+                    local effect=Slash.New({x=cut,y=a.x,width=a.h,height=m.wave.expandedWidth,
+                        thickness=4})
+                    local draw=effect.Draw
+                    function effect:Draw()
+                        love.graphics.push()
+                        love.graphics.translate(a.x,cut)
+                        love.graphics.rotate(-math.pi/2)
+                        love.graphics.translate(-cut,-a.x)
+                        draw(self)
+                        love.graphics.pop()
+                    end
                     effect:Strike()
                     effects[#effects+1]=effect
                     Audio.PlaySound("heavyswing.wav")
@@ -138,7 +147,7 @@ function B.start(round)
     Player.canMove=true
     Player.sprite.Draw=function() end
     syncArena(model)
-    overlay=Layers.add_external(function() renderer:draw(model) end,"TopAll")
+    overlay=Layers.add_external(function() renderer:draw(model,{effects=effects}) end,"TopAll")
     local destroyed=false
     table.insert(wave.objects,{Destroy=function()
         if destroyed then return end
@@ -157,6 +166,14 @@ function B.start(round)
         model.player.hp=Player.hp
         model.player.hurt=math.max(0,Player.hurt_time/60)
         updateDialogue(dt)
+        for i=#effects,1,-1 do
+            local effect=effects[i]
+            effect:Update(dt)
+            if effect:Finished() then
+                effect:Destroy()
+                table.remove(effects,i)
+            end
+        end
         if opening then
             -- Dialogue advances through the engine while the attack simulation
             -- remains stopped. Only start resizing after the final pause.

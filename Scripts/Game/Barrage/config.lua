@@ -1,6 +1,7 @@
 -- Authored alternatives; no user-facing tuning panel.
 local C={}
-local base={knifeSpeed=140,spacing=25,warning=.85,hold=.8,radius=38,
+-- A 12px pitch overlaps the blade's 10px cross-section plus the soul hitbox.
+local base={knifeSpeed=140,spacing=12,warning=.85,hold=.8,radius=38,
     lightSpeed=80,slowFactor=.35,orbitSpeed=42,triggerDistance=16,
     thrustLength=14,thrustTime=.85,damage=3,hurtTime=30,punishDamage=2,seed=73,
     sweepDuration=2.25,stagger=.035,easing="cubic",lightDuration=2.8,
@@ -23,14 +24,13 @@ function C.defaults(index)
 end
 function C.wave03A()
     local out=C.defaults(3)
-    out.label="A · 柔缓先手"
+    out.label="B · 滑灯截刀"
+    out.radius,out.spacing=22,12
     out.wave03Prototype={
-        emerge=.36,spin=.42,pause=.13,burst=.60,expand=.27,edgeDelay=.24,
-        horizontalAppearDelay=.24,horizontalEmerge=.16,
+        emerge=.36,spin=.42,pause=.13,burst=.60,expand=.27,edgeDelay=.20,
         slashAt=.30,firstCut=.06,cutGap=.10,cutSettle=.24,lightEntry=1.0,
-        orbitPeriod=3.75,lightRadiusX=29,lightRadiusY=29,
-        swayPeriod=2.55,swayAmplitude=16,swayRamp=.85,
-        ringSpeed=1.03,ringDelay=.9,
+        moveTime=.90,launchAt=.18,beats=5,hold=.16,retract=.34,
+        kind="glide",flights={1.85,1.65,1.45,1.30,1.24},
     }
     return out
 end

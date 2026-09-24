@@ -95,8 +95,8 @@ function W.enter(m)
         m.vars.spawnDelay=0
         m.vars.shotSpeed=280
         m.vars.launched=false
-        -- Both shadow and curtain volleys use tighter coverage between blades.
-        local spacing=m.config.spacing/2
+        -- Both shadow and curtain volleys cover every horizontal dodge lane.
+        local spacing=m.config.spacing
         for x=a.x-a.w/2+5,a.x+a.w/2-5,spacing do
             local inLight=false
             for _,l in ipairs(m.lights) do

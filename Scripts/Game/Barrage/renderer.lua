@@ -42,6 +42,24 @@ function R:draw(m,presentation,debugUnlit)
     end
     Clip.arenas(arenas)
     if not debugUnlit then Lighting.drawLights(m.lights,m.lightStyle) end
+    if m.round==3 and m.stage==5 and m.vars.targetX then
+        -- An outline marks the next light position, not an already safe lane.
+        local light=m.lights[1]
+        if math.abs(light.x-m.vars.targetX)>2 then
+            g.setColor(1,1,1,.65)
+            g.circle("line",m.vars.targetX,light.y,6)
+        end
+        for _,fan in ipairs(m.vars.fans) do
+            if m.vars.beatTime<fan.launchAt then
+                local y=m.wave.arena.y-fan.sign*(m.wave.arena.h/2-8)
+                g.setColor(1,.65,.4,.7)
+                for x=m.wave.arena.x-m.wave.expandedWidth/2+8,
+                    m.wave.arena.x+m.wave.expandedWidth/2-8,12 do
+                    g.line(x-3,y-fan.sign*4,x,y,x+3,y-fan.sign*4)
+                end
+            end
+        end
+    end
     local pixelLighting=Lighting.beginBullets(m.lights,m.lightStyle,dark,m.player)
     for _,k in ipairs(m.knives) do
         if not k.backdrop or k.visibleInside then
@@ -53,7 +71,11 @@ function R:draw(m,presentation,debugUnlit)
     end
     Lighting.endBullets(pixelLighting)
     g.setStencilState()
-    if presentation and presentation.fx then presentation.fx:Draw() end
+    if presentation and presentation.effects then
+        for _,effect in ipairs(presentation.effects) do effect:Draw() end
+    elseif presentation and presentation.fx then
+        presentation.fx:Draw()
+    end
     local p=m.player
     local playerAlpha=p.hurt>0 and (math.floor(p.hurt*16)%2==0 and .4 or 1) or 1
     if not debugUnlit then Lighting.drawPlayerGlow(p,m.lights,playerAlpha) end

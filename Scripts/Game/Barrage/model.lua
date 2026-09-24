@@ -67,7 +67,8 @@ function Model:retry(config)
     self:enter(self.stage)
 end
 function Model:knife(x,y,angle,scale)
-    local k={x=x,y=y,angle=angle or 0,scale=scale or 1,active=false}
+    -- All battle barrage knives use the authored sprite size.
+    local k={x=x,y=y,angle=angle or 0,scale=1,active=false}
     self.knives[#self.knives+1]=k
     return k
 end

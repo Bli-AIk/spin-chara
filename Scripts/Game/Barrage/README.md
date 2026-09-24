@@ -1,8 +1,8 @@
 # Adopted battle barrages
 
 Originally copied from the independent barrage-lab repository. Round 3 now uses
-prototype 03A from `54a798a`; round 2 uses preset C, round 4 preset D, and
-round 5 preset A. All knife sprites in rounds 2–5 use scale 1.
+prototype B; round 2 uses preset C, round 4 preset D, and round 5 preset A.
+All knife sprites in rounds 2–5 use scale 1.
 
 `battle.lua` bridges the model to real Player movement, Battle.OnHit, localized
 EText dialogue and wave cleanup. Rendering draws only barrage content, leaving
@@ -36,15 +36,17 @@ afford that timer — there the model keeps running while the line plays — so 
 two copies differ here. `tests/wave02-entry` pins both halves: the box holds
 still and the entrance follows the line.
 
-Round 3 eases from the incoming defense box to a 156×156 frame after Chara's
-opening line. A cross of knives emerges behind it, turns, pauses, then rushes
-through the centre as the frame widens to 288×156. Two rapid vertical cuts form
-left, middle and right areas. The soul stays in the area it occupied at the
-second cut. The 18px gaps leave 8px of visible black between the engine's 5px
-borders. The spotlight enters at the top of its orbit around the middle area;
-nine rings of knives follow it while the middle area swings from side to side.
-The other two areas then drift, tilt and slide down. X slows the ring knives in
-darkness; round 4 still ramps the spotlight speed while X is held.
+Round 3 eases from the incoming defense box to the prototype's fixed 156×156
+square, independent of the incoming size. The opening uses dense horizontal
+rows, with the outer two rows removed, then widens to 288×156. Two rapid
+horizontal cuts form upper, middle and lower areas, 38 / 56 / 38px high with
+12px gaps. The soul stays in the strip it occupied at the second cut. The spotlight
+enters the middle strip and glides left or right while vertical knife rows attack
+from the corresponding edge. Upper and lower strips receive only their outward
+attack direction; the middle alternates. The five beats tighten their travel
+time, so X is required to slow the blade rows and create a safe timing window.
+A small ring marks the light's next position, and orange chevrons mark the edge
+the next row will enter from before it launches.
 
 Rounds two and four sound their blades leaving the box. A fan or a volley is one
 beat however many knives it holds, so the wave announces a launch and `knife.wav`
