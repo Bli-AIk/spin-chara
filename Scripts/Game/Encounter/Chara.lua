@@ -60,7 +60,7 @@ local encounter = {
     wave = "bones.wave1",
 
     player = {
-        name = "end",
+        name = "sans",
         lv = 20,
         maxhp = 99,
         hp = 99

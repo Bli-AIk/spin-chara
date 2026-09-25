@@ -99,7 +99,7 @@ local encounter = {
     wave = "wave01",
 
     player = {
-        name = "end",
+        name = "sans",
         lv = 1,
         maxhp = 20,
         hp = 20
