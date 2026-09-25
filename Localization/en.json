@@ -23,6 +23,7 @@
   "Battle.EnemiesName.Chara": "Chara",
   "Battle.EnemiesName.Napstablook": "Napstablook",
   "Battle.Actions.Names.Check": "Check",
+  "Battle.Actions.Names.Recall": "Recall",
   "Battle.Actions.Names.Applause": "Applause",
   "Battle.Actions.Names.Boo": "Boo",
   "Battle.Actions.Texts.Chara.Check": [
@@ -64,6 +65,13 @@
     "oh......[wait:0.5] thanks.[wait:0.5]",
     "oh......[wait:0.5] sorry."
   ],
+  "Battle.Rules.Intro": "* You think back... to the rules.",
+  "Battle.Rules.1": "* The enemy moves first.",
+  "Battle.Rules.2": "* The light shrinks. Keep up.",
+  "Battle.Rules.3": "* In the dark, tread carefully.",
+  "Battle.Rules.4": "* Hold [colorHEX:ff0000]X[colorHEX:ffffff] in the dark to slow down.",
+  "Battle.Rules.5": "* Lit spots hunt and burn.",
+  "Battle.Rules.6": "* Props have sharp parts.",
   "Battle.BarrageLab.Wave02.Intro": "[speed:0.03]Either you [colorHEX:00ff00]keep up[colorHEX:000000]\nwith our [colorHEX:ff0000]rules[colorHEX:000000]...[wait:0.7]\nor you die trying.[wait:0.5]",
   "Battle.BarrageLab.Wave03.Intro": "[speed:0.035]When you are\n[colorHEX:00ff00]in the dark[colorHEX:000000],[wait:0.35]\nyou ought to\n[colorHEX:00ff00]tread carefully[colorHEX:000000].",
   "Battle.BarrageLab.Wave03.Nap": "[speed:0.04]...[wait:0.4]maybe hold [colorHEX:ff0000]X[colorHEX:000000] to slow down...[wait:0.5]\nor something?[wait:0.5]",

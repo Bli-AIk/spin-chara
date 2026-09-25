@@ -33,7 +33,10 @@ for _, locale in ipairs({'en', 'zh_CN'}) do
         local acts = module.New()
         acts:Use({_id = 7, id = 'Chara', position = {320, 120}}, {id = action})
         assert(Battle.dialogue_started and current.kind == 'narration')
-        assert(#current.lines == 1 and #changes == 0)
+        -- en and zh_CN do not agree on how many elements an ACT text array has
+        -- (zh_CN still carries the pre-split single-element form), so assert the
+        -- shape rather than the count.
+        assert(#current.lines >= 1 and #changes == 0)
         current:_onComplete() -- Confirm initial narration.
         assert(current.kind == 'bubble' and current.mode == 'manual')
         assert(current.direction == 'right' and #changes == 0)
@@ -64,6 +67,25 @@ for _, locale in ipairs({'en', 'zh_CN'}) do
     acts:Use({id = 'Chara'}, {id = 'Check'})
     current:_onComplete()
     assert(#changes == 1 and changes[1] == 'ACTIONSELECT')
+    -- Recall reads back the rules announced so far and, like Check, hands the
+    -- turn straight back instead of reaching DEFENDING.  Round 3 has announced
+    -- four rules (1 + 1 + 2), so: lead-in alone, then three rules, then the last.
+    Battle.game = {round = 3}
+    changes = {}
+    acts = module.New()
+    acts:Use({id = 'Chara'}, {id = 'Recall'})
+    assert(current.kind == 'narration' and #current.lines == 3)
+    local _, newlines = current.lines[2]:gsub('\n', '\n')
+    assert(newlines == 2, 'three rules belong on one screen')
+    if locale == 'zh_CN' then
+        assert(current.lines[1] == '* 你开始回想...这场演出的规矩。')
+        assert(current.lines[2]:find('* 敌人先手开局。', 1, true))
+        assert(current.lines[2]:find('* 黑暗里要小心行事。', 1, true))
+        assert(current.lines[3]:find('* 黑暗中按住 ', 1, true))
+    end
+    current:_onComplete()
+    assert(#changes == 1 and changes[1] == 'ACTIONSELECT')
+    assert(next(acts.pending) == nil, 'Recall is not an action taken at the enemy')
     changes = {}
     acts:Use({_id = 8, id = 'Napstablook', position = {520, 120}}, {id = 'Applause'})
     current:_onComplete()
@@ -75,4 +97,4 @@ for _, locale in ipairs({'en', 'zh_CN'}) do
     acts:Clear()
     assert(#changes == 0 and acts.typer == nil, 'Scene cleanup must not advance ACT')
 end
-print('PASS: bilingual ACT phases, final-confirm transition, Check, per-enemy tags and cleanup')
+print('PASS: bilingual ACT phases, final-confirm transition, Check, Recall, per-enemy tags and cleanup')

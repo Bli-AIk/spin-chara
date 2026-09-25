@@ -47,7 +47,11 @@ local encounter = {
             actions = {
                 -- Every ACT is something the PLAYER does to Chara. Chara's own
                 -- replies live in Battle.Actions.Texts.Chara.<id>.
+                -- Recall has no per-enemy text: its lines come from the rounds
+                -- table via Scripts/Game/Logics/battle_rules.lua, so any enemy
+                -- listing it would read back the same rules.
                 {id = "Check",     name = Localize.localizeText("Battle.Actions.Names.Check")},
+                {id = "Recall",    name = Localize.localizeText("Battle.Actions.Names.Recall")},
                 {id = "Applause",  name = Localize.localizeText("Battle.Actions.Names.Applause")},
                 {id = "Boo",       name = Localize.localizeText("Battle.Actions.Names.Boo")},
             }

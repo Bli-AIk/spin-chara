@@ -1,4 +1,5 @@
 local acts = {}
+local rules = require("Scripts.Game.Logics.battle_rules")
 
 -- Tags describe intent only; waves may consume these later without changing ACT flow.
 local effects = {
@@ -32,6 +33,14 @@ function acts.New()
         local key = "Battle.Actions.Texts." .. enemy.id .. "." .. action.id
         if action.id == "Check" then
             Battle.BattleDialogue(Localize.localizeText(key), "ACTIONSELECT")
+            return
+        end
+        -- Recall is the player looking up what has been announced so far, not
+        -- an action taken at the enemy: like Check it hands back to
+        -- ACTIONSELECT and never reaches DEFENDING.  Its text comes from the
+        -- round instead of from a per-enemy dialogue key.
+        if action.id == "Recall" then
+            Battle.BattleDialogue(rules.Pages(Battle.game.round), "ACTIONSELECT")
             return
         end
         local has_reply = (enemy.id == "Chara" and effects.Chara[action.id])

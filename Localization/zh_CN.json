@@ -23,6 +23,7 @@
   "Battle.EnemiesName.Chara": "Chara",
   "Battle.EnemiesName.Napstablook": "Napstablook",
   "Battle.Actions.Names.Check": "查看",
+  "Battle.Actions.Names.Recall": "回想",
   "Battle.Actions.Names.Applause": "鼓掌",
   "Battle.Actions.Names.Boo": "喝倒彩",
   "Battle.Actions.Texts.Chara.Check": [
@@ -57,6 +58,13 @@
     "哦...[wait:0.5]谢谢。[wait:0.5]",
     "哦...[wait:0.5]对不起。"
   ],
+  "Battle.Rules.Intro": "* 你开始回想...这场演出的规矩。",
+  "Battle.Rules.1": "* 敌人先手开局。",
+  "Battle.Rules.2": "* 聚光灯会缩小，得跟上。",
+  "Battle.Rules.3": "* 黑暗里要小心行事。",
+  "Battle.Rules.4": "* 黑暗中按住 [colorHEX:ff0000]X键[colorHEX:ffffff] 可以减速。",
+  "Battle.Rules.5": "* 幕布落下后，光斑会追着你、且很烫。",
+  "Battle.Rules.6": "* 道具会用尖锐的部分碰你。",
   "Battle.BarrageLab.Wave02.Intro": "[speed:0.045]要么你[colorHEX:00ff00]跟上[colorHEX:000000]我们的[colorHEX:ff0000]规则[colorHEX:000000]...[wait:0.7]\n要么死路一条。[wait:0.5]",
   "Battle.BarrageLab.Wave03.Intro": "[speed:0.055]如果[colorHEX:00ff00]身处黑暗[colorHEX:000000]，[wait:0.35]\n就得[colorHEX:00ff00]小心行事[colorHEX:000000]。",
   "Battle.BarrageLab.Wave03.Nap": "[speed:0.055]...[wait:0.4]你该按住 [colorHEX:ff0000]X键[colorHEX:000000] 之类的\n来减速...[wait:0.5]吧？[wait:0.5]",
