@@ -16,7 +16,9 @@ default: run
 # 相对路径都依赖这一点，所以先 cd 到 justfile 所在目录再启动。
 # `-l/--language` 可覆盖本次启动语言，例如 `just run -l en`。
 # `-w/--wave` 直接进入指定回合，例如 `just run -w 3`；`-w skip` 跳过开场的敌人回合，
-# 直接停在玩家回合（菜单）。
+# 直接停在玩家回合（菜单）；`-w skip-N` 停在「第 N 回合打完之后」的玩家回合，
+# 例如 `just run -w skip-6` 一进游戏就是第 6 回合的菜单（规则也已累积到第 6 条）。
+# `-w skip` 等价于 `-w skip-1`。
 # `--workspace` 指定窗口开在哪个工作区：数字 = 对应工作区（默认 9），
 # auto = 当前工作区。注意工作区只有长选项，`-w` 已被上面的 `--wave` 占用，
 # `just run -w auto` 会被当成回合号 auto 报错。做法是给本次启动一个专属窗口
@@ -43,8 +45,8 @@ run *args:
     [ "$previous" != "language" ] || { echo "-l/--language 缺少语言代码" >&2; exit 2; }
     [ "$previous" != "wave" ] || { echo "-w/--wave 缺少回合编号" >&2; exit 2; }
     case "$wave" in
-      ""|1|2|3|4|5|6|7|8|9|10|skip) ;;
-      *) echo "-w/--wave 只接受 1–10 或 skip：$wave" >&2; exit 2 ;;
+      ""|1|2|3|4|5|6|7|8|9|10|skip|skip-[1-9]|skip-10) ;;
+      *) echo "-w/--wave 只接受 1–10、skip 或 skip-N（N 为 1–10）：$wave" >&2; exit 2 ;;
     esac
     [ "$previous" != "workspace" ] || { echo "--workspace 缺少参数（数字或 auto）" >&2; exit 2; }
     [ -z "$language" ] || [ -f "{{justfile_directory()}}/Localization/$language.json" ] || { echo "不支持的语言：$language" >&2; exit 2; }

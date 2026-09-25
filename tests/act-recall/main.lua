@@ -166,56 +166,81 @@ local function walk(typer, label, shoot, strict)
     return worstRight, lowestBottom, screens
 end
 
+-- Rules announced by the end of each round, cumulative.  Rounds 6-10 are the
+-- placeholder wave and announce nothing, so the count stops moving at five.
+local ANNOUNCED_BY_ROUND = {[1] = 1, [2] = 2, [3] = 4, [4] = 5, [5] = 6}
+local function rules_by(round)
+    return ANNOUNCED_BY_ROUND[math.min(round, 5)]
+end
+local function screens_by(round)
+    return 1 + math.ceil(rules_by(round) / 3)
+end
+
+--- The player's turn at `round`, however it was reached: assert the rules list
+--- holds exactly what has been announced by then, walk every screen, and check
+--- the turn comes straight back with no defense in between.
+local function recall_at(round, shoot)
+    local wasRound = Game.round
+    open_action(RECALL_INDEX)
+    local typer = dialogue_typer()
+    assert(typer, "choosing Recall did not open the rules dialogue")
+    assert(typer.texts[1] == Localize.localizeText("Battle.Rules.Intro"),
+        "the dialogue must open on the lead-in, got "..tostring(typer.texts[1]))
+    assert(#typer.texts == screens_by(round),
+        ("round %d has announced %d rule(s), so it wants the lead-in plus %d screen(s), got %d")
+            :format(round, rules_by(round), screens_by(round) - 1, #typer.texts))
+
+    walk(typer, "Recall round "..round, shoot, true)
+
+    assert(not dialogue_typer(), "the rules dialogue must be gone once the menu is back")
+    assert(Game.round == wasRound, "Recall must not advance the round")
+    -- The round's own narration is live again, not the rules text.
+    assert(Battle.narration_text.texts and Battle.narration_text.texts[1],
+        "the menu must go back to the turn's narration")
+end
+
 local function run()
-    assert(os.getenv("SPIN_CHARA_WAVE") == "skip", "this check needs SPIN_CHARA_WAVE=skip")
+    local wave = os.getenv("SPIN_CHARA_WAVE") or ""
+    local skipRound = tonumber(wave:match("^skip%-(%d+)$"))
+    assert(wave == "skip" or skipRound,
+        "this check needs SPIN_CHARA_WAVE=skip or skip-N")
+    local lang = os.getenv("SPIN_CHARA_LANGUAGE") or "zh_CN"
     frames(240)
 
     assert(Battle.state == "ACTIONSELECT", "expected the menu, got "..tostring(Battle.state))
+
+    if skipRound then
+        -- `-w skip-N` is the switch's own test: it must land on round N's
+        -- player turn, with the next defense booked as wave N+1.
+        assert(Game.round == skipRound,
+            ("skip-%d must open on round %d, got %s"):format(skipRound, skipRound, tostring(Game.round)))
+        assert(Battle.wave == ("wave%02d"):format(skipRound),
+            ("skip-%d must book its own wave, got %s"):format(skipRound, tostring(Battle.wave)))
+        recall_at(skipRound, lang)
+        print("[OK] skip-"..skipRound.." opens the player's turn with every announced rule on it")
+        love.event.quit(0)
+        return
+    end
+
     assert(Game.round == 1, "expected round 1, got "..tostring(Game.round))
 
-    -- Check ships in this box already, so it is the baseline Recall must match.
+    -- Check ships in this box already, so it is measured as a reference for what
+    -- the game already accepts.  It is not held to the box: shipped Chinese
+    -- Check overflows it, which is a pre-existing thing, not Recall's problem.
     open_action(CHECK_INDEX)
     local checkTyper = dialogue_typer()
     assert(checkTyper, "Check opened no dialogue")
     local checkRight, checkBottom, checkScreens = walk(checkTyper, "Check", nil, false)
 
-    open_action(RECALL_INDEX)
-    local typer = dialogue_typer()
-    assert(typer, "choosing Recall did not open the rules dialogue")
-    local pages = typer.texts
-    assert(pages[1] == Localize.localizeText("Battle.Rules.Intro"),
-        "the dialogue must open on the lead-in, got "..tostring(pages[1]))
-    -- Round 1 has announced exactly one rule: the lead-in, then that rule.
-    assert(#pages == 2, "round 1 should show the lead-in plus one rule screen, got "..#pages)
-    assert(pages[2] == Localize.localizeText("Battle.Rules.1"),
-        "round 1 must show only the opening rule, got "..tostring(pages[2]))
-
-    local recallRight, recallBottom, recallScreens = walk(typer, "Recall round 1", nil, true)
-    -- Check is only a reference: it ships in this box, so its numbers say what
-    -- the game already accepts.  Recall is not required to beat it -- the two
-    -- hold different text -- only to stay inside the box, which walk() asserts.
-
-    assert(not dialogue_typer(), "the rules dialogue must be gone once the menu is back")
-    assert(Battle.wave == "wave01" and Game.round == 1,
-        "Recall must not advance the round")
-
-    -- Now the worst case: every rule the battle has, which is also the widest a
-    -- rules screen ever gets.  Round 5 is the last one that announces anything.
+    recall_at(1, nil)
+    -- And the worst case, which is also the widest a rules screen ever gets:
+    -- every rule the battle has, reached the way a player would reach it.
     Game.round = 5
-    menuShot = "recall-menu-"..(os.getenv("SPIN_CHARA_LANGUAGE") or "zh_CN")
-    open_action(RECALL_INDEX)
-    local full = dialogue_typer()
-    assert(full, "Recall opened nothing on a later round")
-    assert(#full.texts == 3, "round 5 should be the lead-in plus two rule screens, got "..#full.texts)
-    walk(full, "Recall round 5", os.getenv("SPIN_CHARA_LANGUAGE") or "zh_CN", true)
-    Game.round = 1
-    -- The round's own narration is live again, not the rules text.
-    local narration = Battle.narration_text.texts
-    assert(narration and narration[1] == Localize.localizeText("Battle.Narration.Default"),
-        "the menu must go back to the turn's narration")
+    menuShot = "recall-menu-"..lang
+    recall_at(5, lang)
 
-    print(("[recall] Check %d screen(s) to %.1f wide / %.1f low; Recall %d screen(s) to %.1f / %.1f")
-        :format(checkScreens, checkRight, checkBottom, recallScreens, recallRight, recallBottom))
+    print(("[recall] Check %d screen(s) to %.1f wide / %.1f low")
+        :format(checkScreens, checkRight, checkBottom))
     print("[OK] Recall lists the announced rules and hands the turn back without a defense")
     love.event.quit(0)
 end

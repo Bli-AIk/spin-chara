@@ -78,10 +78,13 @@ for _, locale in ipairs({'en', 'zh_CN'}) do
     local _, newlines = current.lines[2]:gsub('\n', '\n')
     assert(newlines == 2, 'three rules belong on one screen')
     if locale == 'zh_CN' then
-        assert(current.lines[1] == '* 你开始回想...这场演出的规矩。')
-        assert(current.lines[2]:find('* 敌人先手开局。', 1, true))
-        assert(current.lines[2]:find('* 黑暗里要小心行事。', 1, true))
-        assert(current.lines[3]:find('* 黑暗中按住 ', 1, true))
+        -- Compare with the [tag]s stripped: these pin the wording, not the
+        -- pacing, so retuning a [wait:] must not break them.
+        local plain = function(s) return (s:gsub('%[.-%]', '')) end
+        assert(plain(current.lines[1]) == '* 你开始回想...这场演出的规矩。')
+        assert(plain(current.lines[2]):find('* 敌人先手开局。', 1, true))
+        assert(plain(current.lines[2]):find('* 黑暗里要小心行事。', 1, true))
+        assert(plain(current.lines[3]):find('* 黑暗中按住 X键 可以减速。', 1, true))
     end
     current:_onComplete()
     assert(#changes == 1 and changes[1] == 'ACTIONSELECT')

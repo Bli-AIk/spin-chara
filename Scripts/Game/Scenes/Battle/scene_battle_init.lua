@@ -11,9 +11,20 @@ if os.getenv("SPIN_CHARA_INVINCIBLE") and not _RELEASED then Battle.Invincible =
 Game = Battle.SetGame("dummy")
 local requestedWave=tonumber(os.getenv("SPIN_CHARA_WAVE"))
 -- `-w skip` (SPIN_CHARA_WAVE=skip): start on the player's turn instead of the
--- scripted opening enemy turn. `tonumber` yields nil for "skip", so the two
--- start-up switches can never both fire.
+-- scripted opening enemy turn.
+-- `-w skip-N` (SPIN_CHARA_WAVE=skip-N): the player's turn as it stands once
+-- round N's defense is over -- the rules list is filled in and the next defense
+-- is wave N+1.  `-w skip` is `-w skip-1`.
+-- `tonumber` yields nil for both spellings, and "skip" does not match the
+-- `skip-N` pattern, so no two start-up switches can ever both fire.
 local skipWave=os.getenv("SPIN_CHARA_WAVE")=="skip" and not _RELEASED
+local skipRound=tonumber((os.getenv("SPIN_CHARA_WAVE") or ""):match("^skip%-(%d+)$"))
+if skipRound and not _RELEASED then
+    assert(Game.rounds[skipRound],"Invalid skip round")
+    Game.round=skipRound-1
+else
+    skipRound=nil
+end
 if requestedWave and not _RELEASED then
     assert(requestedWave%1==0 and Game.rounds[requestedWave],"Invalid starting wave")
     Game.round=requestedWave-1
@@ -137,16 +148,16 @@ Battle.OnHit = OnHit
 -- SetGame loads the encounter before this scene installs its handlers.  Emit
 -- the initial round here so startup and later DEFENDING entries use the same
 -- round bookkeeping.
-if Battle.state == "DEFENDING" and (Game.round == 0 or requestedWave and not _RELEASED) then
+if Battle.state == "DEFENDING" and (Game.round == 0 or (requestedWave or skipRound) and not _RELEASED) then
     local jumpToWave = requestedWave and not _RELEASED
-    if jumpToWave or skipWave then
+    if jumpToWave or skipWave or skipRound then
         -- SetGame has already loaded the encounter's default wave01. Replace
         -- that instance as well as the round number before the first update.
         if Battle._wave.EndWave then Battle._wave.EndWave() end
         Battle.ClearWaveModule(Battle.wave)
     end
     EnterRound()
-    if skipWave then
+    if skipWave or skipRound then
         -- EnterRound has already advanced to the round the enemy turn would
         -- have run, so leaving DEFENDING here is the very walk-out a finished
         -- wave performs (wave unload, arena clear, BGM): the menu opens on that
