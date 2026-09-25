@@ -1,5 +1,5 @@
 {
-  "Battle.Narration.Default": "* Looks like you're on stage.[wait:1.5]\n* Break a leg...[wait:0.5]\n  preferably not your own.",
+  "Battle.Narration.Default": "* You're on stage.[wait:1.5]\n* Break a leg...[wait:0.5]\n  preferably not yours.",
   "Battle.Narration.Random": [
     "* Smells like stage smoke and...[wait:1.0]\n  chocolate?",
     "* The spotlight is shining\n  right on your skull.",
@@ -26,34 +26,39 @@
   "Battle.Actions.Names.Applause": "Applause",
   "Battle.Actions.Names.Boo": "Boo",
   "Battle.Actions.Texts.Chara.Check": [
-    "* CHARA[wait:0.5] - LV 1[wait:0.35]\n* A mysterious performer that seems\n  to have a vendetta against you."
+    "* CHARA[wait:0.5] - LV 1[wait:0.35]",
+    "* A mysterious performer that seems to have a\n  vendetta against you."
   ],
   "Battle.Actions.Texts.Chara.Applause": [
-    "* You applaud.[wait:0.5]\n* Chara turns to a completely empty set,\n  and bows deeply."
+    "* You applaud.[wait:0.5]",
+    "* Chara turns to a\n  completely empty set,[wait:0.35]\n  and bows deeply."
   ],
   "Battle.Actions.Texts.Chara.Applause.Reply": [
     "Oh dear,[wait:0.35] how generous.",
     "Do keep clapping,[wait:0.35] partner.",
-    "It makes you easier[wait:0.35] to aim at."
+    "It makes you easier to aim at."
   ],
   "Battle.Actions.Texts.Chara.Applause.Effect": [
     "* Chara slows down, but aims more precisely!"
   ],
   "Battle.Actions.Texts.Chara.Boo": [
-    "* You boo.[wait:0.5]\n* Chara gasps,[wait:0.35]\n  like you just broke a commandment."
+    "* You boo.",
+    "* Chara gasps,[wait:0.35]\n  like you just broke a\n  commandment."
   ],
   "Battle.Actions.Texts.Chara.Boo.Reply": [
     "Partner,[wait:0.35] you have NO taste.[wait:0.5]",
-    "An empty set is just[wait:0.5] a set that hasn't caught up to me yet."
+    "An empty set is just a set that hasn't caught up to me yet."
   ],
   "Battle.Actions.Texts.Chara.Boo.Effect": [
     "* Chara will deal more damage next turn!"
   ],
   "Battle.Actions.Texts.Napstablook.Check": [
-    "* NAPSTABLOOK[wait:0.5] - ATK 5 DEF 4[wait:0.35]\n* This ghost doesn't seem to want to be here."
+    "* NAPSTABLOOK[wait:0.5] - ATK 5 DEF 4[wait:0.35]",
+    "* This ghost doesn't seem\n  to want to be here."
   ],
   "Battle.Actions.Texts.Napstablook.Applause": [
-    "* You applaud.[wait:0.5]\n* Napstablook shrinks about two inches."
+    "* You applaud.",
+    "* Napstablook shrinks\n  about two inches."
   ],
   "Battle.Actions.Texts.Napstablook.Applause.Reply": [
     "oh......[wait:0.5] thanks.[wait:0.5]",
@@ -81,16 +86,16 @@
   "Battle.Items.Stew.Stat": "HP -??",
   "Battle.Items.Speed": "+SP",
   "Battle.Items.Stew.Name": "Pot o' Stew",
-  "Battle.Items.Stew.Use": "* You finished the whole pot.[wait:0.35]\n* You regretted it on the first bite.",
+  "Battle.Items.Stew.Use": "* You finished the pot.[wait:0.35]\n* First bite: instant\n  regret.",
   "Battle.Items.Stew.Digest": "* ...[wait:0.5]But it is, technically, food.",
   "Battle.Items.Bunlet.Name": "CinnaBunlet",
-  "Battle.Items.Bunlet.Use": "* You ate the CinnaBunlet.[wait:0.35]\n* Don't give it away.[wait:0.35]\n%s",
-  "Battle.Items.Bunlet.Repeat": "* Bunexpectedly—[wait:0.35]You ate another one.[wait:0.35]\n%s",
+  "Battle.Items.Bunlet.Use": "* You ate a CinnaBunlet.[wait:0.35]\n* Don't give it away.[wait:0.35]\n%s",
+  "Battle.Items.Bunlet.Repeat": "* Bunexpectedly—[wait:0.35]\n  you ate another one.[wait:0.35]\n%s",
   "Battle.Items.Pinecone.Name": "Pinecone",
   "Battle.Items.Pinecone.Use": "* You ate the pinecone.[wait:0.35]\n%s",
   "Battle.Items.Pinecone.Repeat": "* You ate the pinecone.[wait:0.45] Again.[wait:0.35]\n%s",
   "Battle.Items.WD40.Name": "WD-40",
-  "Battle.Items.WD40.Use": "* You sprayed WD-40 on yourself.[wait:0.35]\n* If it doesn't move and it should...",
+  "Battle.Items.WD40.Use": "* WD-40 sprayed on you.[wait:0.35]\n* If it should move,\n  it'll move now...",
   "Battle.Items.Chocolate.Name": "Chocolate",
   "Battle.Items.Chocolate.Name3": "Chocolate",
   "Battle.Items.Chocolate.Name2": "Choco",
@@ -102,9 +107,17 @@
   "Battle.Items.Chocolate.FinishOff": "* You finished it off.[wait:0.35]\n%s",
   "Battle.Items.Chocolate.Finish": "* You finished it.[wait:0.35]\n%s",
   "Items": {},
-  "Overworld.Menu.Buttons": ["ITEM", "STAT", "CELL"],
+  "Overworld.Menu.Buttons": [
+    "ITEM",
+    "STAT",
+    "CELL"
+  ],
   "Overworld.Menu.Item": "USE   INFO   DROP",
-  "Overworld.Menu.Interval": [215, 312, 425],
+  "Overworld.Menu.Interval": [
+    215,
+    312,
+    425
+  ],
   "Overworld.Menu.Stat": "\"%s\"\n\nLV %s\nHP %s/%s\n\nAT %s(%s)\nDF %s(%s)\n\nWeapon: %s\nArmor: %s\nGold: %s",
   "Overworld.Save.Buttons": "Save       Cancel",
   "Overworld.Save.Success": "Saved successfully",

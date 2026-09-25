@@ -80,6 +80,11 @@ same sound, and in round four as the volley's stage opens.
 Run a defense directly with `just run -w 2` (also 1 through 10). Window workspace
 selection remains available as `--workspace auto` or `--workspace 9`.
 
+`just run -w skip` skips the opening enemy turn instead and opens the battle on
+the player's turn, which is how the menu, narration or item work is reached
+without playing a defense first. The skip is final: the next defense is the wave
+that follows the skipped one, not that wave again.
+
 `SPIN_CHARA_INVINCIBLE=1` (dev only, ignored in releases) adds `invincible` to the
 model's context, so `Model:hit` counts the contact but never damages, blinks or
 cries out. The gate sits before `player.hurt` is set, because the renderer reads
@@ -91,5 +96,7 @@ Run the real-engine integration check from the project root:
 It exercises the chosen presets, dialogue, curtain, completion and cleanup.
 Round 2's entrance timing has its own check:
 `SPIN_CHARA_WAVE=2 xvfb-run -a love-git tests/wave02-entry`.
+The skip switch has one too:
+`SPIN_CHARA_WAVE=skip xvfb-run -a love-git tests/skip-to-player-turn`.
 The launch sample has one too, for `SPIN_CHARA_WAVE` 2 and 4:
 `xvfb-run -a love-git tests/knife-launch-sound`.

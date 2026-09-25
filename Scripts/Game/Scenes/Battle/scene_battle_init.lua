@@ -10,6 +10,10 @@ Battle.SetEndRoom("scene_end")
 if os.getenv("SPIN_CHARA_INVINCIBLE") and not _RELEASED then Battle.Invincible = true end
 Game = Battle.SetGame("dummy")
 local requestedWave=tonumber(os.getenv("SPIN_CHARA_WAVE"))
+-- `-w skip` (SPIN_CHARA_WAVE=skip): start on the player's turn instead of the
+-- scripted opening enemy turn. `tonumber` yields nil for "skip", so the two
+-- start-up switches can never both fire.
+local skipWave=os.getenv("SPIN_CHARA_WAVE")=="skip" and not _RELEASED
 if requestedWave and not _RELEASED then
     assert(requestedWave%1==0 and Game.rounds[requestedWave],"Invalid starting wave")
     Game.round=requestedWave-1
@@ -134,14 +138,23 @@ Battle.OnHit = OnHit
 -- the initial round here so startup and later DEFENDING entries use the same
 -- round bookkeeping.
 if Battle.state == "DEFENDING" and (Game.round == 0 or requestedWave and not _RELEASED) then
-    if requestedWave and not _RELEASED then
+    local jumpToWave = requestedWave and not _RELEASED
+    if jumpToWave or skipWave then
         -- SetGame has already loaded the encounter's default wave01. Replace
         -- that instance as well as the round number before the first update.
         if Battle._wave.EndWave then Battle._wave.EndWave() end
         Battle.ClearWaveModule(Battle.wave)
     end
     EnterRound()
-    if requestedWave and not _RELEASED then Battle.Defending() end
+    if skipWave then
+        -- EnterRound has already advanced to the round the enemy turn would
+        -- have run, so leaving DEFENDING here is the very walk-out a finished
+        -- wave performs (wave unload, arena clear, BGM): the menu opens on that
+        -- round's narration and the next defense is the following wave.
+        Battle.ChangeState("ACTIONSELECT")
+    elseif jumpToWave then
+        Battle.Defending()
+    end
 end
 
 
