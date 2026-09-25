@@ -46,4 +46,12 @@ function C.wave03A()
     }
     return out
 end
+function C.wave05()
+    local out=C.defaults(1)
+    out.label="A · 平稳"
+    out.wave05Profile={kind="steady",moves={240/54,240/54,240/54,240/54},
+        pauses={0,0,0,0},wavePeriod=2.6,
+        warning=.48,thrust=.30,hold=.12,retract=.36,cooldown=.60}
+    return out
+end
 return C

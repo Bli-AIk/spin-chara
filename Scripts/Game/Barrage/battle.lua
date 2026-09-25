@@ -75,7 +75,8 @@ function B.start(round)
         arena.white.visible=false; arena.black.visible=false
         Player.sprite:MoveTo(m.player.x,m.player.y)
     end
-    local config=round==3 and Config.wave03A() or Config.defaults(B.presets[round])
+    local config=round==3 and Config.wave03A()
+        or round==5 and Config.wave05() or Config.defaults(B.presets[round])
     if round==3 then
         config.verticalXOffsets={love.math.random(-48,48),love.math.random(-48,48)}
     end

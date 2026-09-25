@@ -45,13 +45,24 @@ function R:draw(m,presentation,debugUnlit)
         g.pop()
     end
     Clip.arenas(arenas)
+    if m.round==5 and m.stage==3 then
+        local box=m.arena
+        local offset=m.vars.scrollOffset or 0
+        local top,bottom=box.y-box.h/2,box.y+box.h/2
+        g.setColor(.65,.65,.65,.35)
+        for y=top-24+offset%24,bottom,24 do
+            g.rectangle("fill",box.x-box.w/2+3,y,7,2)
+            g.rectangle("fill",box.x+box.w/2-10,y,7,2)
+        end
+    end
     if not debugUnlit then Lighting.drawLights(m.lights,m.lightStyle) end
     local pixelLighting=Lighting.beginBullets(m.lights,m.lightStyle,dark,m.player)
     for _,k in ipairs(m.knives) do
         if not k.backdrop or k.visibleInside then
             local opacity=(k.alpha or (k.warning and .5 or 1))
             if not pixelLighting then opacity=opacity*Lighting.bulletAlpha(m.lights,k.x,k.y,dark) end
-            g.setColor(1,1,1,opacity)
+            if m.round==5 and k.warning then g.setColor(1,.94,.94,opacity)
+            else g.setColor(1,1,1,opacity) end
             g.draw(a.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
         end
     end

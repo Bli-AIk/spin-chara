@@ -100,3 +100,14 @@ The skip switch has one too:
 `SPIN_CHARA_WAVE=skip xvfb-run -a love-git tests/skip-to-player-turn`.
 The launch sample has one too, for `SPIN_CHARA_WAVE` 2 and 4:
 `xvfb-run -a love-git tests/knife-launch-sound`.
+
+Round 5 adopts prototype A from barrage-lab `17d7636`: a fixed 280×156 viewport,
+a spotlight rising from below, 54px/s downward soul drift, and one synchronized
+lower knife wave with independent proximity stabs. Nap and Chara speak during
+the scroll. The ceiling row enters through scroll displacement; the final wave
+keeps the ordinary 2.6s rhythm and increases its reach from 76px to 112px.
+The spotlight then exits upward over 1.6s as the darkness and inactive knives
+fade. Warnings are nearly white pink. The game retains its own blade pitch,
+swept collision shape, smoothed X slowdown and real movement/dialogue adapters.
+Run `SPIN_CHARA_WAVE=5 xvfb-run -a love-git --renderers opengl tests/wave05-scroll` for the full
+engine check, including the return to the action menu and presentation cleanup.

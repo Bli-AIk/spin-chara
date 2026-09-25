@@ -48,7 +48,8 @@ local function lightingShader()
                 if(extent.y>0.0) {
                     float light=core;
                     for(int i=1;i<=5;i++) {
-                        float ringRadius=mix(lamp.z*extent.z,extent.y*growth,float(i)/5.0);
+                        // lamp.w includes this light's reach and expansion.
+                        float ringRadius=mix(lamp.z*extent.z,lamp.w,float(i)/5.0);
                         float brightness=0.30*pow(0.48,float(i-1));
                         light=max(light,disc(p,centre,ringRadius)*brightness);
                     }

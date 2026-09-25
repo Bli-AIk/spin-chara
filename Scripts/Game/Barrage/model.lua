@@ -115,6 +115,7 @@ function Model:update(dt,input)
         local speed=input.slow and 60 or 120
         p.x=p.x+(input.dx or 0)*speed*dt; p.y=p.y+(input.dy or 0)*speed*dt
     end
+    if self.wave.afterMove then self.wave.afterMove(self,dt,input) end
     local a=self.arena
     p.x=math.max(a.x-a.w/2+8, math.min(a.x+a.w/2-8,p.x))
     p.y=math.max(a.y-a.h/2+8, math.min(a.y+a.h/2-8,p.y))
