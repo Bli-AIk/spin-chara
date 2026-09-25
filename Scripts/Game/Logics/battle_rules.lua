@@ -7,15 +7,15 @@ local rules = {}
 -- is parsed out of the dialogue, so the two can never disagree about wording,
 -- only about emphasis.
 --
--- Keyed by the round that announces the rule.  A round may announce more than
--- one (round 3 both warns about the dark and hands over the X slow-down), and
--- rounds 6-10 are still the placeholder wave with nothing to say.
+-- One rule per round, in the order the enemy announces them, so the index is
+-- the round number itself.  Rounds 6-10 are still the placeholder wave with
+-- nothing to announce, which is why the list stops at five.
 local announced = {
-    [1] = {"Battle.Rules.1"},
-    [2] = {"Battle.Rules.2"},
-    [3] = {"Battle.Rules.3", "Battle.Rules.4"},
-    [4] = {"Battle.Rules.5"},
-    [5] = {"Battle.Rules.6"},
+    "Battle.Rules.1",
+    "Battle.Rules.2",
+    "Battle.Rules.3",
+    "Battle.Rules.4",
+    "Battle.Rules.5",
 }
 
 -- The menu dialogue box is 596x130 with the text starting 14px in, leaving
@@ -35,10 +35,8 @@ function rules.Pages(round)
     local intro = Localize.localizeText("Battle.Rules.Intro")
     local texts = {intro}
     local lines = {}
-    for r = 1, round or 0 do
-        for _, key in ipairs(announced[r] or {}) do
-            lines[#lines + 1] = Localize.localizeText(key)
-        end
+    for r = 1, math.min(round or 0, #announced) do
+        lines[#lines + 1] = Localize.localizeText(announced[r])
     end
     for i = 1, #lines, PER_SCREEN do
         local screen = {}

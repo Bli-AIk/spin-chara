@@ -68,13 +68,14 @@ for _, locale in ipairs({'en', 'zh_CN'}) do
     current:_onComplete()
     assert(#changes == 1 and changes[1] == 'ACTIONSELECT')
     -- Recall reads back the rules announced so far and, like Check, hands the
-    -- turn straight back instead of reaching DEFENDING.  Round 3 has announced
-    -- four rules (1 + 1 + 2), so: lead-in alone, then three rules, then the last.
+    -- turn straight back instead of reaching DEFENDING.  One rule is announced
+    -- per round, so round 3 has three: the lead-in alone, then all three on one
+    -- screen, since three is exactly what the box holds.
     Battle.game = {round = 3}
     changes = {}
     acts = module.New()
     acts:Use({id = 'Chara'}, {id = 'Recall'})
-    assert(current.kind == 'narration' and #current.lines == 3)
+    assert(current.kind == 'narration' and #current.lines == 2)
     local _, newlines = current.lines[2]:gsub('\n', '\n')
     assert(newlines == 2, 'three rules belong on one screen')
     if locale == 'zh_CN' then
@@ -83,8 +84,8 @@ for _, locale in ipairs({'en', 'zh_CN'}) do
         local plain = function(s) return (s:gsub('%[.-%]', '')) end
         assert(plain(current.lines[1]) == '* 你开始回想...这场演出的规矩。')
         assert(plain(current.lines[2]):find('* 敌人先手开局。', 1, true))
-        assert(plain(current.lines[2]):find('* 黑暗里要小心行事。', 1, true))
-        assert(plain(current.lines[3]):find('* 黑暗中按住 X键 可以减速。', 1, true))
+        assert(plain(current.lines[2]):find('* 聚光灯里才是安全的。', 1, true))
+        assert(plain(current.lines[2]):find('* 黑暗里按 X键，弹幕大幅变慢。', 1, true))
     end
     current:_onComplete()
     assert(#changes == 1 and changes[1] == 'ACTIONSELECT')

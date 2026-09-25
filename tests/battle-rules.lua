@@ -5,7 +5,7 @@ Localize = {localizeText = function(key) return assert(language[key], key) end}
 local rules = dofile('Scripts/Game/Logics/battle_rules.lua')
 
 -- Rules announced through the end of each round, cumulative.
-local announced_by_round = {[0] = 0, [1] = 1, [2] = 2, [3] = 4, [4] = 5, [5] = 6}
+local announced_by_round = {[0] = 0, [1] = 1, [2] = 2, [3] = 3, [4] = 4, [5] = 5}
 
 -- The menu dialogue box wraps a line that outgrows 558px.  English is
 -- determination_mono, a true monospace: 16.2px a glyph at 27px, so 34 glyphs.
@@ -63,6 +63,22 @@ for _, locale in ipairs({'en', 'zh_CN'}) do
                     -- in here it paints the rest of the line invisible.
                     assert(not line:find('[colorHEX:000000]', 1, true),
                         'black reset is invisible in the arena dialogue: ' .. line)
+                    -- House style: a clause break takes a beat, and every rule
+                    -- line closes on one.  Rewriting a sentence is what quietly
+                    -- drops these, so count both: one [wait:] per break, plus
+                    -- the closing one.  The fullwidth comma is matched as a
+                    -- literal on purpose -- as a byte class it would also hit
+                    -- the 0xBC/0x8C continuation bytes of ordinary characters.
+                    -- Tags come off first, so any ':' left is a real one.
+                    local text = line:gsub('%[.-%]', '')
+                    local breaks = 0
+                    for _ in text:gmatch('，') do breaks = breaks + 1 end
+                    for _ in text:gmatch(',') do breaks = breaks + 1 end
+                    for _ in text:gmatch(':') do breaks = breaks + 1 end
+                    local waits = select(2, line:gsub('%[wait:', ''))
+                    assert(waits >= breaks + 1,
+                        ('%d clause break(s) want %d beat(s), found %d: %s')
+                            :format(breaks, breaks + 1, waits, line))
                     local plain = line:gsub('%[.-%]', '')
                     assert(width(plain) <= BOX_WIDTH,
                         ('%s r%d line wraps (%.1f > %d): %s'):format(

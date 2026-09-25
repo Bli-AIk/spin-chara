@@ -168,7 +168,7 @@ end
 
 -- Rules announced by the end of each round, cumulative.  Rounds 6-10 are the
 -- placeholder wave and announce nothing, so the count stops moving at five.
-local ANNOUNCED_BY_ROUND = {[1] = 1, [2] = 2, [3] = 4, [4] = 5, [5] = 6}
+local ANNOUNCED_BY_ROUND = {[1] = 1, [2] = 2, [3] = 3, [4] = 4, [5] = 5}
 local function rules_by(round)
     return ANNOUNCED_BY_ROUND[math.min(round, 5)]
 end
