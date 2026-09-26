@@ -77,6 +77,7 @@ function B.start(round)
     end
     local config=round==3 and Config.wave03A()
         or round==5 and Config.wave05() or round==6 and Config.wave06D()
+        or round==7 and Config.wave07B()
         or Config.defaults(B.presets[round])
     if round==3 then
         config.verticalXOffsets={love.math.random(-48,48),love.math.random(-48,48)}

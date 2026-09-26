@@ -136,14 +136,21 @@ function Model:update(dt,input)
     p.y=math.max(a.y-a.h/2+8, math.min(a.y+a.h/2-8,p.y))
     if p.hurt<=0 then
         for _,k in ipairs(self.knives) do
-            if Knife.hits(k,p) then self:hit(); break end
+            local target=p
+            if k.birthFraction then
+                local t=k.birthFraction
+                target={x=p.x,y=p.y,oldX=p.oldX+(p.x-p.oldX)*t,oldY=p.oldY+(p.y-p.oldY)*t}
+            end
+            if Knife.hits(k,target) then self:hit(); break end
         end
     end
+    for _,k in ipairs(self.knives) do k.birthFraction=nil end
     if self.curtain then require(prefix.."curtain-preview").updateCloth(self,dt) end
     if self.context.update then self.context.update(self,dt) end
     if self.pending then self:enter(self.stage+1) end
 end
 function Model:destroy()
+    self.vars.hat=nil
     if self.clothState then self.clothState:destroy(); self.clothState=nil end
     self.knives,self.lights,self.caption={},{},nil
     if self.context.destroy then self.context.destroy(self) end

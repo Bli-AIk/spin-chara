@@ -121,3 +121,48 @@ at a capped speed, so fast movement can still collide with them. The right
 blade accelerates across six passes (65, 145, 185, 225, 265, 305 px/s); dialogue
 continues while it moves. Run `SPIN_CHARA_WAVE=6 xvfb-run -a love-git --renderers
 opengl tests/wave06-curtain` for the real-engine check.
+
+## Round 7 — adopted B hat throws
+
+Adopted from barrage-lab `c7085c4` (B), approved 2026-09-27. Run with
+`just run -w 7`. The 280×180 arena receives six predicted, varied parabolic
+throws. Strong exponential Out easing retains the agreed launch speed and
+2× minimum/exit speed: each B flight lasts about 1.39 seconds, with .85 seconds
+between hats. The first two have no knives. The white double-ring placeholder
+is `Resources/Sprites/Attacks/Monsters/hat-placeholder.png`.
+
+The hat carries the real soul while leaving control within its 30px inner
+radius. It releases naturally at the edge, ahead of the blade belt. Starting
+with throw three, four opaque knife rows enter one blade at a time, at 16px
+pitch and 110px/s, clockwise with tips facing inward. The arena clips part of
+each blade. Stop births at the end, then let the final knives walk out.
+
+Round 5's near-tip rule still applies without wearing a hat: individual knives
+warn, thrust inward 28px, and retract while continuing along the row. Occupied
+hats additionally attract idle knives after a warning; already-thrusting knives
+are not interrupted. No hat invulnerability is added. The real game's damage,
+knife outline, soul movement and launch sound are retained. Mid-attack Chinese
+and English dialogue does not stop the attack.
+
+The shared model limits newborn swept collisions to their actual birth fraction
+of a frame. Hat rendering uses the game's stencil; teardown clears the hat and
+restores the native soul, arena and menu. Unlike the prototype, opening timing
+is owned by the engine's confirmation and arena resize, without a second .6s hold.
+
+Validation:
+
+```sh
+luajit tests/wave07-rules.lua
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=7 xvfb-run -a love-git --renderers opengl tests/wave07-hat
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=7 WAVE07_LANGUAGE=en xvfb-run -a love-git --renderers opengl tests/wave07-hat
+```
+
+The rule test checks speed endpoints, prediction, capture/release, actual
+collision and safe routes, four-sided proximity thrusts, incremental streams
+and natural draining at 30/120Hz. The engine test covers actual loading,
+movement, dialogue, damage, launch sounds, completion and cleanup.
+
+Migration regression: knife row coverage, damage punishment and round 6's native
+engine check pass. `tests/wave03-slow.lua` currently fails its line 13 slow-factor
+expectation on both the pre-migration HEAD and this worktree; this migration
+does not change that round's speed settings.

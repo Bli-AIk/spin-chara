@@ -11,6 +11,7 @@ end
 function R.new()
     local self=setmetatable({assets={}},R)
     for key,path in pairs({knife="Attacks/Monsters/spr_dummyknife_0.png",
+        hat="Attacks/Monsters/hat-placeholder.png",
         heart="Soul Library Sprites/spr_default_heart.png"}) do
         local image=g.newImage("Resources/Sprites/"..path)
         -- Pixel art, like every sprite the engine loads: a blade sweeps through
@@ -60,12 +61,18 @@ function R:draw(m,presentation,debugUnlit)
         if not k.backdrop or k.visibleInside then
             local opacity=(k.alpha or (k.warning and .5 or 1))
             if not pixelLighting then opacity=opacity*Lighting.bulletAlpha(m.lights,k.x,k.y,dark) end
-            if m.round==5 and k.warning then g.setColor(1,.94,.94,opacity)
+            if m.round==7 and k.warning then g.setColor(1,.45,.45,1)
+            elseif m.round==5 and k.warning then g.setColor(1,.94,.94,opacity)
             else g.setColor(1,1,1,opacity) end
             g.draw(a.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
         end
     end
     Lighting.endBullets(pixelLighting)
+    if m.round==7 and m.vars.hat then
+        local h=m.vars.hat
+        g.setColor(1,1,1)
+        g.draw(a.hat,h.x,h.y,0,1,1,a.hat:getWidth()/2,a.hat:getHeight()/2)
+    end
     g.setStencilState()
     if presentation and presentation.effects then
         for _,effect in ipairs(presentation.effects) do effect:Draw() end

@@ -60,4 +60,12 @@ function C.wave06D()
     out.wave06Profile={speeds={65,145,185,225,265,305},rest=0}
     return out
 end
+function C.wave07B()
+    local out=C.defaults(2)
+    out.label="B · 停顿抛接"
+    -- Reference timings before the adopted 2x minimum-speed adjustment.
+    out.wave07Profile={easeTimes={1.65,1.65,1.65,1.65,1.65,1.65},
+        gaps={.85,.85,.85,.85,.85,0},orbitSpeed=110}
+    return out
+end
 return C

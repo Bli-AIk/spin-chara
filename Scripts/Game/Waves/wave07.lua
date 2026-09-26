@@ -1,1 +1,1 @@
-return dofile("Scripts/Game/Waves/wave.lua")
+return require("Scripts.Game.Barrage.battle").start(7)
