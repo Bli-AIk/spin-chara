@@ -3,5 +3,6 @@
 
 /prototypes/
 
-# 本地录屏 / 成片
 /recordings/
+
+/.agents/skills/
