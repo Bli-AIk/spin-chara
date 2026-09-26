@@ -21,7 +21,6 @@ function R.new()
     return self
 end
 function R:draw(m,presentation,debugUnlit)
-    if m.round==6 then CurtainPreview.draw(m,self.assets,debugUnlit); return end
     local dark=m.dark and not debugUnlit
     local a=self.assets
     g.push("all")

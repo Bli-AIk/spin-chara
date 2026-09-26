@@ -54,4 +54,10 @@ function C.wave05()
         warning=.48,thrust=.30,hold=.12,retract=.36,cooldown=.60}
     return out
 end
+function C.wave06D()
+    local out=C.defaults(1)
+    out.label="D · 逐趟加速"
+    out.wave06Profile={speeds={65,145,185,225,265,305},rest=0}
+    return out
+end
 return C

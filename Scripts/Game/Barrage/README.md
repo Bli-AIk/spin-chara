@@ -111,3 +111,13 @@ fade. Warnings are nearly white pink. The game retains its own blade pitch,
 swept collision shape, smoothed X slowdown and real movement/dialogue adapters.
 Run `SPIN_CHARA_WAVE=5 xvfb-run -a love-git --renderers opengl tests/wave05-scroll` for the full
 engine check, including the return to the action menu and presentation cleanup.
+
+Round 6 adopts barrage-lab `55038c9` variant D. It uses the engine's 155×130
+arena, a spotlight entering from above and exiting upward, a single horizontal
+knife whose handle stays against the right inner edge, and a left knife column.
+The curtain starts only after at least seven seconds of active play and a
+sweeping knife approaches the soul. Under the cloth, nearby left blades retreat
+at a capped speed, so fast movement can still collide with them. The right
+blade accelerates across six passes (65, 145, 185, 225, 265, 305 px/s); dialogue
+continues while it moves. Run `SPIN_CHARA_WAVE=6 xvfb-run -a love-git --renderers
+opengl tests/wave06-curtain` for the real-engine check.
