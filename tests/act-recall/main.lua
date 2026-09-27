@@ -166,11 +166,11 @@ local function walk(typer, label, shoot, strict)
     return worstRight, lowestBottom, screens
 end
 
--- Rules announced by the end of each round, cumulative.  Rounds 6-10 are the
--- placeholder wave and announce nothing, so the count stops moving at five.
-local ANNOUNCED_BY_ROUND = {[1] = 1, [2] = 2, [3] = 3, [4] = 4, [5] = 5}
+-- Rules announced by the end of each round, cumulative.  Rounds 8-10 are the
+-- placeholder wave and announce nothing, so the count stops moving at seven.
+local ANNOUNCED_BY_ROUND = {[1] = 1, [2] = 2, [3] = 3, [4] = 4, [5] = 5, [6] = 6, [7] = 7}
 local function rules_by(round)
-    return ANNOUNCED_BY_ROUND[math.min(round, 5)]
+    return ANNOUNCED_BY_ROUND[math.min(round, 7)]
 end
 local function screens_by(round)
     return 1 + math.ceil(rules_by(round) / 3)
@@ -235,9 +235,9 @@ local function run()
     recall_at(1, nil)
     -- And the worst case, which is also the widest a rules screen ever gets:
     -- every rule the battle has, reached the way a player would reach it.
-    Game.round = 5
+    Game.round = 7
     menuShot = "recall-menu-"..lang
-    recall_at(5, lang)
+    recall_at(7, lang)
 
     print(("[recall] Check %d screen(s) to %.1f wide / %.1f low")
         :format(checkScreens, checkRight, checkBottom))
