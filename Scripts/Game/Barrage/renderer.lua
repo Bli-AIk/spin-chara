@@ -22,7 +22,7 @@ function R.new()
     return self
 end
 function R:draw(m,presentation,debugUnlit)
-    local dark=m.dark and not debugUnlit
+    local dark=m.dark and not debugUnlit and not (m.round==8 and m.curtain)
     local a=self.assets
     g.push("all")
     -- DEFENDING layout: centred arena, lower-right status, no action menu.
@@ -61,14 +61,14 @@ function R:draw(m,presentation,debugUnlit)
         if not k.backdrop or k.visibleInside then
             local opacity=(k.alpha or (k.warning and .5 or 1))
             if not pixelLighting then opacity=opacity*Lighting.bulletAlpha(m.lights,k.x,k.y,dark) end
-            if m.round==7 and k.warning then g.setColor(1,.45,.45,1)
+            if (m.round==7 or m.round==8) and k.warning then g.setColor(1,.45,.45,1)
             elseif m.round==5 and k.warning then g.setColor(1,.94,.94,opacity)
             else g.setColor(1,1,1,opacity) end
             g.draw(a.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
         end
     end
     Lighting.endBullets(pixelLighting)
-    if m.round==7 and m.vars.hat then
+    if (m.round==7 or m.round==8) and m.vars.hat then
         local h=m.vars.hat
         g.setColor(1,1,1)
         g.draw(a.hat,h.x,h.y,0,1,1,a.hat:getWidth()/2,a.hat:getHeight()/2)

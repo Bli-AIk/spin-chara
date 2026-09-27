@@ -166,3 +166,32 @@ Migration regression: knife row coverage, damage punishment and round 6's native
 engine check pass. `tests/wave03-slow.lua` currently fails its line 13 slow-factor
 expectation on both the pre-migration HEAD and this worktree; this migration
 does not change that round's speed settings.
+
+## Round 8 — adopted C curtain and hat throws
+
+Adopted from barrage-lab `7764f0a` (C), approved 2026-09-27. Run with
+`just run -w 8`. Each knife fades in outside the arena, completes a full turn,
+aims at the soul and launches. Hats first extend from the side, retract, then
+follow the predicted parabolic throw from round 7. The first four volleys play
+without the curtain; it then stays down for two more aimed volleys followed by
+two dense knife rows. The rows use the real game's 14px blade outline and 16px
+pitch, centred over the arena's reachable height as in round 2. Hats under the
+curtain repel nearby knives with finite force, leaving collisions active.
+
+The body uses its own movement, damage, launch sound, opening dialogue and
+return-to-menu lifecycle. The curtain shader keeps hats and knives readable
+outside the arena without introducing a spotlight. Wave 7's hat movement is
+reused unchanged apart from exporting its movement and time-scale helpers.
+
+Validation:
+
+```sh
+luajit tests/wave08-rules.lua
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=8 xvfb-run -a love-git --renderers opengl tests/wave08-hat
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=8 WAVE08_LANGUAGE=en xvfb-run -a love-git --renderers opengl tests/wave08-hat
+```
+
+The rule test covers row pitch, safe routes, actual damage when the hat is not
+repelling, completion and cleanup at 30/120Hz. The engine test covers the hat's
+extend/retract/throw order, continuous curtain, covered volley order, exact row
+count, dialogue in both languages, real damage and launch sounds, and menu return.

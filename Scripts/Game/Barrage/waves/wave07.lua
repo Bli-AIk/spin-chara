@@ -268,4 +268,7 @@ function W.update(m,dt)
     knives(m,dt); attract(m,dt)
     if v.rowStop and #m.knives==0 then m.caption=nil; m:next() end
 end
+-- Shared approved parabola and capture movement for round 08.
+W.moveHat=moveHat
+W.timeScale=timeScale
 return W

@@ -92,6 +92,7 @@ local function getShader()
         extern vec2 gridSize;
         extern vec2 lamp;
         extern vec3 visibilityRange;
+        extern float ambientSilhouette;
         extern vec2 soul;
         extern bool unlit;
         extern int pass;
@@ -127,11 +128,11 @@ local function getShader()
             red*=lit;
             if(pass==1 || pass==2) {
                 vec4 pixel=Texel(tex,uv)*color;
-                float grey=.065+lit*.10;
+                float grey=.065+lit*.10+ambientSilhouette*.10;
                 if(pass==2) {
                     pixel.rgb=vec3(.055+lit*.44,.009+lit*.025,.009+lit*.025);
                 } else {
-                    float white=unlit ? 1.0:visibilityRange.z*(1.0-smoothstep(visibilityRange.x,visibilityRange.y,distance(screen,lamp)));
+                    float white=unlit ? 1.0:max(ambientSilhouette,visibilityRange.z*(1.0-smoothstep(visibilityRange.x,visibilityRange.y,distance(screen,lamp))));
                     float localRed=unlit ? 0.0:visibilityRange.z*.50*(1.0-smoothstep(8.0,28.0,distance(screen,soul)));
                     float visible=max(white,localRed);
                     pixel.rgb=vec3(grey)*vec3(visible,white,white)/max(visible,.0001);
@@ -177,19 +178,27 @@ function C.drawOverlay(m,assets,debugUnlit)
     s:send("gridSize",{cloth.cols,cloth.rows})
     local profile=Lighting.styles[Lighting.ADOPTED_STYLE]
     local growth=l.expansion or 1
-    s:send("visibilityRange",{l.r*profile.coreScale,(l.fadeRadius or profile.reach)*growth,#m.lights>0 and growth>0 and 1 or 0})
+    s:send("ambientSilhouette",m.round==8 and .85 or 0)
+    s:send("visibilityRange",{(l.r or 38)*profile.coreScale,(l.fadeRadius or profile.reach)*growth,#m.lights>0 and growth>0 and 1 or 0})
     s:send("lamp",{l.x,l.y}); s:send("soul",{m.player.x,m.player.y})
     s:send("unlit",not not debugUnlit)
     g.setShader(s); s:send("pass",0); g.setColor(1,1,1)
     -- Deliberately outside the battle stencil: the drape hides the frame itself.
     g.rectangle("fill",cloth.x-64,cloth.y+offset-40,cloth.w+128,cloth.h*stretch+80)
-    -- Objects remain clipped to the arena even though the cloth covers its rim.
+    -- Round 08's knives enter through the drape from outside the battle rim.
+    -- Let the cloth shade that approach as well as the part inside the box.
     local a=m.arena
-    Clip.arenas({a})
+    if m.round==8 then Clip.arenas({{x=320,y=240,w=640,h=480}})
+    else Clip.arenas({a}) end
     s:send("pass",1)
     for _,k in ipairs(m.knives) do
         g.setColor(1,1,1,k.alpha or (k.warning and .5 or 1))
         g.draw(assets.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
+    end
+    if m.round==8 and m.vars.hat and assets.hat then
+        local h=m.vars.hat
+        g.setColor(1,1,1)
+        g.draw(assets.hat,h.x,h.y,0,1,1,assets.hat:getWidth()/2,assets.hat:getHeight()/2)
     end
     s:send("pass",2); g.setColor(1,1,1)
     g.draw(assets.heart,m.player.x,m.player.y,0,1,1,8,8)

@@ -68,4 +68,14 @@ function C.wave07B()
         gaps={.85,.85,.85,.85,.85,0},orbitSpeed=110}
     return out
 end
+function C.wave08C()
+    local out=C.defaults(1)
+    out.label="C · 长短交替"
+    out.wave08Profile={
+        gaps={.85,.3,.85,.3,.85,.3,.85},
+        speeds={324,418,324,418,324,418,351,432},
+        shotGap=.18,
+    }
+    return out
+end
 return C

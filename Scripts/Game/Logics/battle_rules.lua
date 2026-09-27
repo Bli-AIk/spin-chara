@@ -8,8 +8,7 @@ local rules = {}
 -- only about emphasis.
 --
 -- One rule per round, in the order the enemy announces them, so the index is
--- the round number itself.  Rounds 8-10 are still the placeholder wave with
--- nothing to announce, which is why the list stops at seven.
+-- the round number itself. Rounds 9-10 still use placeholder waves.
 local announced = {
     "Battle.Rules.1",
     "Battle.Rules.2",
@@ -18,6 +17,7 @@ local announced = {
     "Battle.Rules.5",
     "Battle.Rules.6",
     "Battle.Rules.7",
+    "Battle.Rules.8",
 }
 
 -- The menu dialogue box is 596x130 with the text starting 14px in, leaving

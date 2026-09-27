@@ -5,7 +5,7 @@ Localize = {localizeText = function(key) return assert(language[key], key) end}
 local rules = dofile('Scripts/Game/Logics/battle_rules.lua')
 
 -- Rules announced through the end of each round, cumulative.
-local announced_by_round = {[0] = 0, [1] = 1, [2] = 2, [3] = 3, [4] = 4, [5] = 5, [6] = 6, [7] = 7}
+local announced_by_round = {[0] = 0, [1] = 1, [2] = 2, [3] = 3, [4] = 4, [5] = 5, [6] = 6, [7] = 7, [8] = 8}
 
 -- The menu dialogue box wraps a line that outgrows 558px.  English is
 -- determination_mono, a true monospace: 16.2px a glyph at 27px, so 34 glyphs.
@@ -91,7 +91,7 @@ for _, locale in ipairs({'en', 'zh_CN'}) do
     end
 
     -- Past the last real round there is simply nothing new to add.
-    assert(#rules.Pages(99) == #rules.Pages(7), locale .. ': rounds beyond 7 must add nothing')
+    assert(#rules.Pages(99) == #rules.Pages(8), locale .. ': rounds beyond 8 must add nothing')
     -- A battle that somehow has no round yet still has the lead-in to show.
     assert(#rules.Pages(nil) == 1, locale .. ': no round means lead-in only')
 end
