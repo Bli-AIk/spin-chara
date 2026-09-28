@@ -53,7 +53,7 @@ function B.start(round)
         bubble.font="speechbubble.ttf"; bubble.fontsize=13
         bubble.use_bondfont=false; bubble.scale=1; bubble.line_spacing=0
         bubble.skip.canskip=false
-        bubble.auto_wrap=true; bubble:ShowBubble(round==10 and speaker=="Nap" and "up" or "right",.5)
+        bubble.auto_wrap=true; bubble:ShowBubble(round==10 and speaker=="Nap" and "left" or "right",.5)
         bubble.size[1]=width-20
     end
     local function updateDialogue(dt)
