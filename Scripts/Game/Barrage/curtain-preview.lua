@@ -44,7 +44,7 @@ function C.pose(m)
 end
 for i,p in ipairs(C.entryVariants) do C.labels[i]=p.label end
 function C.updateCloth(m,dt,previousPlayer,previousKnives)
-    if not m.clothState then m.clothState=Cloth.new(m.arena,m.curtainStyle or 2) end
+    if not m.clothState then m.clothState=Cloth.new(m.clothRect or m.arena,m.curtainStyle or 2) end
     local p=m.player
     local old=previousPlayer or {x=p.oldX or p.x,y=p.oldY or p.y}
     local contacts={{x=p.x,y=p.y,ox=old.x,oy=old.y,radius=28,strength=1,player=true,gain=m.touchGain or 2}}
@@ -178,7 +178,7 @@ function C.drawOverlay(m,assets,debugUnlit)
     s:send("gridSize",{cloth.cols,cloth.rows})
     local profile=Lighting.styles[Lighting.ADOPTED_STYLE]
     local growth=l.expansion or 1
-    s:send("ambientSilhouette",m.round==8 and .85 or 0)
+    s:send("ambientSilhouette",m.ambientSilhouette or (m.round==8 and .85 or 0))
     s:send("visibilityRange",{(l.r or 38)*profile.coreScale,(l.fadeRadius or profile.reach)*growth,#m.lights>0 and growth>0 and 1 or 0})
     s:send("lamp",{l.x,l.y}); s:send("soul",{m.player.x,m.player.y})
     s:send("unlit",not not debugUnlit)
@@ -195,10 +195,14 @@ function C.drawOverlay(m,assets,debugUnlit)
         g.setColor(1,1,1,k.alpha or (k.warning and .5 or 1))
         g.draw(assets.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
     end
-    if m.round==8 and m.vars.hat and assets.hat then
-        local h=m.vars.hat
-        g.setColor(1,1,1)
-        g.draw(assets.hat,h.x,h.y,0,1,1,assets.hat:getWidth()/2,assets.hat:getHeight()/2)
+    if m.vars and assets.hat then
+        local hats=m.vars.hats or (m.vars.hat and {m.vars.hat})
+        for _,h in ipairs(hats or {}) do
+            local scale=h.diameter and h.diameter/assets.hat:getWidth() or h.scale or 1
+            g.setColor(1,1,1,h.alpha or 1)
+            g.draw(assets.hat,h.x,h.y,0,scale,scale,
+                assets.hat:getWidth()/2,assets.hat:getHeight()/2)
+        end
     end
     s:send("pass",2); g.setColor(1,1,1)
     g.draw(assets.heart,m.player.x,m.player.y,0,1,1,8,8)

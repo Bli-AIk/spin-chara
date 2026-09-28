@@ -12,6 +12,7 @@ function R.new()
     local self=setmetatable({assets={}},R)
     for key,path in pairs({knife="Attacks/Monsters/spr_dummyknife_0.png",
         hat="Attacks/Monsters/hat-placeholder.png",
+        tear="Attacks/Napstablook/spr_teardrop_0.png",
         heart="Soul Library Sprites/spr_default_heart.png"}) do
         local image=g.newImage("Resources/Sprites/"..path)
         -- Pixel art, like every sprite the engine loads: a blade sweeps through
@@ -56,24 +57,29 @@ function R:draw(m,presentation,debugUnlit)
         end
     end
     if not debugUnlit then Lighting.drawLights(m.lights,m.lightStyle) end
-    local pixelLighting=Lighting.beginBullets(m.lights,m.lightStyle,dark,m.player)
+    local pixelLighting=Lighting.beginBullets(m.lights,m.lightStyle,dark,m.player,m.ambient)
     for _,k in ipairs(m.knives) do
         if not k.backdrop or k.visibleInside then
             local opacity=(k.alpha or (k.warning and .5 or 1))
-            if not pixelLighting then opacity=opacity*Lighting.bulletAlpha(m.lights,k.x,k.y,dark) end
-            if (m.round==7 or m.round==8) and k.warning then g.setColor(1,.45,.45,1)
+            if not pixelLighting then opacity=opacity*Lighting.bulletAlpha(m.lights,k.x,k.y,dark,m.lightStyle,m.ambient) end
+            if (m.round==7 or m.round==8 or m.round==9) and k.warning then g.setColor(1,.45,.45,1)
             elseif m.round==5 and k.warning then g.setColor(1,.94,.94,opacity)
             else g.setColor(1,1,1,opacity) end
             g.draw(a.knife,k.x,k.y,k.angle,k.scale,k.scale,30,30)
         end
     end
     Lighting.endBullets(pixelLighting)
-    if (m.round==7 or m.round==8) and m.vars.hat then
-        local h=m.vars.hat
-        g.setColor(1,1,1)
-        g.draw(a.hat,h.x,h.y,0,1,1,a.hat:getWidth()/2,a.hat:getHeight()/2)
+    local hats=m.vars.hats or ((m.round==7 or m.round==8) and m.vars.hat and {m.vars.hat})
+    for _,h in ipairs(hats or {}) do
+        local scale=h.diameter and h.diameter/a.hat:getWidth() or h.scale or 1
+        g.setColor(1,1,1,h.alpha or 1)
+        g.draw(a.hat,h.x,h.y,0,scale,scale,a.hat:getWidth()/2,a.hat:getHeight()/2)
     end
     g.setStencilState()
+    for _,t in ipairs(m.vars.tears or {}) do
+        g.setColor(1,1,1)
+        g.draw(a.tear,t.x,t.y,t.angle,t.scale,t.scale,6,6)
+    end
     if presentation and presentation.effects then
         for _,effect in ipairs(presentation.effects) do effect:Draw() end
     elseif presentation and presentation.fx then
@@ -81,14 +87,17 @@ function R:draw(m,presentation,debugUnlit)
     end
     local p=m.player
     local playerAlpha=p.hurt>0 and (math.floor(p.hurt*16)%2==0 and .4 or 1) or 1
-    if not debugUnlit then Lighting.drawPlayerGlow(p,m.lights,playerAlpha) end
+    if not debugUnlit then Lighting.drawPlayerGlow(p,m.lights,playerAlpha,m.ambient) end
     local bodyBrightness=Lighting.playerBodyBrightness(p,m.lights,dark,m.darkAmount)
     g.setColor(bodyBrightness,0,0,playerAlpha)
     g.draw(a.heart,p.x,p.y,0,1,1,8,8)
+    -- The half drape keeps its own brightness over the lightless dark stage.
+    local veilFirst=m.round==9
+    if veilFirst then Lighting.drawMask(m.lights,dark,m.lightStyle,m.darkAmount,arenas) end
     if m.curtain then CurtainPreview.drawOverlay(m,a,debugUnlit) end
     -- Both the heart and its faint emission live inside the scene lighting.
-    Lighting.drawMask(m.lights,dark,m.lightStyle,m.darkAmount,arenas)
-    if not debugUnlit and not m.curtain then Lighting.drawPlayerEmission(a.heart,p,m.lights,playerAlpha,bodyBrightness) end
+    if not veilFirst then Lighting.drawMask(m.lights,dark,m.lightStyle,m.darkAmount,arenas) end
+    if not debugUnlit and not m.curtain then Lighting.drawPlayerEmission(a.heart,p,m.lights,playerAlpha,bodyBrightness,m.ambient) end
     g.pop()
 end
 return R

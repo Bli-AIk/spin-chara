@@ -41,7 +41,7 @@ function Model.new(round, config, context)
         config=copy(config), context=context or {},
         player={x=320,y=330,hp=20,hurt=0}, lights={}, knives={}, vars={},
         elapsed=0,hits=0,stage=0,dark=true,curtain=false,done=false}, Model)
-    self.wave = require(prefix .. "waves.wave0" .. round)
+    self.wave = require(prefix .. string.format("waves.wave%02d",round))
     self.arena = copy(self.wave.arena)
     self.player.x, self.player.y = self.arena.x, self.arena.y
     self:enter(1)
@@ -150,7 +150,9 @@ function Model:update(dt,input)
     if self.pending then self:enter(self.stage+1) end
 end
 function Model:destroy()
-    self.vars.hat=nil
+    self.vars.hat=nil; self.vars.hats=nil; self.vars.tears=nil
+    self.curtain=false; self.clothRect=nil; self.clothTransition=nil
+    self.ambient=nil; self.ambientSilhouette=nil
     if self.clothState then self.clothState:destroy(); self.clothState=nil end
     self.knives,self.lights,self.caption={},{},nil
     if self.context.destroy then self.context.destroy(self) end

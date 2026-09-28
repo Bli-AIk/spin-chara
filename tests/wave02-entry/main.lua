@@ -15,12 +15,12 @@ local task
 
 local function frames(n) for _=1,n do coroutine.yield() end end
 
---- Holds the cancel key, the way a player mashes X through the intro line, so
---- the entrance timing does not ride on the typer's own pacing.
-local function holdSkip()
+--- Confirm the opening after the real typer finishes its text and final pause.
+--- The battle adapter waits for confirm; cancel no longer closes this bubble.
+local function holdConfirm()
     local real=Controller.GetState
     Controller.GetState=function(name)
-        if name=="cancel" then return 1 end
+        if name=="confirm" then return 1 end
         return real(name)
     end
     return function() Controller.GetState=real end
@@ -31,7 +31,7 @@ local function run()
     local model=assert(Battle._wave and Battle._wave.barrage,"the round 2 barrage must be loaded")
     assert(model.round==2,"expected round 2, got "..tostring(model.round))
     assert(model.opening and model.stage==1,"round 2 must open on Chara's line")
-    local restore=holdSkip()
+    local restore=holdConfirm()
 
     local box={model.arena.x,model.arena.y,model.arena.w,model.arena.h}
     local fields={"x","y","w","h"}

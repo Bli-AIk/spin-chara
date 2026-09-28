@@ -195,3 +195,80 @@ The rule test covers row pitch, safe routes, actual damage when the hat is not
 repelling, completion and cleanup at 30/120Hz. The engine test covers the hat's
 extend/retract/throw order, continuous curtain, covered volley order, exact row
 count, dialogue in both languages, real damage and launch sounds, and menu return.
+
+## Round 9 — adopted layout 04, changing curtain sides
+
+Adopted from barrage-lab `be715c8`, layout 04 “幕布换边”, approved 2026-09-28.
+Run with `just run -w 9`. The 340×190 arena has a solid, pushable scenery hat,
+a knife wall and one door with its point facing the hat. The hat has a 26px
+radius and moves at up to 92px/s. It threads the door toward the handle;
+following the blade axis can still injure the soul. The current game hat asset
+is scaled to a 52px diameter independently of the source image dimensions.
+
+The stage has ambient blade visibility and soul glow, with no spotlight.
+The right half curtain lifts at hour six, then falls on the left. The clock
+continues throughout the switch and Nap/Chara's dialogue. Twelve aimed shots
+at 1.3s intervals end with 41 parallel knives at the game's 16px pitch.
+A hat actually covered by the cloth repels them with round 8's finite force.
+X retains the game's smooth attack slowdown. Both solving and failing the
+puzzle lead to the curtain exit, fading scenery and the native action menu.
+
+Opening confirmation and arena resizing belong to the engine, so the prototype's
+extra .6s hold is omitted. Native movement, blade collision, damage and one
+launch sound per shot or wall remain connected. Cleanup also removes the half
+curtain state, hat list and ambient lighting on interruption.
+
+Validation:
+
+```sh
+luajit tests/wave09-rules.lua
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=9 xvfb-run -a love-git --renderers opengl tests/wave09-puzzle
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=9 WAVE09_LANGUAGE=en xvfb-run -a love-git --renderers opengl tests/wave09-puzzle
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=9 WAVE09_ROUTE=unsafe xvfb-run -a love-git --renderers opengl tests/wave09-puzzle
+```
+
+Rule checks cover one-way blocking, safe off-axis pushing versus blade-axis
+injury, the sheltered closing wall at 30/120Hz, X slowdown, side switching,
+unsolved completion and interrupted cleanup. Engine checks use actual controller
+input to deliver the hat and survive without damage in both languages; the
+unsafe route leaves the hat behind and verifies real HP loss. They also check
+continuous dialogue, sounds, curtain rendering, menu return and object cleanup.
+
+
+## 第十回合：Nap 原作散落眼泪与战斗收尾（2026-09-28）
+
+```sh
+just run -w 10
+```
+
+用户采纳 barrage-lab 第十回合，并要求 Nap 只平移，不缩放。
+Nap 的真实敌人动画现使用项目已有两帧战斗贴图，全程固定 2×（原型攻击时的尺寸）；
+从侧边平移到原作发射位置，攻击后平移回去。独立动画实例保留受伤反应和清理接口。
+Nap 的气泡位于右下方，避开演员的移动路径。引擎角色只绘制一份，不用覆盖层冒充演员。
+
+采用原作 crygen1 / crybullet 普通情绪：10 帧一对，140 帧（30Hz）一轮，
+双眼位置 (318,154)/(348,164)，155×130 内框。原作横速、重力、摩擦、缩放随机范围与
+左右反弹均保留；每次进回合使用新的随机种子。眼泪复用 `spr_teardrop_0.png`，
+从框外的双眼直接落入场内。原作导出缺少碰撞 mask，眼泪沿用采纳原型的凸轮廓扫掠近似；
+本体碰撞模块支持单弹自定义轮廓，现有刀保持默认刀刃轮廓。
+
+开场使用本体确认键和缩框流程，Nap 对白结束后再发射。真实 Player 只移动一次，
+X 只减慢玩家；眼泪保持 30Hz 节奏。眼泪通过原有 `Battle.OnHit` / `Player.Hurt` 扣 5 HP，
+60 帧无敌、无连续受伤加罚，保留受伤音效。回合内 0–1 次受伤走放水对白，2 次以上走伤害低对白。
+所有中英键已进入本体 Localization。Chara 最后离场后清理波次并淡出到现有 `scene_end`，
+不额外发奖励、死亡消息或再次开放行动菜单。中途切回菜单则恢复演员原位置与显示状态。
+
+```sh
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=10 xvfb-run -a love-git --renderers opengl tests/wave10-finale
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=10 WAVE10_LANGUAGE=en WAVE10_ROUTE=unsafe xvfb-run -a love-git --renderers opengl tests/wave10-finale
+env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=10 WAVE10_ROUTE=abort xvfb-run -a love-git --renderers opengl tests/wave10-finale
+```
+
+真实引擎检查覆盖固定缩放与平移、双眼锚点、移动只施加一次、攻击计时与数量、
+无伤／受伤及音效、两支对白、正常结束／中断退出，以及清理弹幕、灯、气泡、角色控制和绘制覆盖。
+另通过刀阵无缝检查、第七／八／九回合规则及第九回合真实引擎回归。
+本体修改尚未提交或推送；既有第九回合等工作区改动继续保留。
+
+### 第十回合收尾修正（2026-09-28）
+
+第 140 个原作帧生成最后一对眼泪后停止发射，已有眼泪继续运动、反弹和伤害判定。眼泪整个碰撞轮廓越过战斗框底边才移除；全部离场（或命中被消耗）后，Chara 才继续说话，结算包含这段收尾中的受击。

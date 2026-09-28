@@ -59,9 +59,7 @@ local encounter = {
         {
             id = "Napstablook",
             name = Localize.localizeText("Battle.EnemiesName.Napstablook"),
-            -- Placeholder: Napstablook reuses chara.png for now, and the factory
-            -- gives it its own independent sprite + state.
-            animation = require("Scripts.Game.Animations.Chara"),
+            animation = require("Scripts.Game.Animations.Napstablook"),
 
             -- Takes damage normally: 2-3 solid hits bring this to 0 HP.
             maxdamage = 50,

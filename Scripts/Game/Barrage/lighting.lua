@@ -28,6 +28,7 @@ local function lightingShader()
             extern vec4 lamps[2];
             extern vec2 expansion;
             extern float darkAmount;
+            extern float ambientLevel;
             extern int lampCount;
             extern vec4 profile;
             extern vec3 extent;
@@ -93,8 +94,11 @@ local function lightingShader()
                     // A small independent red source can reveal nearby blades
                     // even outside the white spotlight's visibility radius.
                     float red=soul.z*(1.0-smoothstep(8.0,28.0,distance(screen,soul.xy)));
-                    float visibility=max(blade,red);
-                    pixel.rgb*=vec3(visibility,blade,blade)/max(visibility,0.0001);
+                    // A lightless dark stage still reads: blades keep a dim
+                    // white ambient floor and the soul's own glow lifts what is near.
+                    float white=max(blade,ambientLevel);
+                    float visibility=max(white,red);
+                    pixel.rgb*=vec3(visibility,white,white)/max(visibility,0.0001);
                     pixel.a*=visibility;
                     return pixel;
                 }
@@ -105,13 +109,14 @@ local function lightingShader()
     end
     return shader
 end
-local function prepare(lights,style,renderPass,player,darkAmount,arenas)
+local function prepare(lights,style,renderPass,player,darkAmount,arenas,ambient)
     local s=lightingShader()
     local p=L.styles[style or 2]
     s:send("profile",{p.spread,p.middle,p.outer,p.floor})
     s:send("extent",{p.coreScale or 1,p.reach or 0,p.ringBase or p.coreScale or 1})
     s:send("lampCount",math.min(2,#lights))
-    s:send("soul",player and #lights>0 and {player.x,player.y,.50} or {0,0,0})
+    s:send("ambientLevel",ambient or 0)
+    s:send("soul",player and (#lights>0 or (ambient or 0)>0) and {player.x,player.y,.50} or {0,0,0})
     local a,b=lights[1],lights[2]
     local function lamp(light)
         if not light then return {0,0,0,0} end
@@ -135,8 +140,8 @@ local function drawPass(lights,style,pass,darkAmount,arenas)
     g.rectangle("fill",0,0,640,480); g.pop()
 end
 function L.drawLights(lights,style) drawPass(lights,style,0) end
-function L.drawPlayerGlow(player,lights,alpha)
-    if #lights==0 then return end
+function L.drawPlayerGlow(player,lights,alpha,ambient)
+    if #lights==0 and not ambient then return end
     lightingShader() -- Load the same authored circle used by the spotlight.
     local g=love.graphics
     g.push("all"); g.setShader(); g.setBlendMode("add","alphamultiply")
@@ -155,8 +160,8 @@ function L.playerBodyBrightness(player,lights,dark,amount)
     local visibility=L.bulletAlpha(lights,player.x,player.y,true,L.ADOPTED_STYLE)
     return 1-.5*(1-visibility)*(amount or 1)
 end
-function L.drawPlayerEmission(image,player,lights,alpha,brightness)
-    if #lights==0 then return end
+function L.drawPlayerEmission(image,player,lights,alpha,brightness,ambient)
+    if #lights==0 and not ambient then return end
     local g=love.graphics
     g.push("all"); g.setShader(); g.setBlendMode("add","alphamultiply")
     -- Small self-emission after the environmental mask, not full-bright red.
@@ -166,8 +171,9 @@ function L.drawPlayerEmission(image,player,lights,alpha,brightness)
 end
 -- Approximate point visibility for headless checks; actual rendering samples
 -- the circle sprite per fragment, including blades that straddle a boundary.
-function L.bulletAlpha(lights,x,y,dark,style)
+function L.bulletAlpha(lights,x,y,dark,style,ambient)
     if not dark then return 1 end
+    if #lights==0 then return ambient or 0 end
     local p=L.styles[style or 2]
     if p.reach then
         local alpha=0
@@ -189,9 +195,10 @@ function L.bulletAlpha(lights,x,y,dark,style)
     local light=distance<=0 and 1 or distance<=p.spread*.5 and p.middle or distance<=p.spread and p.outer or 0
     return p.floor+(1-p.floor)*light
 end
-function L.beginBullets(lights,style,dark,player)
+function L.beginBullets(lights,style,dark,player,ambient)
     if not dark then return false end
-    love.graphics.push("all"); love.graphics.setShader(prepare(lights,style,2,player))
+    love.graphics.push("all")
+    love.graphics.setShader(prepare(lights,style,2,player,nil,nil,ambient))
     return true
 end
 function L.endBullets(active) if active then love.graphics.pop() end end

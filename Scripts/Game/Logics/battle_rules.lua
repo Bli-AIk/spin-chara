@@ -8,7 +8,7 @@ local rules = {}
 -- only about emphasis.
 --
 -- One rule per round, in the order the enemy announces them, so the index is
--- the round number itself. Rounds 9-10 still use placeholder waves.
+-- the round number itself.
 local announced = {
     "Battle.Rules.1",
     "Battle.Rules.2",

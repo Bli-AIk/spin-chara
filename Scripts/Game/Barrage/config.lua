@@ -78,4 +78,16 @@ function C.wave08C()
     }
     return out
 end
+function C.wave09D()
+    local out=C.defaults(1)
+    out.label="04 · 幕布换边"
+    return out
+end
+function C.wave10()
+    local out=C.defaults(1)
+    out.label="原作散落眼泪"
+    out.seed=love.math.random(1,2147483646)
+    out.damage,out.hurtTime,out.punishDamage=5,60,0
+    return out
+end
 return C

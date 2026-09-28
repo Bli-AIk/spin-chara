@@ -37,8 +37,9 @@ function K.edge(edge,limit,pitch,sign)
 end
 function K.vertices(k, x, y, angle)
     local vertices, c, s = {}, math.cos(angle or k.angle), math.sin(angle or k.angle)
-    for i = 1, #K.polygon, 2 do
-        local px, py = K.polygon[i] * k.scale, K.polygon[i+1] * k.scale
+    local polygon = k.polygon or K.polygon
+    for i = 1, #polygon, 2 do
+        local px, py = polygon[i] * k.scale, polygon[i+1] * k.scale
         vertices[#vertices+1] = (x or k.x) + px*c - py*s
         vertices[#vertices+1] = (y or k.y) + px*s + py*c
     end

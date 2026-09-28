@@ -13,6 +13,9 @@ function B.start(round)
     local model,bubble,caption,captionKind,captionFinished,captionHold,overlay
     local effects,seenSlash,openingLaunchPlayed={},0,false
     local complete=true
+    local finaleFinished=false
+    local Actors=round==10 and require(P.."round10-actors")
+    local actors=Actors and Actors.new(Battle.game.enemies)
     local oldDraw=Player.sprite.Draw
     local oldMove=arena.move_player
     local oldWhite,oldBlack=arena.white.visible,arena.black.visible
@@ -22,7 +25,10 @@ function B.start(round)
     end
     local function syncDialogue(m)
         local key=m.caption and m.caption[2]
-        if not key then return end
+        if not key then
+            if round==10 then clearBubble(); caption=nil; complete=true end
+            return
+        end
         if key==caption then return end
         clearBubble()
         caption=key
@@ -37,6 +43,9 @@ function B.start(round)
         local width,height=210,100
         local x=math.max(25,position[1]-width-45)
         local y=math.max(35,position[2]-height/2+10)
+        if round==10 then
+            if speaker=="Nap" then x,y=415,265 else x,y=55,70 end
+        end
         local text=Localize.localizeText("Battle.BarrageLab."..key)
         assert(type(text)=="string","Missing barrage localization: "..key)
         bubble=Typers.EText.New({"[colorHEX:000000]"..text},
@@ -44,7 +53,7 @@ function B.start(round)
         bubble.font="speechbubble.ttf"; bubble.fontsize=13
         bubble.use_bondfont=false; bubble.scale=1; bubble.line_spacing=0
         bubble.skip.canskip=false
-        bubble.auto_wrap=true; bubble:ShowBubble("right",.5)
+        bubble.auto_wrap=true; bubble:ShowBubble(round==10 and speaker=="Nap" and "up" or "right",.5)
         bubble.size[1]=width-20
     end
     local function updateDialogue(dt)
@@ -78,6 +87,8 @@ function B.start(round)
     local config=round==3 and Config.wave03A()
         or round==5 and Config.wave05() or round==6 and Config.wave06D()
         or round==7 and Config.wave07B() or round==8 and Config.wave08C()
+        or round==9 and Config.wave09D()
+        or round==10 and Config.wave10()
         or Config.defaults(B.presets[round])
     if round==3 then
         config.verticalXOffsets={love.math.random(-48,48),love.math.random(-48,48)}
@@ -107,6 +118,7 @@ function B.start(round)
             end
         end,
         update=function(m)
+            if actors then Actors.update(actors,m) end
             syncDialogue(m)
             if round==3 and m.stage==2 and m.vars.burstStarted and not openingLaunchPlayed then
                 openingLaunchPlayed=true
@@ -166,6 +178,7 @@ function B.start(round)
         for _,effect in ipairs(effects) do effect:Destroy() end
         Layers.remove_external(overlay)
         model:destroy()
+        if actors then Actors.restore(actors,finaleFinished) end
         Player.sprite.Draw=oldDraw
         arena.move_player=oldMove
         arena.white.visible=oldWhite; arena.black.visible=oldBlack
@@ -207,7 +220,15 @@ function B.start(round)
         end
         model:update(dt,{slow=Controller.GetState("cancel")>0})
         syncArena(model)
-        if model.done and not bubble then wave.EndWave() end
+        if model.done and not bubble then
+            if round==10 then
+                finaleFinished=true
+                -- Scripted departure: clean up DEFENDING and fade to the
+                -- encounter end scene without rewards or another player turn.
+                Battle.ChangeState("WIN")
+                Battle._end=true
+            else wave.EndWave() end
+        end
     end
     return wave
 end
