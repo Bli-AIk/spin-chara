@@ -76,10 +76,16 @@ function R:draw(m,presentation,debugUnlit)
         g.draw(a.hat,h.x,h.y,0,scale,scale,a.hat:getWidth()/2,a.hat:getHeight()/2)
     end
     g.setStencilState()
+    -- The tears fall in from the eyes above the frame: the frame's own lower
+    -- edge cuts them, so the drop leaving the box is the drop sliding out of
+    -- the mask rather than one drawn over the frame and then removed in full
+    -- view. Nothing is masked while the tears are still outside and above.
+    if m.vars.tears and #m.vars.tears>0 then Clip.exceptBelow(arenas) end
     for _,t in ipairs(m.vars.tears or {}) do
         g.setColor(1,1,1)
         g.draw(a.tear,t.x,t.y,t.angle,t.scale,t.scale,6,6)
     end
+    g.setStencilState()
     if presentation and presentation.effects then
         for _,effect in ipairs(presentation.effects) do effect:Draw() end
     elseif presentation and presentation.fx then

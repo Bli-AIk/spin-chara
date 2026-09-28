@@ -154,9 +154,9 @@
   "Overworld.Text.NobodyCame": "* But nobody came.",
   "Battle.BarrageLab.Wave10.Intro": "[speed:0.03]Tch![wait:0.25] You just won't quit![wait:0.4]\nNap,[wait:0.25] you're up!\nUse your...[speed:0.055][wait:0.4] whatever.[speed:0.03]\nGive this show a finale![wait:0.6]",
   "Battle.BarrageLab.Wave10.Nap": "[speed:0.055]oh?[wait:0.45]... me?[wait:0.5]\num...[wait:0.35] well...[wait:0.35] okay...[wait:0.4]\n[speed:0.04]here comes my\nsuper powerful attack...[wait:0.5]\n[speed:0.06]sorry...[wait:0.6]",
-  "Battle.BarrageLab.Wave10.FewHits": "[speed:0.065]...[wait:0.55][speed:0.025]Are you kidding me?![wait:0.35]\nYou call THAT an attack?![wait:0.4]\nYou're letting them off\n[colorHEX:ff0000]on purpose![colorHEX:000000][wait:0.6]",
-  "Battle.BarrageLab.Wave10.ManyHits": "[speed:0.025]So you hit them.[wait:0.3] So what?!\nThat's [colorHEX:ff0000]ALL the damage?![colorHEX:000000][wait:0.4]\n[speed:0.045]You call that\nsuper powerful?![wait:0.6]",
+  "Battle.BarrageLab.Wave10.FewHits": "[speed:0.065]...[wait:0.55][speed:0.025]Are you kidding me?![wait:0.35]\nYou call THAT an attack?![wait:0.4]\nYou're letting them off\non purpose![wait:0.6]",
+  "Battle.BarrageLab.Wave10.ManyHits": "[speed:0.025]So you hit them.[wait:0.3] So what?!\nThat's ALL the damage?![wait:0.4]\n[speed:0.045]You call that\nsuper powerful?![wait:0.6]",
   "Battle.BarrageLab.Wave10.NapReply": "[speed:0.05]i...[wait:0.35] missed by accident...[wait:0.45]\nmaybe on purpose?[wait:0.6]\n[speed:0.055]i don't want there to be\nanother ghost here...[wait:0.8]",
-  "Battle.BarrageLab.Wave10.Quit": "[speed:0.02][colorHEX:ff0000]Enough![colorHEX:000000][wait:0.4] What a disaster!\nThe lights![wait:0.2] The sound![wait:0.2]\nMy partner is CRYING![wait:0.4]\n[speed:0.045][colorHEX:ff0000]I'm done with this show![colorHEX:000000][wait:0.7]",
-  "Battle.BarrageLab.Wave10.Last": "[speed:0.03]This doesn't mean you won![wait:0.4]\nI'll save your [colorHEX:ff0000]destruction[colorHEX:000000]\nfor prime time,[wait:0.3]\n[speed:0.06]human![wait:0.8]"
+  "Battle.BarrageLab.Wave10.Quit": "[speed:0.02]Enough![wait:0.4] What a disaster!\nThe lights![wait:0.2] The sound![wait:0.2]\nMy partner is CRYING![wait:0.4]\n[speed:0.045]I'm done with this show![wait:0.7]",
+  "Battle.BarrageLab.Wave10.Last": "[speed:0.03]This doesn't mean you won![wait:0.4]\nI'll save your destruction\nfor prime time,[wait:0.3]\n[speed:0.06]human![wait:0.8]"
 }
