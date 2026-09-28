@@ -17,7 +17,7 @@
   "Battle.WinTexts1": "* 你赢了！[wait:0.5]\n* 你获得了 %s XP 和 %s 金钱。\n",
   "Battle.WinTexts2": "* 你的LOVE提升了！",
   "Battle.GameoverText": [
-    "不...\n不要这样——",
+    "不...[wait:0.5]\n不要这样——",
     "%s![wait:0.5]\n  保持你的决心..."
   ],
   "Battle.EnemiesName.Chara": "Chara",
@@ -76,7 +76,7 @@
   "Battle.BarrageLab.Wave04.Intro": "[speed:0.04]一场精彩的演出，[wait:0.3]\n怎么能少得了...[wait:0.6]\n戏剧性的阴影！[wait:0.5]",
   "Battle.BarrageLab.Wave04.Curtain": "[speed:0.045]拉上[colorHEX:00ff00]幕布[colorHEX:000000]！[wait:0.6]",
   "Battle.BarrageLab.Wave04.Nap": "[speed:0.05]呃...[wait:0.4]幕布拉上的时候，[wait:0.35]\n[colorHEX:00ff00]灯光照射[colorHEX:000000]的地方\n会变得[colorHEX:00ff00]很烫[colorHEX:000000]...[wait:0.6]",
-  "Battle.BarrageLab.Wave09.Intro": "[speed:0.04]好吧，小滑头。[wait:0.3]\n把所有规则拼起来，[wait:0.25]\n完成我们的压轴大戏！[wait:0.4]\n[speed:0.07]滴答、[wait:0.2]滴答，[speed:0.04]\n收视率可不等人！[wait:0.5]",
+  "Battle.BarrageLab.Wave09.Intro": "[speed:0.04]好吧，小滑头。[wait:0.3]\n把所有规则拼起来，[wait:0.25]\n完成我们的压轴大戏！[wait:0.4]\n[speed:0.07]滴答、[wait:0.2]滴答，[speed:0.04][wait:0.2]\n收视率可不等人！[wait:0.5]",
   "Battle.BarrageLab.Wave09.Nap": "[speed:0.055]这看起来好复杂...[wait:0.4]\n记住之前所有的事...[wait:0.3]\n[colorHEX:00ff00]推那个帽子[colorHEX:000000]...[wait:0.35]\n[colorHEX:00ff00]利用阴影[colorHEX:000000]...[wait:0.4]祝你好运...[wait:0.4]",
   "Battle.BarrageLab.Wave09.Reply": "[speed:0.03]不许再给场外提示了！[wait:0.4]\n[speed:0.045]要是你能撑过这一局，[wait:0.25]\n我也许会勉强承认\n你是个命硬的群演！[wait:0.5]",
   "Battle.BarrageLab.Wave08.Intro": "[speed:0.045]明星配饰藏进暗处，[wait:0.3]\n会发生什么？[wait:0.3]\n准备见证[colorHEX:00ff00]戏剧魔法[colorHEX:000000]！[wait:0.5]",
@@ -89,7 +89,7 @@
   "Battle.BarrageLab.Wave06.Nap": "[speed:0.05]哦...[wait:0.35]这些道具\n在暗处会[colorHEX:00ff00]害羞[colorHEX:000000]...[wait:0.5]",
   "Battle.BarrageLab.Wave06.Reply": "[speed:0.05]它们才不害羞！[wait:0.35]\n那叫“制造张力”！[wait:0.3]\n你到底懂不懂\n什么叫戏剧美学！[wait:0.5]",
   "Battle.BarrageLab.Wave05.Intro": "[speed:0.05]我的道具最爱\n和嘉宾[colorHEX:00ff00]亲密接触[colorHEX:000000]，[wait:0.35]\n尤其爱用\n[colorHEX:00ff00]最尖锐的部分[colorHEX:000000]。[wait:0.5]",
-  "Battle.BarrageLab.Wave05.Nap": "[speed:0.05]呃...[wait:0.35]每次这样，\n[colorHEX:00ff00]你都会...[colorHEX:000000][wait:0.45]\n啊，我不该\n说这个的...[wait:0.5]",
+  "Battle.BarrageLab.Wave05.Nap": "[speed:0.05]呃...[wait:0.35]每次这样，[wait:0.35]\n[colorHEX:00ff00]你都会...[colorHEX:000000][wait:0.45]\n啊，我不该\n说这个的...[wait:0.5]",
   "Battle.BarrageLab.Wave05.Reply": "[speed:0.05]你再多嘴，[wait:0.3]\n我就掐了\n你的麦克风！[wait:0.5]",
   "Battle.Waves.Wave01.Intro": [
     "[speed:0.045]看来，[wait:0.35]又到了\n上台表演的时候啦！",
@@ -139,9 +139,9 @@
   "Overworld.Shop.Action.Talk": "交谈",
   "Overworld.Shop.Action.Exit": "离开",
   "Overworld.Text.NobodyCame": "* 但是谁也没有来。",
-  "Battle.BarrageLab.Wave10.Intro": "[speed:0.035]啧，[wait:0.25]你可真难缠！[wait:0.4]\n算了。[wait:0.3]Nap，该你了！[wait:0.35]\n用你的...[speed:0.065][wait:0.4]随便什么绝招，[speed:0.035]\n给这期节目收个尾！[wait:0.6]",
+  "Battle.BarrageLab.Wave10.Intro": "[speed:0.035]啧，[wait:0.25]你可真难缠！[wait:0.4]\n算了。[wait:0.3]Nap，该你了！[wait:0.35]\n用你的...[speed:0.065][wait:0.4]随便什么绝招，[speed:0.035][wait:0.35]\n给这期节目收个尾！[wait:0.6]",
   "Battle.BarrageLab.Wave10.Nap": "[speed:0.065]哎？[wait:0.45]...我吗？[wait:0.5]\n呃...[wait:0.35]那...[wait:0.35]好吧...[wait:0.4]\n[speed:0.05]超强力攻击要来了...[wait:0.5]\n[speed:0.075]对不起...[wait:0.6]",
-  "Battle.BarrageLab.Wave10.FewHits": "[speed:0.08]...[wait:0.55][speed:0.035]你是在逗我吗？！[wait:0.35]\n这也叫攻击？！[wait:0.4]\n你根本就是故意放水！[wait:0.6]",
+  "Battle.BarrageLab.Wave10.FewHits": "[speed:0.08]...[speed:0.035][wait:0.55]你是在逗我吗？！[wait:0.35]\n这也叫攻击？！[wait:0.4]\n你根本就是故意放水！[wait:0.6]",
   "Battle.BarrageLab.Wave10.ManyHits": "就这么点伤害？！[wait:0.4]\n[speed:0.055]这也叫“超强力攻击”？！[wait:0.6]",
   "Battle.BarrageLab.Wave10.NapReply": "[speed:0.06]我...[wait:0.35]不小心打偏了...[wait:0.45]\n可能是故意的？[wait:0.6]\n[speed:0.07]我不想让这里\n多出一个幽灵...[wait:0.8]",
   "Battle.BarrageLab.Wave10.Quit": "[speed:0.025]够了！[wait:0.4]这简直是场灾难！\n灯光全错，[wait:0.2]音效一团糟，[wait:0.2]\n我的搭档居然还在哭！[wait:0.4]\n[speed:0.065]我不录了！[wait:0.7]",

@@ -44,7 +44,9 @@ function B.start(round)
         local x=math.max(25,position[1]-width-45)
         local y=math.max(35,position[2]-height/2+10)
         if round==10 then
-            if speaker=="Nap" then x,y=415,265 else x,y=55,70 end
+            if key=="Wave10.Nap" then x,y=415,70
+            elseif speaker=="Nap" then x,y=415,265
+            else x,y=55,70 end
         end
         local text=Localize.localizeText("Battle.BarrageLab."..key)
         assert(type(text)=="string","Missing barrage localization: "..key)
@@ -53,7 +55,8 @@ function B.start(round)
         bubble.font="speechbubble.ttf"; bubble.fontsize=13
         bubble.use_bondfont=false; bubble.scale=1; bubble.line_spacing=0
         bubble.skip.canskip=false
-        bubble.auto_wrap=true; bubble:ShowBubble(round==10 and speaker=="Nap" and "left" or "right",.5)
+        bubble.auto_wrap=true; bubble:ShowBubble(round==10 and key=="Wave10.Nap" and "left"
+            or round==10 and speaker=="Nap" and "up" or "right",.5)
         bubble.size[1]=width-20
     end
     local function updateDialogue(dt)
