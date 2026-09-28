@@ -15,7 +15,8 @@ end
 function A.update(actors,m)
     local v=m.vars
     actors[1].sprite:MoveTo(v.charaX,120)
-    actors[2].sprite:MoveTo(v.napX+52,actors[2].y)
+    -- The 2x Nap sprite is 33px shorter below its pivot than chara.png.
+    actors[2].sprite:MoveTo(v.napX+52,actors[2].y+33)
 end
 function A.restore(actors,finished)
     for i,a in ipairs(actors) do

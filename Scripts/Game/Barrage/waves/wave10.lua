@@ -3,7 +3,7 @@
 -- directly by the host's variable dt. See README for source and mask limits.
 local P=(...):match('(.-)waves%.')
 local Collision=require(P..'knife')
-local W={arena={x=319.5,y=320,w=155,h=130},
+local W={arena={x=320,y=315,w=155,h=130},reusesIncomingBox=true,
     stages={'开场','Nap 上场','散落眼泪','Chara 质问','Nap 回答','罢演','最后通牒','离场'},
     frames=140,interval=10,sourceX=266,sourceY=44,
     -- Convex silhouette of the existing 12x13 tear, relative to (6,6).
