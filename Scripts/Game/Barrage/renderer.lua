@@ -8,10 +8,18 @@ local g=love.graphics
 local function rect(x,y,w,h,color)
     g.setColor(color or {1,1,1}); g.rectangle("fill",x,y,w,h)
 end
-function R.new()
+function R.new(round)
     local self=setmetatable({assets={}},R)
+    local hatPools={
+        [7]={"hat-remilia.png"},
+        [8]={"hat-remilia.png"},
+        [9]={"hat-koishi.png","hat-suwako.png","hat-yukari.png"},
+    }
+    local pool=hatPools[round]
+    local hatName="hat-koishi.png"
+    if pool then hatName=pool[#pool>1 and love.math.random(#pool) or 1] end
     for key,path in pairs({knife="Attacks/Monsters/spr_dummyknife_0.png",
-        hat="Attacks/Monsters/hat-placeholder.png",
+        hat="Attacks/Monsters/Hats/"..hatName,
         tear="Attacks/Napstablook/spr_teardrop_0.png",
         heart="Soul Library Sprites/spr_default_heart.png"}) do
         local image=g.newImage("Resources/Sprites/"..path)

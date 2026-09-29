@@ -9,7 +9,7 @@ local B={presets={[2]=3,[3]=3,[4]=4,[5]=1}}
 function B.start(round)
     local wave=ImportFile("Battle.Waves")
     local arena=Battle.mainarena
-    local renderer=Renderer.new()
+    local renderer=Renderer.new(round)
     local model,bubble,caption,captionKind,captionFinished,captionHold,overlay
     local effects,seenSlash,openingLaunchPlayed={},0,false
     local complete=true

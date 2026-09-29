@@ -128,8 +128,10 @@ Adopted from barrage-lab `c7085c4` (B), approved 2026-09-27. Run with
 `just run -w 7`. The 280×180 arena receives six predicted, varied parabolic
 throws. Strong exponential Out easing retains the agreed launch speed and
 2× minimum/exit speed: each B flight lasts about 1.39 seconds, with .85 seconds
-between hats. The first two have no knives. The white double-ring placeholder
-is `Resources/Sprites/Attacks/Monsters/hat-placeholder.png`.
+between hats. The first two have no knives. This round uses the large
+`hat-remilia.png` design (96×96); it is the only large design currently in the
+selection pool. Hat artwork and the size pools are documented in
+`Resources/Sprites/Attacks/Monsters/Hats/README.md`.
 
 The hat carries the real soul while leaving control within its 30px inner
 radius. It releases naturally at the edge, ahead of the blade belt. Starting
@@ -178,7 +180,8 @@ two dense knife rows. The rows use the real game's 14px blade outline and 16px
 pitch, centred over the arena's reachable height as in round 2. Hats under the
 curtain repel nearby knives with finite force, leaving collisions active.
 
-The body uses its own movement, damage, launch sound, opening dialogue and
+Round 8 uses the same large Remilia hat as round 7. The body uses its own
+movement, damage, launch sound, opening dialogue and
 return-to-menu lifecycle. The curtain shader keeps hats and knives readable
 outside the arena without introducing a spotlight. Wave 7's hat movement is
 reused unchanged apart from exporting its movement and time-scale helpers.
@@ -202,8 +205,9 @@ Adopted from barrage-lab `be715c8`, layout 04 “幕布换边”, approved 2026-
 Run with `just run -w 9`. The 340×190 arena has a solid, pushable scenery hat,
 a knife wall and one door with its point facing the hat. The hat has a 26px
 radius and moves at up to 92px/s. It threads the door toward the handle;
-following the blade axis can still injure the soul. The current game hat asset
-is scaled to a 52px diameter independently of the source image dimensions.
+following the blade axis can still injure the soul. At wave start, one of the
+three 64×64 small hats is selected for the round; the image is scaled to a 52px
+diameter independently of its source dimensions.
 
 The stage has ambient blade visibility and soul glow, with no spotlight.
 The right half curtain lifts at hour six, then falls on the left. The clock
