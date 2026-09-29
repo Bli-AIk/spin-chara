@@ -82,8 +82,10 @@ local function run()
             if turn and not v.sceneEntry and not seen.turn then
                 local h=v.hats[1]
                 local angle=h.angle
-                keys={left=2,up=2};frames(12);keys={}
-                assert(math.abs(h.angle-angle)>.1,'Native sideways input rotates the hat')
+                -- Allow the new angular inertia to build from rest.
+                keys={left=2,up=2};frames(24);keys={}
+                assert(math.abs(h.angle-angle)>.1,
+                    'Native sideways input rotates the hat: '..tostring(h.angle-angle))
                 angle=h.angle
                 capture='wave09-push-turn.png';frames(4)
                 assert(math.abs(h.angle-angle)<1e-8,'Releasing native input stops rotation')
@@ -112,7 +114,10 @@ local function run()
                     if p.x<h.x+W.hatRadius+W.pushTouch+3 then keys.right=2
                     elseif math.abs(p.y-ty)>1 then keys[p.y<ty and 'down' or 'up']=2
                     else seen.aligned=true end
-                else keys.left=2 end
+                else
+                    keys.left=2
+                    if math.abs(p.y-ty)>1 then keys[p.y<ty and 'down' or 'up']=2 end
+                end
             end
             if h and h.x<400 then seen.push=true end
             if v.solved and seen.fallen then seen.solved=true end

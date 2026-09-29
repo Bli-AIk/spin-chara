@@ -15,6 +15,10 @@ local W={arena={x=320,y=300,w=340,h=190},stages={'开场','解谜 · 送帽入�
     -- Keep the adopted scenery hat at a 26px radius, regardless of the
     -- current game sprite's source dimensions.
     hatRadius=26,pushSpeed=92,pushTouch=6,
+    -- Pixel-space constrained rigid body. Normal resistance models the force
+    -- required to push across the stage; Coulomb friction limits sideways grip.
+    hatMass=1,hatInertiaFactor=.5,hatFriction=.65,
+    normalResistance=14,tangentResistance=12,angularDamping=4,physicsStep=1/240,
     -- Contact is measured to the blade's edge, not its centre line, so the
     -- drawn brim stops where the drawn blade begins.
     bladeHalf=7,
@@ -115,11 +119,12 @@ end
 -- Stop at the first blocked arc step instead of sliding off the pivot's circle.
 function W.rotateHat(m,h,px,py,angle)
     local radius=length(h.x-px,h.y-py)
-    if radius<.001 or math.abs(angle)<1e-10 then return end
+    if radius<.001 or math.abs(angle)<1e-10 then return 0 end
     local left,right,top,bottom=W.hatBounds(m)
     local steps=math.max(1,math.ceil(math.abs(angle)*radius))
     local turn=angle/steps
     local c,s=math.cos(turn),math.sin(turn)
+    local turned=0
     for _=1,steps do
         local x,y=h.x,h.y
         local dx,dy=x-px,y-py
@@ -131,7 +136,27 @@ function W.rotateHat(m,h,px,py,angle)
             break
         end
         h.angle=(h.angle or 0)+turn
+        turned=turned+turn
     end
+    return turned
+end
+-- A player-pivot constraint is intentional gameplay, rather than a free disc:
+-- I_p = I_cm + m*r^2, with a uniform-disc estimate for the hat's mass profile.
+-- Sideways grip opposes relative slip and is capped by mu * normal pressure.
+-- Integrate I_p*omega' = r*F_t - damping*I_p*omega, retaining angular velocity
+-- across contact steps so changes in push direction do not snap the turn rate.
+function W.pushRotation(omega,normalSpeed,tangentSpeed,radius,dt)
+    if normalSpeed<=0 or dt<=0 then return 0,0 end
+    local mass=W.hatMass
+    local inertia=mass*(W.hatInertiaFactor*W.hatRadius^2+radius^2)
+    local normalForce=mass*W.normalResistance*normalSpeed
+    local slip=tangentSpeed-radius*omega
+    local force=clamp(mass*W.tangentResistance*slip,
+        -W.hatFriction*normalForce,W.hatFriction*normalForce)
+    local terminal=radius*force/(inertia*W.angularDamping)
+    local decay=math.exp(-W.angularDamping*dt)
+    local angle=terminal*dt+(omega-terminal)*(1-decay)/W.angularDamping
+    return angle,terminal+(omega-terminal)*decay
 end
 -- Adopted layout 04 from barrage-lab be715c8: the clock keeps running
 -- while the right drape lifts and the left drape falls.
@@ -200,7 +225,8 @@ function W.enter(m)
     m.vars={layout=layout,hour=0,clock=0,time=0,fired=0,solved=false,coveredTime=0,repelled=0,
         hits=0,wallFired=false,switched=false,hats={},sceneEntry=0}
     for _,spot in ipairs(layout.hats) do
-        m.vars.hats[#m.vars.hats+1]={x=spot[1],y=spot[2],diameter=2*W.hatRadius,alpha=0,angle=0}
+        m.vars.hats[#m.vars.hats+1]={x=spot[1],y=spot[2],diameter=2*W.hatRadius,
+            alpha=0,angle=0,angularVelocity=0}
     end
     build(m,layout)
     -- The moving box may leave the soul inside the authored hat position.
@@ -255,29 +281,47 @@ end
 -- The soul pushes the prop hat by touching its brim. The hat is solid, so a
 -- push that the blades refuse also stops the soul.
 function W.afterMove(m,dt)
-    if m.stage~=2 or not m.vars.hats then return end
+    if m.stage~=2 or not m.vars.hats or dt<=0 then return end
     local p,touch=m.player,W.hatRadius+W.pushTouch
-    for _,h in ipairs(m.vars.hats) do
-        local dx,dy=h.x-p.x,h.y-p.y
-        local d=length(dx,dy)
-        if d<touch then
-            if d<.001 then dx,dy,d=0,-1,1 end
-            local mx,my=p.x-(p.oldX or p.x),p.y-(p.oldY or p.y)
-            -- The sideways part of the player's push supplies the turn. An
-            -- aligned push has no torque; an idle contact has none either.
-            local sideways=(dx*my-dy*mx)/d
-            local outward=touch-d
-            local travel=length(outward,sideways)
-            local gain=math.min(1,W.pushSpeed*dt/math.max(.001,travel))
-            W.moveHat(m,h,dx/d*outward*gain,dy/d*outward*gain)
-            local nx,ny=h.x-p.x,h.y-p.y
-            local nd=length(nx,ny)
-            if nd<touch then
-                if nd<.001 then nx,ny,nd=0,-1,1 end
-                p.x,p.y=h.x-nx/nd*touch,h.y-ny/nd*touch
+    local startX,startY=p.oldX or p.x,p.oldY or p.y
+    local moveX,moveY=p.x-startX,p.y-startY
+    -- Reconstruct the native movement in small contact steps. This prevents
+    -- a slow frame from delivering its entire push/rotation as one impulse.
+    local steps=math.max(1,math.ceil(dt/W.physicsStep),math.ceil(length(moveX,moveY)))
+    local step=dt/steps
+    local a=m.arena
+    p.x,p.y=startX,startY
+    for _=1,steps do
+        local oldX,oldY=p.x,p.y
+        p.x=clamp(p.x+moveX/steps,a.x-a.w/2+8,a.x+a.w/2-8)
+        p.y=clamp(p.y+moveY/steps,a.y-a.h/2+8,a.y+a.h/2-8)
+        local vx,vy=(p.x-oldX)/step,(p.y-oldY)/step
+        for _,h in ipairs(m.vars.hats) do
+            local dx,dy=h.x-p.x,h.y-p.y
+            local d=length(dx,dy)
+            if d<touch then
+                if d<.001 then dx,dy,d=0,-1,1 end
+                local nx,ny=dx/d,dy/d
+                local normal=math.max(0,nx*vx+ny*vy)
+                local tangent=nx*vy-ny*vx
+                local turn,omega=W.pushRotation(h.angularVelocity or 0,normal,tangent,touch,step)
+                local outward=touch-d
+                local gain=math.min(1,W.pushSpeed*step/math.max(.001,length(outward,touch*turn)))
+                W.moveHat(m,h,nx*outward*gain,ny*outward*gain)
+                local rx,ry=h.x-p.x,h.y-p.y
+                local radius=length(rx,ry)
+                if radius<touch then
+                    if radius<.001 then rx,ry,radius=0,-1,1 end
+                    p.x,p.y=h.x-rx/radius*touch,h.y-ry/radius*touch
+                end
+                turn=turn*gain
+                local turned=W.rotateHat(m,h,p.x,p.y,turn)
+                h.angularVelocity=math.abs(turned-turn)<1e-8 and omega*gain or 0
+            else
+                -- Preserve the adopted stop-on-release rule; no spin is stored
+                -- while detached, so a later touch cannot revive old momentum.
+                h.angularVelocity=0
             end
-            local radius=length(h.x-p.x,h.y-p.y)
-            W.rotateHat(m,h,p.x,p.y,sideways*gain/math.max(.001,radius))
         end
     end
 end

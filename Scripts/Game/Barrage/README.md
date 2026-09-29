@@ -207,12 +207,27 @@ two vertical knives at the upper and lower centre, pointing inward. The middle
 knife and horizontal wall were removed after play feedback: the centre now
 leaves enough room to push the 26px-radius hat through at up to 92px/s.
 A centred push translates the hat; a sideways push rotates its centre and
-artwork together around the soul's current position. Both components share the
-92px/s movement budget. The arc stops at knives and arena edges, and releasing
-the push preserves the hat's final position and angle. The curtain silhouette
-uses that same angle. The remaining scenery knives still block hats and can
-injure the soul. At wave start, one of the
-three 64×64 small hats is selected for the round; the image is scaled to a 52px
+artwork together around the soul's current position. This is a constrained
+rigid-body approximation retaining the adopted player pivot and immediate stop
+on release. A free rigid body would not remain pinned to the soul.
+
+Normal push speed supplies pressure through stage resistance; the tangential
+force opposes slip and is limited by Coulomb friction (`|Ft| <= mu * Fn`,
+`mu=.65`). Rotation uses `I_p = .5*m*R^2 + m*r^2`, `torque = r*Ft` and angular
+damping, so grazing contact loses grip, centred pressure generates no torque,
+and direction changes first brake the stored angular velocity. The hat uses a
+uniform-disc mass estimate; these are game-space parameters, not measurements
+of real cloth. Contact steps are at most 1/240s, with exponential damping
+integration. Both movement components share the 92px/s budget. Knives and arena
+edges stop the arc and cancel blocked angular velocity. Release preserves the
+last position and angle and clears momentum. The curtain silhouette uses that
+same angle.
+
+The friction constraint follows [Box2D's contact model](https://box2d.org/documentation/md_simulation.html);
+rotation uses the [parallel-axis theorem and rotational dynamics](https://openstax.org/books/university-physics-volume-1/pages/10-summary).
+
+The remaining scenery knives still block hats and can injure the soul. At wave
+start, one of the three 64×64 small hats is selected for the round; the image is scaled to a 52px
 diameter independently of its source dimensions.
 
 The stage has ambient blade visibility and soul glow, with no spotlight.
@@ -248,7 +263,8 @@ env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=9 WAVE09_ROUTE=unsaf
 ```
 
 Rule checks cover one-way blocking, pushing through the open centre, vertical
-blade damage, player-pivot turning and blocked arcs, harmless wall assembly and
+blade damage, player-pivot turning and blocked arcs, force-angle response,
+angular inertia/reversal, 30/60/120/144Hz contact consistency, harmless wall assembly and
 sheltered launch at 30/120Hz, X slowdown, side switching,
 unsolved completion and interrupted cleanup. Engine checks use actual controller
 input to deliver the hat and survive without damage in both languages; the

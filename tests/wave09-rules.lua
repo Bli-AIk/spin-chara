@@ -51,6 +51,52 @@ local function pushFixture()
     m.player.x,m.player.y=412,300
     return m,h
 end
+local function drivenRotation(degrees,speed)
+    local angle=math.rad(degrees)
+    local omega,total=0,0
+    for _=1,240 do
+        local turn
+        turn,omega=W.pushRotation(omega,speed*math.cos(angle),speed*math.sin(angle),32,1/240)
+        total=total+turn
+    end
+    return total,omega
+end
+do
+    local headOn=drivenRotation(0,120)
+    local shallow=drivenRotation(15,120)
+    local oblique,omega=drivenRotation(45,120)
+    local grazing=drivenRotation(85,120)
+    assert(headOn==0 and shallow>0 and oblique>shallow and grazing<shallow,
+        'Pressure and slip yield no head-on spin and reduced grazing torque')
+    assert(math.abs(drivenRotation(-45,120)+oblique)<1e-8,
+        'Mirrored force directions produce mirrored angular displacement')
+    assert(math.abs(drivenRotation(45,60)*2-oblique)<1e-8,
+        'A slower push supplies proportionally less rotation')
+    local inertia=W.hatInertiaFactor
+    W.hatInertiaFactor=inertia*4
+    local heavy=drivenRotation(45,120)
+    W.hatInertiaFactor=inertia
+    assert(heavy<oblique,'Greater rotational inertia resists the same push')
+    local _,nextOmega=W.pushRotation(omega,85,-85,32,1/240)
+    assert(nextOmega>0 and nextOmega<omega,'Reversing input brakes angular momentum before reversing it')
+    for _=1,240 do _,nextOmega=W.pushRotation(nextOmega,85,-85,32,1/240) end
+    assert(nextOmega<0,'Sustained opposite input reverses the rotation')
+    local turn,stopped=W.pushRotation(omega,0,100,32,1/240)
+    assert(turn==0 and stopped==0,'Detached grazing cannot rotate or store momentum')
+end
+do
+    local reference
+    for _,fps in ipairs({30,60,120,144}) do
+        local m,h=pushFixture()
+        for _=1,fps/2 do m:update(1/fps,{dx=-1,dy=.5}) end
+        if reference then
+            assert(math.sqrt((h.x-reference.x)^2+(h.y-reference.y)^2)<.5
+                and math.abs(h.angle-reference.angle)<math.rad(1),
+                'Frame-rate changes preserve the contact path within half a pixel and one degree')
+        else reference={x=h.x,y=h.y,angle=h.angle} end
+        m:destroy()
+    end
+end
 for _,dt in ipairs({1/30,1/120}) do
     local m,h=pushFixture()
     for _=1,math.ceil(.2/dt) do m:update(dt,{dx=-1}) end
@@ -115,7 +161,10 @@ local function route(dt)
             if p.x<h.x+W.hatRadius+W.pushTouch+3 then input.dx=1
             elseif math.abs(p.y-ty)>1 then input.dy=p.y<ty and 1 or -1
             else aligned=true end
-        else input.dx=-1 end
+        else
+            input.dx=-1
+            if math.abs(p.y-ty)>.5 then input.dy=p.y<ty and 1 or -1 end
+        end
         m:update(dt,input)
         assert(math.sqrt((h.x-p.x)^2+(h.y-p.y)^2)>=W.hatRadius+W.pushTouch-1e-6,
             'Hat stays solid while pushed')
