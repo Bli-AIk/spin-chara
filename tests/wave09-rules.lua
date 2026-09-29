@@ -43,6 +43,57 @@ assert(not W.blocks(k,340,300,-1,0),'Tip admits the hat toward the handle')
 assert(W.blocks(k,288,300,1,0),'Hat cannot reverse off the point')
 assert(W.blocks(k,340,312,-1,0),'Blade body blocks the hat')
 assert(W.blocks(k,270,300,1,0),'Handle blocks entry')
+local function pushFixture()
+    local m=fresh()
+    m.knives={};m.vars.clock=-1e6
+    local h=m.vars.hats[1]
+    h.x,h.y,h.angle=380,300,0
+    m.player.x,m.player.y=412,300
+    return m,h
+end
+for _,dt in ipairs({1/30,1/120}) do
+    local m,h=pushFixture()
+    for _=1,math.ceil(.2/dt) do m:update(dt,{dx=-1}) end
+    assert(h.x<380 and math.abs(h.y-300)<1e-8 and h.angle==0,
+        'A centred push translates without spinning')
+    m:destroy()
+    local offsets={}
+    for _,side in ipairs({-1,1}) do
+        m,h=pushFixture()
+        for _=1,math.ceil(.2/dt) do m:update(dt,{dx=-1,dy=side}) end
+        assert(h.angle*side<0 and (h.y-300)*side>0,
+            'A sideways push turns both the hat artwork and its physical centre')
+        assert(math.abs(math.sqrt((h.x-m.player.x)^2+(h.y-m.player.y)^2)
+            -W.hatRadius-W.pushTouch)<1e-6,'Turning preserves contact with the soul')
+        offsets[side]=h.y-300
+        local x,y,angle=h.x,h.y,h.angle
+        for _=1,10 do m:update(dt,{}) end
+        assert(math.abs(h.x-x)+math.abs(h.y-y)+math.abs(h.angle-angle)<1e-8,
+            'Releasing the push stops the hat without snapping its angle')
+        m:destroy()
+    end
+    assert(math.abs(offsets[-1]+offsets[1])<1e-6,'Mirrored pushes turn in opposite directions')
+end
+do
+    local m,h=pushFixture()
+    h.x,h.y=432,300
+    local px,py=400,300
+    W.rotateHat(m,h,px,py,math.pi/4)
+    assert(math.abs(h.x-(px+32/math.sqrt(2)))<1e-6
+        and math.abs(h.y-(py+32/math.sqrt(2)))<1e-6
+        and math.abs(h.angle-math.pi/4)<1e-6,
+        'The whole hat rotates about the player pivot, not its own centre')
+    assert(m.player.x==412 and m.player.y==300,'Rotation never repositions the soul')
+    h.x,h.y,h.angle=400,300,0
+    m.knives={{x=395,y=335,angle=0,prop=true}}
+    W.rotateHat(m,h,368,300,math.pi/2)
+    assert(h.angle>0 and h.angle<math.pi/2 and W.free(m,h.x,h.y,0,0),
+        'The swept rotation stops at a blade instead of crossing it')
+    m.knives={};h.x,h.y,h.angle=432,369,0
+    W.rotateHat(m,h,400,369,math.pi/4)
+    assert(h.x==432 and h.y==369 and h.angle==0,'The arena edge blocks outward rotation')
+    m:destroy()
+end
 local function route(dt)
     local m=fresh()
     W.drape(m,W.layout.switchDrape);m.vars.switched=true
@@ -53,12 +104,18 @@ local function route(dt)
     for _,blade in ipairs(m.knives) do
         assert(math.abs(math.cos(blade.angle))<1e-6, "Scenery knives stand vertically")
     end
+    local aligned=false
     for _=1,math.ceil(12/dt) do
         local p=m.player
         local ty=h.y
         local input={}
-        if math.abs(p.y-ty)>1 then input.dy=p.y<ty and 1 or -1 end
-        if p.x<h.x+10 then input.dx=1 elseif math.abs(p.y-ty)<=3 then input.dx=-1 end
+        if not aligned then
+            -- Walk clear of the brim before aligning; rubbing along it now
+            -- deliberately turns the prop around the soul.
+            if p.x<h.x+W.hatRadius+W.pushTouch+3 then input.dx=1
+            elseif math.abs(p.y-ty)>1 then input.dy=p.y<ty and 1 or -1
+            else aligned=true end
+        else input.dx=-1 end
         m:update(dt,input)
         assert(math.sqrt((h.x-p.x)^2+(h.y-p.y)^2)>=W.hatRadius+W.pushTouch-1e-6,
             'Hat stays solid while pushed')

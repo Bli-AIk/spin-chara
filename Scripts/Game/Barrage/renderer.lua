@@ -81,7 +81,7 @@ function R:draw(m,presentation,debugUnlit)
     for _,h in ipairs(hats or {}) do
         local scale=h.diameter and h.diameter/a.hat:getWidth() or h.scale or 1
         g.setColor(1,1,1,h.alpha or 1)
-        g.draw(a.hat,h.x,h.y,0,scale,scale,a.hat:getWidth()/2,a.hat:getHeight()/2)
+        g.draw(a.hat,h.x,h.y,h.angle or 0,scale,scale,a.hat:getWidth()/2,a.hat:getHeight()/2)
     end
     g.setStencilState()
     -- The tears fall in from the eyes above the frame: the frame's own lower

@@ -110,6 +110,29 @@ function W.moveHat(m,h,dx,dy)
     end
     return false
 end
+-- Rotate the whole prop around the contact point. Its centre follows the arc
+-- too, so the drawn rotation and the circular collision body stay together.
+-- Stop at the first blocked arc step instead of sliding off the pivot's circle.
+function W.rotateHat(m,h,px,py,angle)
+    local radius=length(h.x-px,h.y-py)
+    if radius<.001 or math.abs(angle)<1e-10 then return end
+    local left,right,top,bottom=W.hatBounds(m)
+    local steps=math.max(1,math.ceil(math.abs(angle)*radius))
+    local turn=angle/steps
+    local c,s=math.cos(turn),math.sin(turn)
+    for _=1,steps do
+        local x,y=h.x,h.y
+        local dx,dy=x-px,y-py
+        local tx,ty=px+dx*c-dy*s,py+dx*s+dy*c
+        if tx<left or tx>right or ty<top or ty>bottom then break end
+        W.moveHat(m,h,tx-x,ty-y)
+        if math.abs(h.x-tx)+math.abs(h.y-ty)>1e-7 then
+            h.x,h.y=x,y
+            break
+        end
+        h.angle=(h.angle or 0)+turn
+    end
+end
 -- Adopted layout 04 from barrage-lab be715c8: the clock keeps running
 -- while the right drape lifts and the left drape falls.
 W.layout={name='幕布换边',hours=12,period=1.30,volley=1,switchAt=6,
@@ -177,7 +200,7 @@ function W.enter(m)
     m.vars={layout=layout,hour=0,clock=0,time=0,fired=0,solved=false,coveredTime=0,repelled=0,
         hits=0,wallFired=false,switched=false,hats={},sceneEntry=0}
     for _,spot in ipairs(layout.hats) do
-        m.vars.hats[#m.vars.hats+1]={x=spot[1],y=spot[2],diameter=2*W.hatRadius,alpha=0}
+        m.vars.hats[#m.vars.hats+1]={x=spot[1],y=spot[2],diameter=2*W.hatRadius,alpha=0,angle=0}
     end
     build(m,layout)
     -- The moving box may leave the soul inside the authored hat position.
@@ -239,14 +262,22 @@ function W.afterMove(m,dt)
         local d=length(dx,dy)
         if d<touch then
             if d<.001 then dx,dy,d=0,-1,1 end
-            W.moveHat(m,h,dx/d*math.min(touch-d,W.pushSpeed*dt),
-                dy/d*math.min(touch-d,W.pushSpeed*dt))
+            local mx,my=p.x-(p.oldX or p.x),p.y-(p.oldY or p.y)
+            -- The sideways part of the player's push supplies the turn. An
+            -- aligned push has no torque; an idle contact has none either.
+            local sideways=(dx*my-dy*mx)/d
+            local outward=touch-d
+            local travel=length(outward,sideways)
+            local gain=math.min(1,W.pushSpeed*dt/math.max(.001,travel))
+            W.moveHat(m,h,dx/d*outward*gain,dy/d*outward*gain)
             local nx,ny=h.x-p.x,h.y-p.y
             local nd=length(nx,ny)
             if nd<touch then
                 if nd<.001 then nx,ny,nd=0,-1,1 end
                 p.x,p.y=h.x-nx/nd*touch,h.y-ny/nd*touch
             end
+            local radius=length(h.x-p.x,h.y-p.y)
+            W.rotateHat(m,h,p.x,p.y,sideways*gain/math.max(.001,radius))
         end
     end
 end

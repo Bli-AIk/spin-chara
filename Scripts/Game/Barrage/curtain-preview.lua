@@ -200,7 +200,7 @@ function C.drawOverlay(m,assets,debugUnlit)
         for _,h in ipairs(hats or {}) do
             local scale=h.diameter and h.diameter/assets.hat:getWidth() or h.scale or 1
             g.setColor(1,1,1,h.alpha or 1)
-            g.draw(assets.hat,h.x,h.y,0,scale,scale,
+            g.draw(assets.hat,h.x,h.y,h.angle or 0,scale,scale,
                 assets.hat:getWidth()/2,assets.hat:getHeight()/2)
         end
     end

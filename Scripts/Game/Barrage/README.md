@@ -206,7 +206,12 @@ Run with `just run -w 9`. The 340×190 arena has a solid, pushable scenery hat,
 two vertical knives at the upper and lower centre, pointing inward. The middle
 knife and horizontal wall were removed after play feedback: the centre now
 leaves enough room to push the 26px-radius hat through at up to 92px/s.
-The remaining scenery knives still block hats and can injure the soul. At wave start, one of the
+A centred push translates the hat; a sideways push rotates its centre and
+artwork together around the soul's current position. Both components share the
+92px/s movement budget. The arc stops at knives and arena edges, and releasing
+the push preserves the hat's final position and angle. The curtain silhouette
+uses that same angle. The remaining scenery knives still block hats and can
+injure the soul. At wave start, one of the
 three 64×64 small hats is selected for the round; the image is scaled to a 52px
 diameter independently of its source dimensions.
 
@@ -243,13 +248,15 @@ env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=9 WAVE09_ROUTE=unsaf
 ```
 
 Rule checks cover one-way blocking, pushing through the open centre, vertical
-blade damage, harmless wall assembly and sheltered launch at 30/120Hz, X slowdown, side switching,
+blade damage, player-pivot turning and blocked arcs, harmless wall assembly and
+sheltered launch at 30/120Hz, X slowdown, side switching,
 unsolved completion and interrupted cleanup. Engine checks use actual controller
 input to deliver the hat and survive without damage in both languages; the
 unsafe route leaves the hat behind and verifies real HP loss. They also check
 continuous box carry without teleporting, the anchored left expansion, darkness
 and curtain entrances before attacks, continuous dialogue, sounds, curtain
-rendering, menu return and object cleanup.
+rendering, menu return and object cleanup. Set `WAVE09_TURN=1` for the engine
+check to turn the hat with diagonal input before completing the puzzle.
 
 
 ## 第十回合：Nap 原作散落眼泪与战斗收尾（2026-09-28）

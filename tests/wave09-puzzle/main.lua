@@ -20,6 +20,7 @@ local function run()
     local cloth
     local oldClock
     local unsafe=os.getenv("WAVE09_ROUTE")=="unsafe"
+    local turn=os.getenv("WAVE09_TURN")=="1"
     local startHP=Player.hp
     local W=m.wave
     local previous
@@ -78,6 +79,16 @@ local function run()
                 assert(math.abs(m.player.x-x-2)<1e-6,'Native movement applied exactly once')
                 seen.nativeMove=true;keys={}
             end
+            if turn and not v.sceneEntry and not seen.turn then
+                local h=v.hats[1]
+                local angle=h.angle
+                keys={left=2,up=2};frames(12);keys={}
+                assert(math.abs(h.angle-angle)>.1,'Native sideways input rotates the hat')
+                angle=h.angle
+                capture='wave09-push-turn.png';frames(4)
+                assert(math.abs(h.angle-angle)<1e-8,'Releasing native input stops rotation')
+                seen.turn=true
+            end
             if not cloth and m.clothState then
                 cloth=m.clothState;capture='wave09-right.png';seen.right=true
                 assert(m.clothRect.x==410 and m.clothRect.w==80)
@@ -97,8 +108,11 @@ local function run()
             if not unsafe and seen.left and h and h.x>235 and not v.exit then
                 local p=m.player
                 local ty=h.y
-                if math.abs(p.y-ty)>1 then keys[p.y<ty and 'down' or 'up']=2 end
-                if p.x<h.x+10 then keys.right=2 elseif math.abs(p.y-ty)<=3 then keys.left=2 end
+                if not seen.aligned then
+                    if p.x<h.x+W.hatRadius+W.pushTouch+3 then keys.right=2
+                    elseif math.abs(p.y-ty)>1 then keys[p.y<ty and 'down' or 'up']=2
+                    else seen.aligned=true end
+                else keys.left=2 end
             end
             if h and h.x<400 then seen.push=true end
             if v.solved and seen.fallen then seen.solved=true end
