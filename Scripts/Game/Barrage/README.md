@@ -203,9 +203,10 @@ count, dialogue in both languages, real damage and launch sounds, and menu retur
 
 Adopted from barrage-lab `be715c8`, layout 04 “幕布换边”, approved 2026-09-28.
 Run with `just run -w 9`. The 340×190 arena has a solid, pushable scenery hat,
-a knife wall and one door with its point facing the hat. The hat has a 26px
-radius and moves at up to 92px/s. It threads the door toward the handle;
-following the blade axis can still injure the soul. At wave start, one of the
+two vertical knives at the upper and lower centre, pointing inward. The middle
+knife and horizontal wall were removed after play feedback: the centre now
+leaves enough room to push the 26px-radius hat through at up to 92px/s.
+The remaining scenery knives still block hats and can injure the soul. At wave start, one of the
 three 64×64 small hats is selected for the round; the image is scaled to a 52px
 diameter independently of its source dimensions.
 
@@ -213,14 +214,24 @@ The stage has ambient blade visibility and soul glow, with no spotlight.
 The right half curtain lifts at hour six, then falls on the left. The clock
 continues throughout the switch and Nap/Chara's dialogue. Twelve aimed shots
 at 1.3s intervals end with 41 parallel knives at the game's 16px pitch.
+The final row assembles outside the arena: each knife fades in and slides 40px
+into place over .5s, with a .22s centre-out stagger and .18s final hold. All
+knives launch together after .9s; damage and the launch sound start then.
 A hat actually covered by the cloth repels them with round 8's finite force.
 X retains the game's smooth attack slowdown. Both solving and failing the
 puzzle lead to the curtain exit, fading scenery and the native action menu.
 
-Opening confirmation and arena resizing belong to the engine, so the prototype's
-extra .6s hold is omitted. Native movement, blade collision, damage and one
-launch sound per shot or wall remain connected. Cleanup also removes the half
-curtain state, hat list and ambient lighting on interruption.
+Opening confirmation belongs to the engine. After the line closes, the incoming
+box resizes to 70×190 over .5s, slides to the right over .7s while carrying the
+soul by its horizontal displacement, then expands left to 340×190 over .7s
+with its right edge fixed at x=490. Expansion leaves the soul in place; scene
+entry never assigns a soul spawn position. If the authored hat position overlaps
+the arriving soul, the invisible hat is placed clear before fading in, so prop
+collision cannot eject an idle soul on the next frame. The darkness and scenery fade in over
+.85s as the right curtain falls with its adopted 2.15s entrance. Clock attacks
+start once that entrance finishes. Native movement, blade collision, damage
+and one launch sound per shot or wall remain connected. Cleanup also removes
+the half curtain state, hat list and ambient lighting on interruption.
 
 Validation:
 
@@ -231,12 +242,14 @@ env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=9 WAVE09_LANGUAGE=en
 env SDL_VIDEODRIVER=x11 ALSOFT_DRIVERS=null SPIN_CHARA_WAVE=9 WAVE09_ROUTE=unsafe xvfb-run -a love-git --renderers opengl tests/wave09-puzzle
 ```
 
-Rule checks cover one-way blocking, safe off-axis pushing versus blade-axis
-injury, the sheltered closing wall at 30/120Hz, X slowdown, side switching,
+Rule checks cover one-way blocking, pushing through the open centre, vertical
+blade damage, harmless wall assembly and sheltered launch at 30/120Hz, X slowdown, side switching,
 unsolved completion and interrupted cleanup. Engine checks use actual controller
 input to deliver the hat and survive without damage in both languages; the
 unsafe route leaves the hat behind and verifies real HP loss. They also check
-continuous dialogue, sounds, curtain rendering, menu return and object cleanup.
+continuous box carry without teleporting, the anchored left expansion, darkness
+and curtain entrances before attacks, continuous dialogue, sounds, curtain
+rendering, menu return and object cleanup.
 
 
 ## 第十回合：Nap 原作散落眼泪与战斗收尾（2026-09-28）

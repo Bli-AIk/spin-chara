@@ -10,6 +10,8 @@ local Covered=Wave06.covered
 -- revolution ends in the seamless wall the hat has to shelter the soul from.
 -- 340 wide: the finale lays out the whole set. Height stays at the HUD's limit.
 local W={arena={x=320,y=300,w=340,h=190},stages={'开场','解谜 · 送帽入幕'},
+    animatesOpeningBox=true,openingWidth=70,resizeTime=.5,slideTime=.7,expandTime=.7,
+    darkEnterTime=.85,
     -- Keep the adopted scenery hat at a 26px radius, regardless of the
     -- current game sprite's source dimensions.
     hatRadius=26,pushSpeed=92,pushTouch=6,
@@ -20,7 +22,8 @@ local W={arena={x=320,y=300,w=340,h=190},stages={'开场','解谜 · 送帽入�
     -- through; anything else presents the blade's body and blocks.
     tipWindow=10,
     stabReach=28,retreatSpeed=78,recoverSpeed=20,maxRetreat=102,
-    wallPitch=16,repelRadius=Wave08.repelRadius,repelAcceleration=Wave08.repelAcceleration,
+    wallPitch=16,wallEnter=.5,wallStagger=.22,wallHold=.18,wallSlide=40,
+    repelRadius=Wave08.repelRadius,repelAcceleration=Wave08.repelAcceleration,
     coveredHold=.3,clothMargin=Cloth.presets[Curtain.ADOPTED.clothStyle].margin}
 local function clamp(x,a,b) return math.max(a,math.min(b,x)) end
 local function length(x,y) return math.sqrt(x*x+y*y) end
@@ -109,11 +112,11 @@ function W.moveHat(m,h,dx,dy)
 end
 -- Adopted layout 04 from barrage-lab be715c8: the clock keeps running
 -- while the right drape lifts and the left drape falls.
-local function gap(y) return {y-43,y+43} end
 W.layout={name='幕布换边',hours=12,period=1.30,volley=1,switchAt=6,
-    drape={330,490},switchDrape={150,300},hats={{430,300}},player={455,340},
-    blades={{kind='col',x=320,from=213,to=387,angle=0,skip=gap(300)},
-        {kind='door',x=320,y=300,angle=0}}}
+    drape={330,490},switchDrape={150,300},hats={{430,300}},
+    -- Two inward-facing vertical blades leave the centre clear for the hat.
+    blades={{kind='door',x=320,y=221,angle=math.pi/2},
+        {kind='door',x=320,y=379,angle=-math.pi/2}}}
 local function prop(m,x,y,angle)
     local k=m:knife(x,y,angle)
     k.prop=true; k.active=true; k.alpha=1
@@ -167,18 +170,64 @@ function W.enter(m)
     m.ambient=nil; m.ambientSilhouette=nil; m.clothRect=nil; m.clothTransition=nil
     if m.stage==1 then m.caption={'Chara','Wave09.Intro'}; return end
     local layout=W.layout
-    m.dark=true; m.darkAmount=1
+    m.dark=true; m.darkAmount=0
     -- Tip direction is the puzzle, so the dark stage keeps blades readable.
-    m.ambient=layout.ambient or .62
+    m.ambient=1
     m.ambientSilhouette=math.min(.85,m.ambient*2.5)
     m.vars={layout=layout,hour=0,clock=0,time=0,fired=0,solved=false,coveredTime=0,repelled=0,
-        hits=0,wallFired=false,switched=false,hats={}}
+        hits=0,wallFired=false,switched=false,hats={},sceneEntry=0}
     for _,spot in ipairs(layout.hats) do
-        m.vars.hats[#m.vars.hats+1]={x=spot[1],y=spot[2],diameter=2*W.hatRadius}
+        m.vars.hats[#m.vars.hats+1]={x=spot[1],y=spot[2],diameter=2*W.hatRadius,alpha=0}
     end
-    m.player.x,m.player.y=layout.player[1],layout.player[2]
     build(m,layout)
-    if not layout.curtainAt then W.drape(m,layout.drape) end
+    -- The moving box may leave the soul inside the authored hat position.
+    -- Place the still-invisible prop clear of it; spawning scenery must never
+    -- send the soul through afterMove's overlap correction on the next frame.
+    for _,h in ipairs(m.vars.hats) do
+        local dx,dy=h.x-m.player.x,h.y-m.player.y
+        local d=length(dx,dy)
+        local clearance=W.hatRadius+W.pushTouch+1
+        if d<clearance then
+            local distance=clearance-d
+            if d<.001 then dx,dy,d=-1,0,1 end
+            W.moveHat(m,h,dx/d*distance,dy/d*distance)
+        end
+    end
+    for _,k in ipairs(m.knives) do k.active=false; k.alpha=0 end
+    if not layout.curtainAt then W.drape(m,layout.drape,true) end
+end
+-- The engine holds the incoming box through the opening line. Resize it first,
+-- carry the soul with its horizontal translation, then open only the left edge.
+-- Expanding the box never drags the soul back toward the centre.
+local function opening(m,dt)
+    local v,a=m.vars,m.arena
+    if not v.boxEntry then
+        v.boxEntry={time=0,from={x=a.x,y=a.y,w=a.w,h=a.h}}
+    end
+    local entry=v.boxEntry
+    entry.time=entry.time+dt
+    local t,from=entry.time,entry.from
+    local right=W.arena.x+W.arena.w/2
+    local targetX=right-W.openingWidth/2
+    if t<W.resizeTime then
+        v.openingPhase='resize'
+        local p=C.curve('quart',t/W.resizeTime)
+        a.x=from.x; a.y=C.lerp(from.y,W.arena.y,p)
+        a.w=C.lerp(from.w,W.openingWidth,p); a.h=C.lerp(from.h,W.arena.h,p)
+    elseif t<W.resizeTime+W.slideTime then
+        v.openingPhase='slide'
+        local x=C.lerp(from.x,targetX,C.curve('quart',(t-W.resizeTime)/W.slideTime))
+        m.player.x=m.player.x+x-a.x
+        a.x,a.y,a.w,a.h=x,W.arena.y,W.openingWidth,W.arena.h
+    else
+        -- Account for the last fraction of translation before changing width.
+        if v.openingPhase~='expand' then m.player.x=m.player.x+targetX-a.x end
+        v.openingPhase='expand'
+        local p=C.curve('quart',(t-W.resizeTime-W.slideTime)/W.expandTime)
+        a.w=C.lerp(W.openingWidth,W.arena.w,p)
+        a.x,a.y,a.h=right-a.w/2,W.arena.y,W.arena.h
+        if p>=1 then m:next() end
+    end
 end
 -- The soul pushes the prop hat by touching its brim. The hat is solid, so a
 -- push that the blades refuse also stops the soul.
@@ -336,10 +385,13 @@ local function wall(m)
     local half=math.ceil(((a.w+a.h)/2+48)/W.wallPitch)
     for i=-half,half do
         local ox,oy=ux*i*W.wallPitch,uy*i*W.wallPitch
-        shot(m,sx+ox,sy+oy,tx+ox,ty+oy,layout.wallSpeed or 245)
+        local k=shot(m,sx+ox,sy+oy,tx+ox,ty+oy,layout.wallSpeed or 245)
+        k.wallEntry={x=k.x,y=k.y,delay=math.abs(i)/half*W.wallStagger}
+        k.x,k.y=k.x-math.cos(k.angle)*W.wallSlide,k.y-math.sin(k.angle)*W.wallSlide
+        k.oldX,k.oldY=k.x,k.y
+        k.active,k.alpha=false,0
     end
-    v.wallFired=true
-    m:launch()
+    v.wallFired,v.wallClock=true,0
 end
 -- Round 08's rule, unchanged: a hat the physical cloth actually covers pushes
 -- nearby blades aside with finite force. Collisions stay enabled.
@@ -360,9 +412,28 @@ local function repel(m,k,dt)
     end
 end
 local function flights(m,dt)
+    local v=m.vars
+    local wallDuration=W.wallEnter+W.wallStagger+W.wallHold
+    if v.wallClock then
+        v.wallClock=v.wallClock+dt
+        if v.wallClock>=wallDuration and not v.wallLaunched then
+            v.wallLaunched=true
+            m:launch()
+        end
+    end
     for i=#m.knives,1,-1 do
         local k=m.knives[i]
-        if k.armed then
+        if k.wallEntry then
+            local entry=k.wallEntry
+            local progress=C.ease((v.wallClock-entry.delay)/W.wallEnter)
+            k.alpha=progress
+            k.x=entry.x-math.cos(k.angle)*W.wallSlide*(1-progress)
+            k.y=entry.y-math.sin(k.angle)*W.wallSlide*(1-progress)
+            if v.wallLaunched then
+                k.wallEntry=nil; k.active=true
+                k.oldX,k.oldY=k.x,k.y
+            end
+        elseif k.armed then
             k.armed=k.armed-dt; k.warning=true
             if k.armed<=0 then
                 local dx,dy=m.player.x-k.x,m.player.y-k.y
@@ -382,11 +453,25 @@ local function flights(m,dt)
 end
 function W.update(m,dt,bulletDt)
     if m.stage==1 then
-        if m:dialogueDone() then m:next() end
+        if m:dialogueDone() then opening(m,dt) end
         return
     end
     local v,step=m.vars,bulletDt or dt
     local layout=v.layout
+    if v.sceneEntry then
+        v.sceneEntry=v.sceneEntry+dt
+        local p=C.ease(v.sceneEntry/W.darkEnterTime)
+        m.darkAmount=p
+        m.ambient=C.lerp(1,layout.ambient or .62,p)
+        m.ambientSilhouette=math.min(.85,m.ambient*2.5)
+        for _,k in ipairs(m.knives) do k.alpha=p end
+        for _,h in ipairs(v.hats) do h.alpha=p end
+        if v.sceneEntry>=math.max(W.darkEnterTime,Curtain.ENTER_TIME) then
+            v.sceneEntry=nil
+            for _,k in ipairs(m.knives) do k.active=true end
+        end
+        return
+    end
     v.clock,v.time=v.clock+step,v.time+step
     if layout.curtainAt and not m.curtain and v.hour>=layout.curtainAt then
         W.drape(m,layout.drape,true)
